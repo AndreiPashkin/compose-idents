@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - .gitignore file.
 - pre-commit config.
 - Task config.
+- Basic implementation of the compose-idents macro.
 
 ### Changed
 

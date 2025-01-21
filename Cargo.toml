@@ -1,0 +1,21 @@
+[package]
+name = "compose-idents"
+version = "0.0.1"
+authors = ["Andrei Pashkin <andrew.pashkin@gmx.co.uk>"]
+description = "Rust macro that makes possible to concatenate idents from multiple parts."
+keywords = ["idents", "ident", "concat", "concatenate", "macro"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1"
+syn = { version = "1.0", features = ["full", "visit-mut"] }
+
+[dev-dependencies]
+trybuild = "1"
+
+[[example]]
+name = "usage"
+path = "examples/usage.rs"

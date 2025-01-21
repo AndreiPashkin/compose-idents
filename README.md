@@ -2,6 +2,10 @@
 
 A procedural macro that allows to construct identifiers from one or more arbitrary parts.
 
+## Usage
+
+For usage examples look into `examples/` and `tests/` directories.
+
 ## Alternatives
 
 There some other projects dedicated to identifier manipulation:
