@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - pre-commit config.
 - Task config.
 - Basic implementation of the compose-idents macro.
+- GitHub CI setup.
 
 ### Changed
 
