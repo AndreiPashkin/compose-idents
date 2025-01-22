@@ -1,13 +1,15 @@
+![Build](https://github.com/AndreiPashkin/compose-idents/actions/workflows/build.yml/badge.svg)
+
 # compose-idents
 
 A procedural macro that allows to construct identifiers from one or more arbitrary parts.
 
 ## Motivation
 
-Rust's declarative macros do not allow generating new identifiers, because they are designed to operate on 
-the syntactic level (as opposed to the lexical level) using simple pattern matching. 
+Rust's declarative macros do not allow generating new identifiers, because they are designed to operate on
+the syntactic level (as opposed to the lexical level) using simple pattern matching.
 
-For example the following code won't work: 
+For example the following code won't work:
 ```rust
 macro_rules! my_macro {
     ($name:ident) => {

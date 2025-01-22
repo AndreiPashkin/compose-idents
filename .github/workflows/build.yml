@@ -1,0 +1,27 @@
+name: build
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Task
+      uses: arduino/setup-task@v2
+      with:
+        version: 3.x
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: pre-commit/action@v3.0.1
+    - name: Set up Rust toolchain
+      run: rustup update stable && rustup default stable
+    - name: Lint
+      run: task lint
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: task test
