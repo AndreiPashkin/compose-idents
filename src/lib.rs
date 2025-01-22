@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use std::collections::HashMap;

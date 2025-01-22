@@ -10,7 +10,7 @@ Rust's declarative macros do not allow generating new identifiers, because they 
 the syntactic level (as opposed to the lexical level) using simple pattern matching.
 
 For example the following code won't work:
-```rust
+```rust,ignore
 macro_rules! my_macro {
     ($name:ident) => {
         my_$name_fn() -> u32 {
@@ -42,10 +42,8 @@ compose_idents!(my_fn_1 = [foo, _, "baz"]; my_fn_2 = [spam, _, eggs]; {
 });
 
 
-fn main() {
-    assert_eq!(foo_baz(), 123);
-    assert_eq!(spam_eggs(), 321);
-}
+assert_eq!(foo_baz(), 123);
+assert_eq!(spam_eggs(), 321);
 ```
 
 For more usage examples look into `examples/` and `tests/` directories of the repository.
