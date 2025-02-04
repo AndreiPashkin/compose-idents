@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - New tests.
+- Support for specifying types as parts for the composed identifiers.
 - Crates.io/Docs.rs badges to the README.md.
 
 ### Changed
