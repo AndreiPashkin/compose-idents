@@ -33,19 +33,22 @@ Here is how the macro works:
 use compose_idents::compose_idents;
 
 
-compose_idents!(my_fn_1 = [foo, _, "baz"]; my_fn_2 = [spam, _, eggs]; {
-    fn my_fn_1() -> u32 {
+compose_idents!(
+  my_fn = [foo, _, "baz"];
+  MY_UPPER_STATIC = [upper(spam), _, upper("eggs")];
+  MY_LOWER_STATIC = [lower(GORK), _, lower(BORK)]; {
+    fn my_fn() -> u32 {
         123
     }
 
-    fn my_fn_2() -> u32 {
-        321
-    }
+    static MY_UPPER_STATIC: u32 = 321;
+    static MY_LOWER_STATIC: u32 = 321123;
 });
 
 
 assert_eq!(foo_baz(), 123);
-assert_eq!(spam_eggs(), 321);
+assert_eq!(SPAM_EGGS, 321);
+assert_eq!(gork_bork, 321123);
 ```
 
 Here is a more practical example for how to auto-generate names for macro-generated tests for different data types:

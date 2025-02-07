@@ -1,5 +1,10 @@
 #![doc = include_str!("../README.md")]
 
+mod core;
+mod eval;
+
+use crate::core::Expr;
+use crate::eval::Eval;
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use std::collections::HashMap;
@@ -8,20 +13,19 @@ use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input,
     visit_mut::VisitMut,
-    Block, Ident, LitStr, Token,
+    Block, Ident, Token,
 };
 
 struct IdentSpecItem {
     alias: Ident,
-    parts: Vec<String>,
+    exprs: Vec<Expr>,
 }
 
 impl IdentSpecItem {
     fn replacement(&self) -> Ident {
-        let ident = self
-            .parts
-            .iter()
-            .fold("".to_string(), |acc, item| format!("{}{}", acc, item));
+        let ident = self.exprs.iter().fold("".to_string(), |acc, item| {
+            format!("{}{}", acc, item.eval())
+        });
         format_ident!("{}", ident)
     }
 }
@@ -38,23 +42,19 @@ impl Parse for IdentSpec {
             input.parse::<Token![=]>()?;
             let content;
             bracketed!(content in input);
-            let mut parts = Vec::new();
+            let mut exprs = Vec::new();
             loop {
-                if let Ok(part) = content.parse::<Ident>() {
-                    parts.push(part.to_string());
-                } else if content.parse::<Token![_]>().is_ok() {
-                    parts.push("_".to_string());
-                } else if let Ok(part) = content.parse::<LitStr>() {
-                    parts.push(part.value());
+                if let Ok(expr) = content.parse::<Expr>() {
+                    exprs.push(expr);
                 } else {
-                    return Err(content.error("Expected identifier or _"));
+                    return Err(content.error("Invalid expression."));
                 }
                 if content.is_empty() {
                     break;
                 }
                 content.parse::<Token![,]>()?;
             }
-            items.push(IdentSpecItem { alias, parts });
+            items.push(IdentSpecItem { alias, exprs });
             input.parse::<Token![;]>()?;
             if !input.peek(Ident) {
                 break;

@@ -1,6 +1,10 @@
 use compose_idents::compose_idents;
 
-compose_idents!(my_fn_1 = [foo, _, "baz"]; my_fn_2 = [spam, _, eggs]; {
+compose_idents!(
+    my_fn_1 = [foo, _, "baz"];
+    my_fn_2 = [spam, _, eggs];
+    my_const = [upper(foo), _, lower(BAR)];
+    my_static = [upper(lower(BAR))]; {
     fn my_fn_1() -> u32 {
         123
     }
@@ -8,6 +12,9 @@ compose_idents!(my_fn_1 = [foo, _, "baz"]; my_fn_2 = [spam, _, eggs]; {
     fn my_fn_2() -> u32 {
         321
     }
+
+    const my_const: u32 = 42;
+    static my_static: u32 = 42;
 });
 
 macro_rules! outer_macro {
@@ -26,4 +33,6 @@ fn main() {
     assert_eq!(foo_baz(), 123);
     assert_eq!(spam_eggs(), 321);
     assert_eq!(nested_foo(), 42);
+    assert_eq!(FOO_bar, 42);
+    assert_eq!(BAR, 42);
 }

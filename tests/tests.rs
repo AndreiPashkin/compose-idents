@@ -7,4 +7,8 @@ fn compile_tests() {
     t.pass("tests/compile/multi_compose.rs");
     t.pass("tests/compile/const_var_compose.rs");
     t.pass("tests/compile/generic_param_compose.rs");
+    t.pass("tests/compile/funcs/upper.rs");
+    t.pass("tests/compile/funcs/lower.rs");
+    t.pass("tests/compile/funcs/nested.rs");
+    t.pass("tests/compile/funcs/different_arg_types.rs");
 }
