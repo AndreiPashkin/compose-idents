@@ -12,7 +12,7 @@ Rust's declarative macros do not allow generating new identifiers, because they 
 the syntactic level (as opposed to the lexical level) using simple pattern matching.
 
 For example the following code won't work:
-```rust,ignore
+```rust,compile_fail
 macro_rules! my_macro {
     ($name:ident) => {
         my_$name_fn() -> u32 {
