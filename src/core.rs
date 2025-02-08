@@ -51,7 +51,7 @@ impl Parse for Func {
                     _ => unreachable!(),
                 }
             }
-            _ => Err(input.error(r#"Expected "upper()" or "lower()""#)),
+            _ => Err(input.error(r#"Expected "upper()", "lower()" or "snake_case()""#)),
         }
     }
 }
