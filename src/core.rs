@@ -25,11 +25,12 @@ impl Parse for Arg {
     }
 }
 
-/// Function call in form of `upper(arg)` or `lower(arg)`.
+/// Function call in form of `upper(arg)` or `lower(arg)`, etc.
 #[derive(Debug)]
 pub enum Func {
     Upper(Box<Expr>),
     Lower(Box<Expr>),
+    SnakeCase(Box<Expr>),
 }
 
 impl Parse for Func {
@@ -37,7 +38,7 @@ impl Parse for Func {
         let call = input.parse::<syn::ExprCall>()?;
         let func_name = call.func.to_token_stream().to_string();
         match func_name.as_str() {
-            "upper" | "lower" => {
+            "upper" | "lower" | "snake_case" => {
                 let args = call.args;
                 if args.len() != 1 {
                     return Err(input.error("Expected 1 argument"));
@@ -46,6 +47,7 @@ impl Parse for Func {
                 match func_name.as_str() {
                     "upper" => Ok(Func::Upper(Box::new(arg))),
                     "lower" => Ok(Func::Lower(Box::new(arg))),
+                    "snake_case" => Ok(Func::SnakeCase(Box::new(arg))),
                     _ => unreachable!(),
                 }
             }

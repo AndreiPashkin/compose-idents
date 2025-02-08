@@ -36,19 +36,22 @@ use compose_idents::compose_idents;
 compose_idents!(
   my_fn = [foo, _, "baz"];
   MY_UPPER_STATIC = [upper(spam), _, upper("eggs")];
-  MY_LOWER_STATIC = [lower(GORK), _, lower(BORK)]; {
+  MY_LOWER_STATIC = [lower(GORK), _, lower(BORK)];
+  MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)]; {
     fn my_fn() -> u32 {
         123
     }
 
     static MY_UPPER_STATIC: u32 = 321;
     static MY_LOWER_STATIC: u32 = 321123;
+    static MY_SNAKE_CASE_STATIC: u32 = 123321;
 });
 
 
 assert_eq!(foo_baz(), 123);
 assert_eq!(SPAM_EGGS, 321);
 assert_eq!(gork_bork, 321123);
+assert_eq!(snake_case, 123321);
 ```
 
 Here is a more practical example for how to auto-generate names for macro-generated tests for different data types:
@@ -86,8 +89,11 @@ For more usage examples look into `examples/` and `tests/` directories of the re
 
 ## Alternatives
 
-There some other projects dedicated to identifier manipulation:
+There some other tools and projects dedicated to identifier manipulation:
 
+- A macro from Nightly Rust that allows to concatenate identifiers. It is limited in functionality and nowhere near
+  to be stabilized:
+  <https://doc.rust-lang.org/std/macro.concat_idents.html>
 - A very similar macro that doesn't support multiple aliases and is not maintained:
   <https://github.com/DzenanJupic/concat-idents>
 - A macro that allows to define and refer to unique temporary variables:

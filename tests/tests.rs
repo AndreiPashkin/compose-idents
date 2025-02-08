@@ -11,4 +11,5 @@ fn compile_tests() {
     t.pass("tests/compile/funcs/lower.rs");
     t.pass("tests/compile/funcs/nested.rs");
     t.pass("tests/compile/funcs/different_arg_types.rs");
+    t.pass("tests/compile/funcs/snake_case.rs");
 }

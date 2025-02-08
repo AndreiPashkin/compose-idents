@@ -2,6 +2,7 @@
 
 mod core;
 mod eval;
+mod funcs;
 
 use crate::core::Expr;
 use crate::eval::Eval;
