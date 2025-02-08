@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Docs/tests fixes.
 - Added "functions" functionality that allows to apply functions over arguments.
+- Added "upper()" and "lower()" functions.
 
 ### Changed
 
