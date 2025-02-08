@@ -104,20 +104,7 @@ impl VisitMut for ComposeIdentsVisitor {
 /// # Example
 ///
 /// ```rust
-/// use compose_idents::compose_idents;
-///
-/// compose_idents!(my_fn_1 = [foo, _, "baz"]; my_fn_2 = [spam, _, eggs]; {
-///     fn my_fn_1() -> u32 {
-///         111
-///     }
-///
-///     fn my_fn_2() -> u32 {
-///         999
-///     }
-/// });
-///
-/// assert_eq!(foo_baz(), 111);
-/// assert_eq!(spam_eggs(), 999);
+#[doc = include_str!("../examples/usage.rs")]
 /// ```
 #[proc_macro]
 pub fn compose_idents(input: TokenStream) -> TokenStream {
