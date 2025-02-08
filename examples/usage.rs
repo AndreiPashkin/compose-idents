@@ -5,7 +5,8 @@ compose_idents!(
     my_fn_2 = [spam, _, eggs];
     my_const = [upper(foo), _, lower(BAR)];
     my_static = [upper(lower(BAR))];
-    MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)]; {
+    MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)];
+    MY_CAMEL_CASE_STATIC = [camel_case(camel_case)]; {
     fn my_fn_1() -> u32 {
         123
     }
@@ -17,6 +18,7 @@ compose_idents!(
     const my_const: u32 = 42;
     static my_static: u32 = 42;
     static MY_SNAKE_CASE_STATIC: u32 = 42;
+    static MY_CAMEL_CASE_STATIC: u32 = 42;
 });
 
 macro_rules! outer_macro {
@@ -38,4 +40,5 @@ fn main() {
     assert_eq!(FOO_bar, 42);
     assert_eq!(BAR, 42);
     assert_eq!(snake_case, 42);
+    assert_eq!(camelCase, 42);
 }

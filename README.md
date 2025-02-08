@@ -37,7 +37,8 @@ compose_idents!(
   my_fn = [foo, _, "baz"];
   MY_UPPER_STATIC = [upper(spam), _, upper("eggs")];
   MY_LOWER_STATIC = [lower(GORK), _, lower(BORK)];
-  MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)]; {
+  MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)];
+  MY_CAMEL_CASE_STATIC = [camel_case(camel_case)]; {
     fn my_fn() -> u32 {
         123
     }
@@ -45,6 +46,7 @@ compose_idents!(
     static MY_UPPER_STATIC: u32 = 321;
     static MY_LOWER_STATIC: u32 = 321123;
     static MY_SNAKE_CASE_STATIC: u32 = 123321;
+    static MY_CAMEL_CASE_STATIC: u32 = 333333;
 });
 
 
@@ -52,6 +54,7 @@ assert_eq!(foo_baz(), 123);
 assert_eq!(SPAM_EGGS, 321);
 assert_eq!(gork_bork, 321123);
 assert_eq!(snake_case, 123321);
+assert_eq!(camelCase, 333333);
 ```
 
 Here is a more practical example for how to auto-generate names for macro-generated tests for different data types:

@@ -1,5 +1,5 @@
 use crate::core::{Arg, Expr, Func};
-use crate::funcs::to_snake_case;
+use crate::funcs::{to_camel_case, to_snake_case};
 
 /// A syntactic structure that can be evaluated.
 pub trait Eval {
@@ -18,6 +18,7 @@ impl Eval for Func {
             Func::Upper(expr) => expr.eval().to_uppercase(),
             Func::Lower(expr) => expr.eval().to_lowercase(),
             Func::SnakeCase(expr) => to_snake_case(expr.eval().as_str()),
+            Func::CamelCase(expr) => to_camel_case(expr.eval().as_str()),
         }
     }
 }
