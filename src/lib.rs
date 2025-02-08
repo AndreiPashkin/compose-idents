@@ -108,7 +108,6 @@ impl VisitMut for ComposeIdentsVisitor {
 /// ```
 #[proc_macro]
 pub fn compose_idents(input: TokenStream) -> TokenStream {
-    // Parse the input into our `Assignments` structure
     let args = parse_macro_input!(input as ComposeIdentsArgs);
     let mut visitor = ComposeIdentsVisitor {
         replacements: args.spec.replacements(),
