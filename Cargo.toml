@@ -19,10 +19,3 @@ syn = { version = "1.0", features = ["full", "visit-mut"] }
 [dev-dependencies]
 trybuild = "1"
 rstest = "~0.24.0"
-
-[[example]]
-name = "usage"
-path = "examples/usage.rs"
-
-[lints.clippy]
-needless_doctest_main = "allow"

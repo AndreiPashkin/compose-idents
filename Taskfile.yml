@@ -7,7 +7,6 @@ tasks:
       RUST_BACKTRACE: full
     cmds:
       - cargo test --verbose
-      - cargo run --example usage
   lint:
     cmds:
       - pre-commit run --all

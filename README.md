@@ -65,16 +65,13 @@ macro_rules! outer_macro {
 
 outer_macro!(foo);
 
-fn main() {
-    assert_eq!(foo_baz(), 123);
-    assert_eq!(spam_eggs(), 321);
-    assert_eq!(nested_foo(), 42);
-    assert_eq!(FOO_bar, 42);
-    assert_eq!(BAR, 42);
-    assert_eq!(snake_case, 42);
-    assert_eq!(camelCase, 42);
-}
-
+assert_eq!(foo_baz(), 123);
+assert_eq!(spam_eggs(), 321);
+assert_eq!(nested_foo(), 42);
+assert_eq!(FOO_bar, 42);
+assert_eq!(BAR, 42);
+assert_eq!(snake_case, 42);
+assert_eq!(camelCase, 42);
 ```
 
 Here is a more practical example for how to auto-generate names for macro-generated tests for different data types:
@@ -108,7 +105,7 @@ test_add_u32();
 test_add_u64();
 ```
 
-For more usage examples look into `examples/` and `tests/` directories of the repository.
+For more usage examples look into `tests/` directory of the repository.
 
 ## Alternatives
 

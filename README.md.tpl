@@ -30,7 +30,7 @@ This is why there is a need for a macro that allows to construct new identifiers
 
 Here is how the macro works:
 ```rust
-{{ file.Read "examples/usage.rs" }}
+{{ file.Read "snippets/usage.rs" -}}
 ```
 
 Here is a more practical example for how to auto-generate names for macro-generated tests for different data types:
@@ -64,7 +64,7 @@ test_add_u32();
 test_add_u64();
 ```
 
-For more usage examples look into `examples/` and `tests/` directories of the repository.
+For more usage examples look into `tests/` directory of the repository.
 
 ## Alternatives
 

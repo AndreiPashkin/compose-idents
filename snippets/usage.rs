@@ -33,12 +33,10 @@ macro_rules! outer_macro {
 
 outer_macro!(foo);
 
-fn main() {
-    assert_eq!(foo_baz(), 123);
-    assert_eq!(spam_eggs(), 321);
-    assert_eq!(nested_foo(), 42);
-    assert_eq!(FOO_bar, 42);
-    assert_eq!(BAR, 42);
-    assert_eq!(snake_case, 42);
-    assert_eq!(camelCase, 42);
-}
+assert_eq!(foo_baz(), 123);
+assert_eq!(spam_eggs(), 321);
+assert_eq!(nested_foo(), 42);
+assert_eq!(FOO_bar, 42);
+assert_eq!(BAR, 42);
+assert_eq!(snake_case, 42);
+assert_eq!(camelCase, 42);

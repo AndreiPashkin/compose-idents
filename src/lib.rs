@@ -104,7 +104,7 @@ impl VisitMut for ComposeIdentsVisitor {
 /// # Example
 ///
 /// ```rust
-#[doc = include_str!("../examples/usage.rs")]
+#[doc = include_str!("../snippets/usage.rs")]
 /// ```
 #[proc_macro]
 pub fn compose_idents(input: TokenStream) -> TokenStream {
