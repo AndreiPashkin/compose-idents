@@ -17,6 +17,9 @@ jobs:
         version: 3.x
         repo-token: ${{ secrets.GITHUB_TOKEN }}
     - uses: pre-commit/action@v3.0.1
+    - uses: pkgxdev/setup@v3
+      with:
+        +: gomplate.ca
     - name: Set up Rust toolchain
       run: rustup update stable && rustup default stable
     - name: Lint
@@ -26,4 +29,6 @@ jobs:
     - name: Run tests
       run: task test
     - name: Build docs
-      run: cargo doc --verbose
+      run: |
+        task render
+        cargo doc --verbose

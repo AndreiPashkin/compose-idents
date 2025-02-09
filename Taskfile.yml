@@ -11,3 +11,6 @@ tasks:
   lint:
     cmds:
       - pre-commit run --all
+  render:
+    cmds:
+      - gomplate -f README.md.tpl -o README.md
