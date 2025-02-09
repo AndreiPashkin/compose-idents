@@ -34,25 +34,27 @@ pub enum Func {
     CamelCase(Box<Expr>),
 }
 
-impl Parse for Func {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+impl Func {
+    fn parse_func(input: ParseStream) -> syn::Result<(String, Vec<Expr>)> {
         let call = input.parse::<syn::ExprCall>()?;
         let func_name = call.func.to_token_stream().to_string();
-        match func_name.as_str() {
-            "upper" | "lower" | "snake_case" | "camel_case" => {
-                let args = call.args;
-                if args.len() != 1 {
-                    return Err(input.error("Expected 1 argument"));
-                }
-                let arg = syn::parse2::<Expr>(args.into_token_stream())?;
-                match func_name.as_str() {
-                    "upper" => Ok(Func::Upper(Box::new(arg))),
-                    "lower" => Ok(Func::Lower(Box::new(arg))),
-                    "snake_case" => Ok(Func::SnakeCase(Box::new(arg))),
-                    "camel_case" => Ok(Func::CamelCase(Box::new(arg))),
-                    _ => unreachable!(),
-                }
-            }
+        let raw_args = call.args;
+        let mut args = Vec::new();
+        for arg in raw_args {
+            args.push(syn::parse2::<Expr>(arg.into_token_stream())?);
+        }
+        Ok((func_name, args))
+    }
+}
+
+impl Parse for Func {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let (func, mut args) = Func::parse_func(input)?;
+        match (func.as_str(), args.len()) {
+            ("upper", 1) => Ok(Func::Upper(Box::new(args.drain(..).next().unwrap()))),
+            ("lower", 1) => Ok(Func::Lower(Box::new(args.drain(..).next().unwrap()))),
+            ("snake_case", 1) => Ok(Func::SnakeCase(Box::new(args.drain(..).next().unwrap()))),
+            ("camel_case", 1) => Ok(Func::CamelCase(Box::new(args.drain(..).next().unwrap()))),
             _ => {
                 Err(input
                     .error(r#"Expected "upper()", "lower()", "snake_case()" or "camel_case()""#))
