@@ -2,7 +2,7 @@ use compose_idents::compose_idents;
 
 compose_idents!(
     my_fn_1 = [foo, _, "baz"];
-    my_fn_2 = [spam, _, eggs];
+    my_fn_2 = [spam, _, 1, _, eggs];
     my_const = [upper(foo), _, lower(BAR)];
     my_static = [upper(lower(BAR))];
     MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)];
@@ -34,7 +34,7 @@ macro_rules! outer_macro {
 outer_macro!(foo);
 
 assert_eq!(foo_baz(), 123);
-assert_eq!(spam_eggs(), 321);
+assert_eq!(spam_1_eggs(), 321);
 assert_eq!(nested_foo(), 42);
 assert_eq!(FOO_bar, 42);
 assert_eq!(BAR, 42);

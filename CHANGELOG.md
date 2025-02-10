@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Docs/tests fixes.
 - Added "functions" functionality that allows to apply functions over arguments.
+- Made it possible to pass integers as arguments.
 - Added "upper()", "lower()", "snake_case()" and "camel_case()" functions for case-manipulation.
 
 ### Changed

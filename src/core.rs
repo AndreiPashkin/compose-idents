@@ -14,10 +14,15 @@ impl Parse for Arg {
         if input.peek(syn::Ident) && !input.peek2(syn::token::Paren) {
             let ident = input.parse::<syn::Ident>()?;
             value = ident.to_string();
-        } else if input.parse::<syn::Token![_]>().is_ok() {
+        } else if input.peek(syn::Token![_]) {
+            input.parse::<syn::Token![_]>()?;
             value = "_".to_string();
-        } else if let Ok(lit_str) = input.parse::<syn::LitStr>() {
+        } else if input.peek(syn::LitStr) {
+            let lit_str = input.parse::<syn::LitStr>()?;
             value = lit_str.value();
+        } else if input.peek(syn::LitInt) {
+            let lit_int = input.parse::<syn::LitInt>()?;
+            value = lit_int.base10_digits().to_string();
         } else {
             return Err(input.error("Expected identifier or _"));
         }

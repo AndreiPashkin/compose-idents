@@ -45,10 +45,9 @@ impl Parse for IdentSpec {
             bracketed!(content in input);
             let mut exprs = Vec::new();
             loop {
-                if let Ok(expr) = content.parse::<Expr>() {
-                    exprs.push(expr);
-                } else {
-                    return Err(content.error("Invalid expression."));
+                match content.parse::<Expr>() {
+                    Ok(expr) => exprs.push(expr),
+                    Err(err) => return Err(err),
                 }
                 if content.is_empty() {
                     break;
