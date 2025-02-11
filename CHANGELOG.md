@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+## [v0.0.3] - 2025-02-11
+
+### Added
+
 - Docs/tests fixes.
 - Added "functions" functionality that allows to apply functions over arguments.
 - Made it possible to pass integers as arguments.
@@ -46,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.2...master
+[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.3...master
+[v0.0.3]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.2...v0.0.3
 [v0.0.2]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.1...v0.0.2
 [v0.0.1]: https://github.com/AndreiPashkin/compose-idents/compare/1e27315fc2d46c7b61700adcf3bf4f22ea82e8e1...v0.0.1
