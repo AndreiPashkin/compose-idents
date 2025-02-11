@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added "functions" functionality that allows to apply functions over arguments.
 - Made it possible to pass integers as arguments.
 - Added "upper()", "lower()", "snake_case()" and "camel_case()" functions for case-manipulation.
+- Added "hash()" function that hashes an input value deterministically within the scope
+  of a single macro invocation.
 
 ### Changed
 

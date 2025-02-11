@@ -2,6 +2,12 @@ use quote::ToTokens;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
 
+/// State of a particular macro invocation.
+#[derive(Debug)]
+pub struct State {
+    pub(super) seed: u64,
+}
+
 /// Argument in form of an identifier, underscore or a string literal.
 #[derive(Debug)]
 pub struct Arg {
@@ -37,6 +43,7 @@ pub enum Func {
     Lower(Box<Expr>),
     SnakeCase(Box<Expr>),
     CamelCase(Box<Expr>),
+    Hash(Box<Expr>),
 }
 
 impl Func {
@@ -60,10 +67,11 @@ impl Parse for Func {
             ("lower", 1) => Ok(Func::Lower(Box::new(args.drain(..).next().unwrap()))),
             ("snake_case", 1) => Ok(Func::SnakeCase(Box::new(args.drain(..).next().unwrap()))),
             ("camel_case", 1) => Ok(Func::CamelCase(Box::new(args.drain(..).next().unwrap()))),
-            _ => {
-                Err(input
-                    .error(r#"Expected "upper()", "lower()", "snake_case()" or "camel_case()""#))
-            }
+            ("hash", 1) => Ok(Func::Hash(Box::new(args.drain(..).next().unwrap()))),
+            _ => Err(input.error(
+                r#"Expected "upper()", "lower()", "snake_case()",
+                    "camel_case()" or "hash()"."#,
+            )),
         }
     }
 }
