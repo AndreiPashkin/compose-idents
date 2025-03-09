@@ -8,6 +8,7 @@ edition = "2018"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/AndreiPashkin/compose-idents"
+documentation = "https://docs.rs/compose-idents"
 
 [lib]
 proc-macro = true
