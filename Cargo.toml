@@ -9,6 +9,13 @@ license = "MIT"
 readme = "README.md"
 repository = "https://github.com/AndreiPashkin/compose-idents"
 documentation = "https://docs.rs/compose-idents"
+exclude = [
+    ".github/*",
+    ".pre-commit-config.yaml",
+    "Taskfile.yml",
+    "README.md.tpl",
+    ".gitignore",
+]
 
 [lib]
 proc-macro = true
