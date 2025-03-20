@@ -4,7 +4,8 @@
 
 # compose-idents
 
-A procedural macro that allows to construct identifiers from one or more arbitrary parts.
+A macro for generating new identifiers (names of variables, functions, traits, etc) by concatenating one or more
+arbitrary parts and applying other manipulations.
 
 ## Motivation
 
@@ -22,23 +23,52 @@ macro_rules! my_macro {
 }
 
 my_macro!(foo);
+assert_eq!(my_foo_fn(), 42);
 ```
 
-This is why there is a need for a macro that allows to construct new identifiers.
+`compose-idents` resolves this limitation:
+```rust
+use compose_idents::compose_idents;
+
+macro_rules! my_macro {
+    ($name:ident) => {
+        compose_idents!(
+            my_fn = [my, _, $name, _, "fn"]; {
+                fn my_fn() -> u32 {
+                    42
+                }
+            }
+        )
+    }
+}
+
+my_macro!(foo);
+assert_eq!(my_foo_fn(), 42);
+```
 
 ## Usage
 
-Here is how the macro works:
+This section contains various usage examples. For more usage examples look into `tests/` directory of the repository.
+
+### Full example
+
+This example includes all the features of the macro:
 ```rust
 use compose_idents::compose_idents;
 
 compose_idents!(
+    // Valid identifiers, underscores, integers and strings are allowed as literal values.
     my_fn_1 = [foo, _, "baz"];
     my_fn_2 = [spam, _, 1, _, eggs];
+    // Functions can be applied to the arguments.
     my_const = [upper(foo), _, lower(BAR)];
+    // Function calls can be arbitrarily nested and combined.
     my_static = [upper(lower(BAR))];
     MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)];
     MY_CAMEL_CASE_STATIC = [camel_case(camel_case)];
+    // This function is useful to create identifiers that are unique across multiple macro invocations.
+    // `hash(0b11001010010111)` will generate the same value even if called twice in the same macro call,
+    // but will be different in different macro calls.
     MY_UNIQUE_STATIC = [hash(0b11001010010111)]; {
     fn my_fn_1() -> u32 {
         123
@@ -55,6 +85,7 @@ compose_idents!(
     static MY_UNIQUE_STATIC: u32 = 42;
 });
 
+// It's possible to use arguments of declarative macros as parts of the identifiers.
 macro_rules! outer_macro {
     ($name:tt) => {
         compose_idents!(my_nested_fn = [nested, _, $name]; {
@@ -90,7 +121,9 @@ assert_eq!(snake_case, 42);
 assert_eq!(camelCase, 42);
 ```
 
-Here is a more practical example for how to auto-generate names for macro-generated tests for different data types:
+### Generating tests for different types
+
+More practical example for how to auto-generate names for macro-generated tests for different data types:
 ```rust
 use std::ops::Add;
 use compose_idents::compose_idents;
@@ -121,7 +154,16 @@ test_add_u32();
 test_add_u64();
 ```
 
-For more usage examples look into `tests/` directory of the repository.
+## Functions
+
+| Function          | Description                                                          |
+|-------------------|----------------------------------------------------------------------|
+| `upper(arg)`      | Converts the `arg` to upper case.                                    |
+| `lower(arg)`      | Converts the `arg` to lower case.                                    |
+| `snake_case(arg)` | Converts the `arg` to snake_case.                                    |
+| `camel_case(arg)` | Converts the `arg` to camelCase.                                     |
+| `hash(arg)`       | Hashes the `arg` deterministically within a single macro invocation. |
+
 
 ## Alternatives
 

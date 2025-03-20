@@ -4,7 +4,8 @@
 
 # compose-idents
 
-A procedural macro that allows to construct identifiers from one or more arbitrary parts.
+A macro for generating new identifiers (names of variables, functions, traits, etc) by concatenating one or more
+arbitrary parts and applying other manipulations.
 
 ## Motivation
 
@@ -22,18 +23,43 @@ macro_rules! my_macro {
 }
 
 my_macro!(foo);
+assert_eq!(my_foo_fn(), 42);
 ```
 
-This is why there is a need for a macro that allows to construct new identifiers.
+`compose-idents` resolves this limitation:
+```rust
+use compose_idents::compose_idents;
+
+macro_rules! my_macro {
+    ($name:ident) => {
+        compose_idents!(
+            my_fn = [my, _, $name, _, "fn"]; {
+                fn my_fn() -> u32 {
+                    42
+                }
+            }
+        )
+    }
+}
+
+my_macro!(foo);
+assert_eq!(my_foo_fn(), 42);
+```
 
 ## Usage
 
-Here is how the macro works:
+This section contains various usage examples. For more usage examples look into `tests/` directory of the repository.
+
+### Full example
+
+This example includes all the features of the macro:
 ```rust
 {{ file.Read "snippets/usage.rs" -}}
 ```
 
-Here is a more practical example for how to auto-generate names for macro-generated tests for different data types:
+### Generating tests for different types
+
+More practical example for how to auto-generate names for macro-generated tests for different data types:
 ```rust
 use std::ops::Add;
 use compose_idents::compose_idents;
@@ -64,7 +90,16 @@ test_add_u32();
 test_add_u64();
 ```
 
-For more usage examples look into `tests/` directory of the repository.
+## Functions
+
+| Function          | Description                                                          |
+|-------------------|----------------------------------------------------------------------|
+| `upper(arg)`      | Converts the `arg` to upper case.                                    |
+| `lower(arg)`      | Converts the `arg` to lower case.                                    |
+| `snake_case(arg)` | Converts the `arg` to snake_case.                                    |
+| `camel_case(arg)` | Converts the `arg` to camelCase.                                     |
+| `hash(arg)`       | Hashes the `arg` deterministically within a single macro invocation. |
+
 
 ## Alternatives
 
