@@ -82,6 +82,7 @@ impl Parse for ComposeIdentsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let spec: IdentSpec = input.parse()?;
         let block: Block = input.parse()?;
+        let _ = input.parse::<Token![;]>();
         Ok(ComposeIdentsArgs { spec, block })
     }
 }

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Documented functions and add more clarity to the docs in general.
 - Updated syn version to 2.
+- Fixed handling of trailing semicolons in the macro.
 
 ### Changed
 
