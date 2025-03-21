@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+## [v0.0.4] - 2025-03-21
+
+### Added
+
 - Documented functions and add more clarity to the docs in general.
 - Updated syn version to 2.
 - Fixed handling of trailing semicolons in the macro.
@@ -59,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.3...master
+[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.4...master
+[v0.0.4]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.3...v0.0.4
 [v0.0.3]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.2...v0.0.3
 [v0.0.2]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.1...v0.0.2
 [v0.0.1]: https://github.com/AndreiPashkin/compose-idents/compare/1e27315fc2d46c7b61700adcf3bf4f22ea82e8e1...v0.0.1
