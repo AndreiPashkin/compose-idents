@@ -48,7 +48,8 @@ assert_eq!(my_foo_fn(), 42);
 
 ## Usage
 
-This section contains various usage examples. For more usage examples look into `tests/` directory of the repository.
+This section contains various usage examples. For even more usage examples look into `tests/` directory
+of the repository.
 
 ### Full example
 
