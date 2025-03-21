@@ -27,3 +27,8 @@ syn = { version = "2.0", features = ["full", "visit-mut"] }
 [dev-dependencies]
 trybuild = "1"
 rstest = "~0.24.0"
+
+[[test]]
+name = "format_doc_attr"
+path = "tests/compile/format_doc_attr.rs"
+harness = false

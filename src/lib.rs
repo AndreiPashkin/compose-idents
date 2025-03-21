@@ -14,7 +14,7 @@ use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input,
     visit_mut::VisitMut,
-    Block, Ident, Token,
+    Block, Ident, LitStr, Token,
 };
 
 struct IdentSpecItem {
@@ -97,11 +97,27 @@ impl VisitMut for ComposeIdentsVisitor {
             *ident = replacement.clone();
         }
     }
+
+    fn visit_lit_str_mut(&mut self, i: &mut LitStr) {
+        let value = i.value();
+        let mut formatted = i.value().clone();
+
+        for (alias, repl) in self.replacements.iter() {
+            formatted = formatted.replace(&format!("%{}%", alias), &repl.to_string());
+        }
+
+        if formatted != value {
+            *i = LitStr::new(&formatted, i.span());
+        }
+    }
 }
 
 static mut COUNTER: u64 = 0;
 
 /// Compose identifiers from the provided parts and replace their aliases in the code block.
+///
+/// In addition to replacing identifier aliases it replaces tokens like `%alias%` in string
+/// literals (including in doc-attributes).
 ///
 /// # Example
 ///

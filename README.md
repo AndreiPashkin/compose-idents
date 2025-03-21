@@ -70,11 +70,15 @@ compose_idents!(
     // This function is useful to create identifiers that are unique across multiple macro invocations.
     // `hash(0b11001010010111)` will generate the same value even if called twice in the same macro call,
     // but will be different in different macro calls.
-    MY_UNIQUE_STATIC = [hash(0b11001010010111)]; {
+    MY_UNIQUE_STATIC = [hash(0b11001010010111)];
+    MY_FORMATTED_STR = [FOO, _, BAR]; {
     fn my_fn_1() -> u32 {
         123
     }
 
+    // You can use %alias% syntax to replace aliases with their replacements
+    // in string literals and doc-attributes.
+    #[doc = "This is a docstring for %my_fn_2%"]
     fn my_fn_2() -> u32 {
         321
     }
@@ -84,6 +88,8 @@ compose_idents!(
     static MY_SNAKE_CASE_STATIC: u32 = 42;
     static MY_CAMEL_CASE_STATIC: u32 = 42;
     static MY_UNIQUE_STATIC: u32 = 42;
+    // This is an example of string literal formatting.
+    static MY_FORMATTED_STR: &str = "This is %MY_FORMATTED_STR%";
 });
 
 // It's possible to use arguments of declarative macros as parts of the identifiers.
@@ -120,6 +126,7 @@ assert_eq!(FOO_bar, 42);
 assert_eq!(BAR, 42);
 assert_eq!(snake_case, 42);
 assert_eq!(camelCase, 42);
+assert_eq!(FOO_BAR, "This is FOO_BAR");
 ```
 
 ### Generating tests for different types
@@ -153,6 +160,51 @@ generate_add_tests!(u8, u32, u64);
 test_add_u8();
 test_add_u32();
 test_add_u64();
+```
+
+### Formatting docstrings for generated functions
+
+It's possible to format strings in doc-attributes (and also any literal strings) using `%alias%` syntax. It is useful
+for generating docstrings for generated functions.
+
+In this particular example we are generating addition functions that work at compile time for different types
+(as `core::ops::Add` can't be used in generic const-functions). Notice, in addition to the function name,
+the docstring is also formatted so that it mentions the type of the function:
+```rust
+use compose_idents::compose_idents;
+
+
+macro_rules! generate_add {
+    ($T:ty) => {
+        compose_idents!(
+            T = [$T];
+            add_fn = [add, _, $T]; {
+                #[doc = "Adds two arguments of type `%T%` at compile time."]
+                const fn add_fn(a: $T, b: $T) -> $T {
+                    a + b
+                }
+            }
+        );
+    };
+}
+
+generate_add!(u32);
+generate_add!(u64);
+```
+
+The above example expands into this:
+```rust
+use compose_idents::compose_idents;
+
+///Adds two arguments of type `u32` at compile time.
+const fn add_u32(a: u32, b: u32) -> u32 {
+  a + b
+}
+
+///Adds two arguments of type `u64` at compile time.
+const fn add_u64(a: u64, b: u64) -> u64 {
+  a + b
+}
 ```
 
 ## Functions

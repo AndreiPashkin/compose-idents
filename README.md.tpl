@@ -91,6 +91,51 @@ test_add_u32();
 test_add_u64();
 ```
 
+### Formatting docstrings for generated functions
+
+It's possible to format strings in doc-attributes (and also any literal strings) using `%alias%` syntax. It is useful
+for generating docstrings for generated functions.
+
+In this particular example we are generating addition functions that work at compile time for different types
+(as `core::ops::Add` can't be used in generic const-functions). Notice, in addition to the function name,
+the docstring is also formatted so that it mentions the type of the function:
+```rust
+use compose_idents::compose_idents;
+
+
+macro_rules! generate_add {
+    ($T:ty) => {
+        compose_idents!(
+            T = [$T];
+            add_fn = [add, _, $T]; {
+                #[doc = "Adds two arguments of type `%T%` at compile time."]
+                const fn add_fn(a: $T, b: $T) -> $T {
+                    a + b
+                }
+            }
+        );
+    };
+}
+
+generate_add!(u32);
+generate_add!(u64);
+```
+
+The above example expands into this:
+```rust
+use compose_idents::compose_idents;
+
+///Adds two arguments of type `u32` at compile time.
+const fn add_u32(a: u32, b: u32) -> u32 {
+  a + b
+}
+
+///Adds two arguments of type `u64` at compile time.
+const fn add_u64(a: u64, b: u64) -> u64 {
+  a + b
+}
+```
+
 ## Functions
 
 | Function          | Description                                                          |
