@@ -1,6 +1,6 @@
 use compose_idents::compose_idents;
 
-compose_idents!(my_var = [camel_case(foo_bar)]; {
+compose_idents!(my_var = [camel_case(foo_bar)], {
     const my_var: u32 = 42;
 });
 

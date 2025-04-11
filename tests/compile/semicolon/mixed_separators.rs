@@ -1,6 +1,9 @@
+/// This should fail to compile because of mixed separators.
 use compose_idents::compose_idents;
 
-compose_idents!(my_fn_1 = [foo, _, "baz"], my_fn_2 = [spam, _, eggs], {
+compose_idents!(
+    my_fn_1 = [foo, _, "baz"],
+    my_fn_2 = [spam, _, eggs]; {
     fn my_fn_1() -> u32 {
         123
     }
