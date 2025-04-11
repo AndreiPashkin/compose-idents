@@ -166,6 +166,38 @@ static mut COUNTER: u64 = 0;
 /// In addition to replacing identifier aliases it replaces tokens like `%alias%` in string
 /// literals (including in doc-attributes).
 ///
+/// # Syntax
+///
+/// ```rust,ignore
+/// use compose_idents::compose_idents;
+///
+/// compose_idents!(
+///     // Alias is defined one or more arguments that are supposed to be concatenated
+///     alias1 = [part1, part2],
+///     // Multiple aliases could be defined
+///     // and they could be composed from arbitrary number of arguments
+///     // Which could be identifiers, strings, numbers or underscores
+///     alias2 = [part3, _, "part4", _, 1],
+///     // Functions could applied to the arguments, calls to functions could be nested
+///     alias3 = [some_func(part5), outer_func(inner_func(part6))],
+///     // ... more aliases
+///     {
+///         // Code block that uses aliases as identifiers
+///         // The aliases will be replaced with their replacements when the code is expanded
+///         let alias1 = 42;
+///
+///         fn alias2() -> u32 { 42 }
+///
+///         // Aliases could be also used for string-formatting using %alias% syntax
+///         #[doc = "Documentation for %alias3%"]
+///         fn alias3() -> u32 { 42 }
+///     },
+/// );
+/// ```
+///
+/// Semicolons could also be used as separators between the macro arguments for
+/// backwards-compatibility. Mixing separator styles in the same macro invocation is not allowed.
+///
 /// # Example
 ///
 /// ```rust
