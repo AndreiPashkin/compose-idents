@@ -33,7 +33,7 @@ use compose_idents::compose_idents;
 macro_rules! my_macro {
     ($name:ident) => {
         compose_idents!(
-            my_fn = [my, _, $name, _, "fn"]; {
+            my_fn = [my, _, $name, _, "fn"], {
                 fn my_fn() -> u32 {
                     42
                 }
@@ -72,7 +72,7 @@ fn add<T: Add<Output = T>>(x: T, y: T) -> T {
 macro_rules! generate_add_tests {
     ($($type:ty),*) => {
       $(
-        compose_idents!(test_fn = [test_add_, $type]; {
+        compose_idents!(test_fn = [test_add_, $type], {
           fn test_fn() {
             let actual = add(2 as $type, 2 as $type);
             let expected = (2 + 2) as $type;
@@ -106,8 +106,8 @@ use compose_idents::compose_idents;
 macro_rules! generate_add {
     ($T:ty) => {
         compose_idents!(
-            T = [$T];
-            add_fn = [add, _, $T]; {
+            T = [$T],
+            add_fn = [add, _, $T], {
                 #[doc = "Adds two arguments of type `%T%` at compile time."]
                 const fn add_fn(a: $T, b: $T) -> $T {
                     a + b

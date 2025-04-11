@@ -1,0 +1,17 @@
+error: Mixing "," and ";" as separators is not allowed
+ --> tests/compile/semicolon/mixed_separators.rs:6:32
+  |
+6 |     my_fn_2 = [spam, _, eggs]; {
+  |                                ^
+
+error[E0425]: cannot find function `foo_baz` in this scope
+  --> tests/compile/semicolon/mixed_separators.rs:17:16
+   |
+17 |     assert_eq!(foo_baz(), 123);
+   |                ^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `spam_eggs` in this scope
+  --> tests/compile/semicolon/mixed_separators.rs:18:16
+   |
+18 |     assert_eq!(spam_eggs(), 321);
+   |                ^^^^^^^^^ not found in this scope

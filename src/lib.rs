@@ -31,13 +31,20 @@ impl IdentSpecItem {
     }
 }
 
+// Note: the parsing code handles both commas or semicolons as argument separators
+// this is done for backwards-compatibility with <= 0.0.4 versions.
+const MIXING_SEP_ERROR: &str = r#"Mixing "," and ";" as separators is not allowed"#;
+
 struct IdentSpec {
     items: Vec<IdentSpecItem>,
+    is_comma_used: Option<bool>,
 }
 
 impl Parse for IdentSpec {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut items = Vec::new();
+        let mut is_comma_used = None;
+
         loop {
             let alias: Ident = input.parse()?;
             input.parse::<Token![=]>()?;
@@ -55,12 +62,34 @@ impl Parse for IdentSpec {
                 content.parse::<Token![,]>()?;
             }
             items.push(IdentSpecItem { alias, exprs });
-            input.parse::<Token![;]>()?;
+
+            let is_comma_current_sep = if input.peek(Token![,]) {
+                input.parse::<Token![,]>()?;
+                true
+            } else if input.peek(Token![;]) {
+                input.parse::<Token![;]>()?;
+                false
+            } else {
+                return Err(input.error(r#"Expected "," or ";""#));
+            };
+
+            if let Some(is_comma_used) = is_comma_used {
+                if is_comma_used != is_comma_current_sep {
+                    return Err(input.error(MIXING_SEP_ERROR));
+                }
+            } else {
+                is_comma_used = Some(is_comma_current_sep);
+            }
+
             if !input.peek(Ident) {
                 break;
             }
         }
-        Ok(IdentSpec { items })
+
+        Ok(IdentSpec {
+            items,
+            is_comma_used,
+        })
     }
 }
 
@@ -82,7 +111,25 @@ impl Parse for ComposeIdentsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let spec: IdentSpec = input.parse()?;
         let block: Block = input.parse()?;
-        let _ = input.parse::<Token![;]>();
+
+        let is_comma_current_sep = if input.peek(Token![,]) {
+            input.parse::<Token![,]>()?;
+            Some(true)
+        } else if input.peek(Token![;]) {
+            input.parse::<Token![;]>()?;
+            Some(false)
+        } else {
+            None
+        };
+
+        if let (Some(is_comma_current_sep), Some(is_comma_used)) =
+            (is_comma_current_sep, spec.is_comma_used)
+        {
+            if is_comma_current_sep ^ is_comma_used {
+                return Err(input.error(MIXING_SEP_ERROR));
+            }
+        }
+
         Ok(ComposeIdentsArgs { spec, block })
     }
 }

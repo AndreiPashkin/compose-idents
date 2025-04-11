@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Semicolon as the argument separator has been replaced with comma. Semicolon support
+  has been preserved for backwards-compatibility.
+
 ### Removed
 
 ## [v0.0.4] - 2025-03-21

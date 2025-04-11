@@ -2,7 +2,7 @@ use compose_idents::compose_idents;
 
 macro_rules! outer_macro {
     ($t:ty) => {
-        compose_idents!(my_fn = [foo, _, $t]; {
+        compose_idents!(my_fn = [foo, _, $t], {
             fn my_fn() -> $t {
                 42 as $t
             }
