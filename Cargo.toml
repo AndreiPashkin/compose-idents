@@ -22,7 +22,7 @@ proc-macro = true
 
 [dependencies]
 quote = "1.0"
-syn = { version = "2.0", features = ["full", "visit-mut"] }
+syn = { version = "2.0", features = ["parsing", "visit-mut", "proc-macro"] }
 
 [dev-dependencies]
 trybuild = "1"
