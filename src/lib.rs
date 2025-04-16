@@ -8,9 +8,10 @@ mod parse;
 use crate::core::{ComposeIdentsArgs, ComposeIdentsVisitor, State};
 use proc_macro::TokenStream;
 use quote::quote;
+use std::sync::Mutex;
 use syn::{parse_macro_input, visit_mut::VisitMut};
 
-static mut COUNTER: u64 = 0;
+static COUNTER: Mutex<u64> = Mutex::new(0);
 
 /// Compose identifiers from the provided parts and replace their aliases in the code block.
 ///
@@ -56,12 +57,9 @@ static mut COUNTER: u64 = 0;
 /// ```
 #[proc_macro]
 pub fn compose_idents(input: TokenStream) -> TokenStream {
-    let state = State {
-        seed: unsafe {
-            COUNTER += 1;
-            COUNTER
-        },
-    };
+    let mut counter = COUNTER.lock().unwrap();
+    *counter += 1;
+    let state = State { seed: *counter };
     let args = parse_macro_input!(input as ComposeIdentsArgs);
     let mut visitor = ComposeIdentsVisitor {
         replacements: args.spec.replacements(&state),
