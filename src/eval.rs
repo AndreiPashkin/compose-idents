@@ -1,7 +1,10 @@
+//! Provides the [`Eval`] trait and its implementations for evaluating expressions.
 use crate::core::{Arg, Expr, Func, State};
 use crate::funcs::{hash, to_camel_case, to_snake_case};
 
 /// A syntactic structure that can be evaluated.
+///
+/// For example, it could be a function call passed by a user to the macro as an argument.
 pub trait Eval {
     fn eval(&self, state: &State) -> String;
 }
