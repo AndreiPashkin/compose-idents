@@ -1,3 +1,4 @@
+//! Provides implementations of the functions that can be used by the user in alias specifications.
 use crate::core::State;
 use std::hash::{DefaultHasher, Hash, Hasher};
 
