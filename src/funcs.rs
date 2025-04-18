@@ -22,22 +22,66 @@ pub fn to_snake_case(input: &str) -> String {
     result
 }
 
+/// Checks if the character is a punctuation character.
+fn is_punct(c: char) -> bool {
+    c == '_' || c == '-'
+}
+
 /// Converts the input string to camelCase.
 pub fn to_camel_case(input: &str) -> String {
     let mut result = String::new();
 
-    let chars = input.chars().collect::<Vec<char>>();
-
     let mut should_upper = false;
-    for char in chars {
-        if char == '_' || char == '-' {
+    let mut prev_char: Option<char> = None;
+    let all_upper = input
+        .chars()
+        .all(|c| c.is_uppercase() || !c.is_alphabetic());
+    let mut is_consecutive_punct = false;
+
+    for (i, char) in input.chars().enumerate() {
+        let is_first = i == 0;
+        let is_second = i == 1;
+        let is_last = i == input.len() - 1;
+
+        if !is_punct(char) && is_consecutive_punct {
+            is_consecutive_punct = false;
+        }
+
+        #[allow(clippy::if_same_then_else)]
+        if is_punct(char) {
+            if let Some(prev_char) = prev_char {
+                if is_punct(prev_char) && !is_consecutive_punct {
+                    is_consecutive_punct = true;
+                    if !is_second {
+                        // Exceptional case when the first character is a punctuation
+                        // and was already pushed due to being such.
+                        result.push(prev_char);
+                    }
+                }
+            }
+            if is_first || is_last || is_consecutive_punct {
+                result.push(char);
+            } else {
+                should_upper = true;
+            }
+        } else if char.is_numeric() {
             should_upper = true;
+            result.push(char);
+        } else if prev_char.is_some_and(|c| c.is_lowercase() || !c.is_alphabetic())
+            && char.is_uppercase()
+        {
+            result.push(char);
+            should_upper = false;
+        } else if prev_char.is_some_and(|c| c.is_uppercase()) && char.is_uppercase() && !all_upper {
+            result.push(char);
+            should_upper = false;
         } else if should_upper {
-            result.push(char.to_uppercase().next().unwrap());
+            result.extend(char.to_uppercase());
             should_upper = false;
         } else {
-            result.push(char.to_lowercase().next().unwrap());
+            result.extend(char.to_lowercase());
         }
+        prev_char = Some(char);
     }
     result
 }
@@ -77,15 +121,28 @@ mod tests {
 
     #[rstest]
     #[case("foo_bar", "fooBar")]
-    #[case("foo__bar", "fooBar")]
+    #[case("foo__bar", "foo__Bar")]
     #[case("FOO_BAR", "fooBar")]
     #[case("foo-bar", "fooBar")]
     #[case("FOO-BAR", "fooBar")]
+    #[case("fo-bar", "foBar")]
+    #[case("Foo_bar", "fooBar")]
+    #[case("Foo_baR", "fooBaR")]
     #[case("foo", "foo")]
     #[case("FOO", "foo")]
     #[case("F", "f")]
     #[case("f", "f")]
     #[case("", "")]
+    #[case("_foo", "_foo")]
+    #[case("foo_", "foo_")]
+    #[case("foo_123bar", "foo123Bar")]
+    #[case("fooBAR", "fooBAR")]
+    #[case("fooBar", "fooBar")]
+    #[case("foo-_bar", "foo-_Bar")]
+    #[case("_", "_")]
+    #[case("__foo", "__foo")]
+    #[case("snake_case_with_numbers_123", "snakeCaseWithNumbers123")]
+    #[case("CamelCase_to_camelCase", "camelCaseToCamelCase")]
     fn test_to_camel_case(#[case] input: &str, #[case] expected: &str) {
         let actual = to_camel_case(input);
         assert_eq!(actual, expected, "Input: {}", input);

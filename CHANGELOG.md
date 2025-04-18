@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Semicolon as the argument separator has been replaced with comma. Semicolon support
   has been preserved for backwards-compatibility.
+- Fixed edge case bugs in the `camel_case` function.
 
 ### Removed
 
