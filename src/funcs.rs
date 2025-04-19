@@ -7,17 +7,26 @@ pub fn to_snake_case(input: &str) -> String {
     let mut result = String::new();
 
     let chars = input.chars().collect::<Vec<char>>();
-
-    let mut chunks = chars.chunks_exact(2);
-    while let Some([a, b]) = chunks.next() {
-        result.push(a.to_lowercase().next().unwrap());
-        if b.is_uppercase() && a.is_lowercase() || a.is_uppercase() && b.is_lowercase() {
-            result.push('_');
-        }
-        result.push(b.to_lowercase().next().unwrap());
+    if chars.len() < 2 {
+        result.extend(chars.iter().flat_map(|c| c.to_lowercase()));
+        return result;
     }
-    if chunks.remainder().len() == 1 {
-        result.push(chunks.remainder()[0].to_lowercase().next().unwrap());
+
+    let mut skip = false;
+
+    for (i, window) in chars.windows(2).enumerate() {
+        let a = window[0];
+        let b = window[1];
+        if i == 0 {
+            result.extend(a.to_lowercase());
+        }
+        if (b.is_uppercase() && a.is_lowercase() || a.is_uppercase() && b.is_lowercase()) && !skip {
+            result.push('_');
+            skip = true;
+        } else if skip {
+            skip = false;
+        }
+        result.extend(b.to_lowercase());
     }
     result
 }
@@ -107,7 +116,14 @@ mod tests {
 
     #[rstest]
     #[case("fooBar", "foo_bar")]
+    #[case("foBar", "fo_bar")]
+    #[case("fBar", "f_bar")]
+    #[case("fooBAR", "foo_bar")]
     #[case("foo_bar", "foo_bar")]
+    #[case("fo_bar", "fo_bar")]
+    #[case("f_bar", "f_bar")]
+    #[case("_foobar", "_foobar")]
+    #[case("foo_baR", "foo_ba_r")]
     #[case("FOO_BAR", "foo_bar")]
     #[case("foo", "foo")]
     #[case("FOO", "foo")]
