@@ -45,7 +45,7 @@ pub(super) struct AliasSpecItem {
 }
 
 /// Specification of aliases provided to the [`compose_idents`] macro by the user.
-pub(super) struct IdentSpec {
+pub(super) struct AliasSpec {
     pub(super) items: Vec<AliasSpecItem>,
     pub(super) is_comma_used: Option<bool>,
 }
@@ -61,11 +61,11 @@ impl AliasSpecItem {
 
 /// Arguments to the [`compose_idents`] macro.
 pub(super) struct ComposeIdentsArgs {
-    pub(super) spec: IdentSpec,
+    pub(super) spec: AliasSpec,
     pub(super) block: Block,
 }
 
-impl IdentSpec {
+impl AliasSpec {
     pub(super) fn replacements(&self, state: &State) -> HashMap<Ident, Ident> {
         self.items
             .iter()

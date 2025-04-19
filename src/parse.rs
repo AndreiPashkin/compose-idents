@@ -1,5 +1,5 @@
 //! Implements parsing logic for different internal components.
-use super::core::{AliasSpecItem, Arg, ComposeIdentsArgs, Expr, Func, IdentSpec};
+use super::core::{AliasSpec, AliasSpecItem, Arg, ComposeIdentsArgs, Expr, Func};
 use quote::ToTokens;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
@@ -75,7 +75,7 @@ const MIXING_SEP_ERROR: &str = r#"Mixing "," and ";" as separators is not allowe
 
 impl Parse for ComposeIdentsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let spec: IdentSpec = input.parse()?;
+        let spec: AliasSpec = input.parse()?;
         let block: Block = input.parse()?;
 
         let is_comma_current_sep = if input.peek(Token![,]) {
@@ -100,7 +100,7 @@ impl Parse for ComposeIdentsArgs {
     }
 }
 
-impl Parse for IdentSpec {
+impl Parse for AliasSpec {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut items = Vec::new();
         let mut is_comma_used = None;
@@ -146,7 +146,7 @@ impl Parse for IdentSpec {
             }
         }
 
-        Ok(IdentSpec {
+        Ok(AliasSpec {
             items,
             is_comma_used,
         })
