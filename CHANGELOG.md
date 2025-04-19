@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Removed
+
+## [v0.0.5] - 2025-04-20
+
+### Added
+
+### Changed
+
 - Semicolon as the argument separator has been replaced with comma. Semicolon support
   has been preserved for backwards-compatibility.
 - Fixed edge case bugs in the `snake_case` and `camel_case` functions.
@@ -71,7 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.4...master
+[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.5...master
+[v0.0.5]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.4...v0.0.5
 [v0.0.4]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.3...v0.0.4
 [v0.0.3]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.2...v0.0.3
 [v0.0.2]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.1...v0.0.2

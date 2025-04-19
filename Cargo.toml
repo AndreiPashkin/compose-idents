@@ -1,6 +1,6 @@
 [package]
 name = "compose-idents"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["Andrei Pashkin <andrew.pashkin@gmx.co.uk>"]
 description = "Rust macro that makes possible to concatenate idents from multiple parts."
 keywords = ["ident", "identifier", "name", "concatenate", "generate"]
