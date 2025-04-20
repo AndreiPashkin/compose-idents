@@ -51,7 +51,7 @@ pub(super) struct AliasSpec {
 }
 
 impl AliasSpecItem {
-    fn replacement(&self, state: &State) -> Ident {
+    pub(super) fn replacement(&self, state: &State) -> Ident {
         let ident = self.exprs.iter().fold("".to_string(), |acc, item| {
             format!("{}{}", acc, item.eval(state))
         });
