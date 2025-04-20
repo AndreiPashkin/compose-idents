@@ -10,6 +10,7 @@ compose_idents!(
     my_static = [upper(lower(BAR))],
     MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)],
     MY_CAMEL_CASE_STATIC = [camel_case(camel_case)],
+    MY_PASCAL_CASE_STATIC = [pascal_case(pascal_case)],
     // This function is useful to create identifiers that are unique across multiple macro invocations.
     // `hash(0b11001010010111)` will generate the same value even if called twice in the same macro call,
     // but will be different in different macro calls.
@@ -31,6 +32,7 @@ compose_idents!(
         static my_static: u32 = 42;
         static MY_SNAKE_CASE_STATIC: u32 = 42;
         static MY_CAMEL_CASE_STATIC: u32 = 42;
+        static MY_PASCAL_CASE_STATIC: u32 = 42;
         static MY_UNIQUE_STATIC: u32 = 42;
         // This is an example of string literal formatting.
         static MY_FORMATTED_STR: &str = "This is %MY_FORMATTED_STR%";
@@ -70,4 +72,5 @@ assert_eq!(FOO_bar, 42);
 assert_eq!(BAR, 42);
 assert_eq!(snake_case, 42);
 assert_eq!(camelCase, 42);
+assert_eq!(PascalCase, 42);
 assert_eq!(FOO_BAR, "This is FOO_BAR");

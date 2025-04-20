@@ -95,6 +95,27 @@ pub fn to_camel_case(input: &str) -> String {
     result
 }
 
+/// Converts the input string to PascalCase.
+pub fn to_pascal_case(input: &str) -> String {
+    let camel_case = to_camel_case(input);
+
+    if camel_case.is_empty() {
+        return camel_case;
+    }
+
+    let mut chars: Vec<char> = camel_case.chars().collect();
+
+    let first_alpha_idx = chars.iter().position(|c| c.is_alphabetic());
+
+    match first_alpha_idx {
+        Some(idx) => {
+            chars.splice(idx..=idx, chars[idx].to_uppercase());
+            chars.iter().collect()
+        }
+        None => chars.iter().collect(),
+    }
+}
+
 /// Generates an identifier from a provided seed deterministically within a single macro invocation.
 ///
 /// `hash(1)` called within a single macro invocation will always return the same
@@ -161,6 +182,36 @@ mod tests {
     #[case("CamelCase_to_camelCase", "camelCaseToCamelCase")]
     fn test_to_camel_case(#[case] input: &str, #[case] expected: &str) {
         let actual = to_camel_case(input);
+        assert_eq!(actual, expected, "Input: {}", input);
+    }
+
+    #[rstest]
+    #[case("foo_bar", "FooBar")]
+    #[case("foo__bar", "Foo__Bar")]
+    #[case("FOO_BAR", "FooBar")]
+    #[case("foo-bar", "FooBar")]
+    #[case("FOO-BAR", "FooBar")]
+    #[case("fo-bar", "FoBar")]
+    #[case("Foo_bar", "FooBar")]
+    #[case("Foo_baR", "FooBaR")]
+    #[case("foo_BAR", "FooBAR")]
+    #[case("foo", "Foo")]
+    #[case("FOO", "Foo")]
+    #[case("F", "F")]
+    #[case("f", "F")]
+    #[case("", "")]
+    #[case("_foo", "_Foo")]
+    #[case("foo_", "Foo_")]
+    #[case("foo_123bar", "Foo123Bar")]
+    #[case("fooBAR", "FooBAR")]
+    #[case("fooBar", "FooBar")]
+    #[case("foo-_bar", "Foo-_Bar")]
+    #[case("_", "_")]
+    #[case("__foo", "__Foo")]
+    #[case("snake_case_with_numbers_123", "SnakeCaseWithNumbers123")]
+    #[case("CamelCase_to_camelCase", "CamelCaseToCamelCase")]
+    fn test_to_pascal_case(#[case] input: &str, #[case] expected: &str) {
+        let actual = to_pascal_case(input);
         assert_eq!(actual, expected, "Input: {}", input);
     }
 
