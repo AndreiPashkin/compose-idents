@@ -32,7 +32,7 @@ and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capab
 This section contains various usage examples. For even more usage examples look into `tests/` directory
 of the repository.
 
-### Quick start example
+### Quick start
 
 `compose_idents!` works by accepting definitions of aliases and a code block where aliases
 could be used as normal identifiers. When the macro is expanded, the aliases are replaced with their
@@ -40,30 +40,18 @@ definitions:
 ```rust
 use compose_idents::compose_idents;
 
-// We generate separate const-functions for each type as a workaround
-// since Rust doesn't allow us to use `core::ops::Add` in `const fn`.
+compose_idents!(
+    my_fn = [hello, _, world],  // Alias for the function name
+    {
+        pub fn my_fn() {  // Aliases are used as normal identifiers
+            println!("Hello, world!");
+        }
+    }
+);
 
-macro_rules! gen_const_add {
-    ($T:ty) => {
-        compose_idents!(
-            Type = [upper($T)],   // Alias for the type - make it uppercase in addition
-            add_fn = [add_, $T],  // Alias for the function name
-            {
-                // Strings (including in doc-attributes) can be formatted with %alias% syntax.
-                #[doc = "Adds two arguments of type `%Type%` at compile time."]
-                pub const fn add_fn(a: $T, b: $T) -> $T {  // Aliases are used as normal identifiers
-                    a + b
-                }
-            }
-        );
-    };
+fn main() {
+    hello_world();
 }
-
-gen_const_add!(u32);  // Expands into `add_u32()` function.
-gen_const_add!(u64);  // Expands into `add_u64()` function.
-
-assert_eq!(add_u32(2_u32, 2_u32), 4_u32);
-assert_eq!(add_u64(2_u64, 2_u64), 4_u64);
 ```
 
 ### Generating tests for different types
