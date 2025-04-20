@@ -100,28 +100,35 @@ impl Parse for ComposeIdentsArgs {
     }
 }
 
+impl Parse for AliasSpecItem {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let alias: Ident = input.parse()?;
+        input.parse::<Token![=]>()?;
+        let content;
+        bracketed!(content in input);
+        let mut exprs = Vec::new();
+        loop {
+            match content.parse::<Expr>() {
+                Ok(expr) => exprs.push(expr),
+                Err(err) => return Err(err),
+            }
+            if content.is_empty() {
+                break;
+            }
+            content.parse::<Token![,]>()?;
+        }
+        Ok(AliasSpecItem { alias, exprs })
+    }
+}
+
 impl Parse for AliasSpec {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut items = Vec::new();
         let mut is_comma_used = None;
 
         loop {
-            let alias: Ident = input.parse()?;
-            input.parse::<Token![=]>()?;
-            let content;
-            bracketed!(content in input);
-            let mut exprs = Vec::new();
-            loop {
-                match content.parse::<Expr>() {
-                    Ok(expr) => exprs.push(expr),
-                    Err(err) => return Err(err),
-                }
-                if content.is_empty() {
-                    break;
-                }
-                content.parse::<Token![,]>()?;
-            }
-            items.push(AliasSpecItem { alias, exprs });
+            let spec_item: AliasSpecItem = input.parse()?;
+            items.push(spec_item);
 
             let is_comma_current_sep = if input.peek(Token![,]) {
                 input.parse::<Token![,]>()?;
