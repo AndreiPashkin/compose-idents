@@ -115,6 +115,7 @@ This example includes all the features of the macro:
 | `lower(arg)`      | Converts the `arg` to lower case.                                    |
 | `snake_case(arg)` | Converts the `arg` to snake_case.                                    |
 | `camel_case(arg)` | Converts the `arg` to camelCase.                                     |
+| `pascal_case(arg)`| Converts the `arg` to PascalCase.                                   |
 | `hash(arg)`       | Hashes the `arg` deterministically within a single macro invocation. |
 
 

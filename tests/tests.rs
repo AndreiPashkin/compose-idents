@@ -15,6 +15,7 @@ fn compile_tests() {
     t.pass("tests/compile/funcs/different_arg_types.rs");
     t.pass("tests/compile/funcs/snake_case.rs");
     t.pass("tests/compile/funcs/camel_case.rs");
+    t.pass("tests/compile/funcs/pascal_case.rs");
     t.pass("tests/compile/funcs/hash.rs");
     t.pass("tests/compile/format_lit_str.rs");
 }

@@ -42,10 +42,11 @@ impl Parse for Func {
             ("lower", 1) => Ok(Func::Lower(Box::new(args.drain(..).next().unwrap()))),
             ("snake_case", 1) => Ok(Func::SnakeCase(Box::new(args.drain(..).next().unwrap()))),
             ("camel_case", 1) => Ok(Func::CamelCase(Box::new(args.drain(..).next().unwrap()))),
+            ("pascal_case", 1) => Ok(Func::PascalCase(Box::new(args.drain(..).next().unwrap()))),
             ("hash", 1) => Ok(Func::Hash(Box::new(args.drain(..).next().unwrap()))),
             _ => Err(input.error(
                 r#"Expected "upper()", "lower()", "snake_case()",
-                    "camel_case()" or "hash()"."#,
+                    "camel_case()", "pascal_case()" or "hash()"."#,
             )),
         }
     }

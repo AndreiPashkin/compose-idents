@@ -28,6 +28,7 @@ pub enum Func {
     Lower(Box<Expr>),
     SnakeCase(Box<Expr>),
     CamelCase(Box<Expr>),
+    PascalCase(Box<Expr>),
     Hash(Box<Expr>),
 }
 
