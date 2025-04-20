@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+## [v0.0.6] - 2025-04-20
+
+### Added
+
 - New `pascal_case()` function.
 
 ### Changed
@@ -81,7 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.5...master
+[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.6...master
+[v0.0.6]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.5...v0.0.6
 [v0.0.5]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.4...v0.0.5
 [v0.0.4]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.3...v0.0.4
 [v0.0.3]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.2...v0.0.3
