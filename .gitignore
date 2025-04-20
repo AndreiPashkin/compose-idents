@@ -295,4 +295,7 @@ Cargo.lock
 .history
 .ionide
 
+### Cursor ###
+.cursor
+
 # End of https://www.toptal.com/developers/gitignore/api/rust,intellij+all,python,visualstudiocode
