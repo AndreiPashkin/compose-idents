@@ -2,7 +2,7 @@
 name = "compose-idents"
 version = "0.0.6"
 authors = ["Andrei Pashkin <andrew.pashkin@gmx.co.uk>"]
-description = "Rust macro that makes possible to concatenate idents from multiple parts."
+description = "A Rust macro for generating new identifiers (names of variables, functions, traits, etc) by concatenating one or more arbitrary parts and applying other manipulations."
 keywords = ["ident", "identifier", "name", "concatenate", "generate"]
 edition = "2018"
 license = "MIT"
@@ -22,13 +22,19 @@ proc-macro = true
 
 [dependencies]
 quote = "1.0"
-syn = { version = "2.0", features = ["parsing", "visit-mut", "proc-macro"] }
+syn = { version = "2.0", features = ["full", "visit-mut"] }
 
 [dev-dependencies]
 trybuild = "1"
 rstest = "~0.24.0"
+tempfile = "3.19"
 
 [[test]]
 name = "format_doc_attr"
 path = "tests/compile/format_doc_attr.rs"
+harness = false
+
+[[test]]
+name = "build"
+path = "tests/build.rs"
 harness = false

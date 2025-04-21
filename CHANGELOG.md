@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Fixed a critical bug - incorrectly configured feature flags of "syn" dependency.
+
 ### Removed
 
 ## [v0.0.6] - 2025-04-20
