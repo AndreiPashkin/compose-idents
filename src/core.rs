@@ -52,9 +52,19 @@ pub(super) struct AliasSpec {
 }
 
 impl AliasSpecItem {
-    pub(super) fn replacement(&self, state: &State) -> Ident {
+    pub(super) fn replacement(
+        &self,
+        state: &State,
+        arg_replacements: &HashMap<String, String>,
+    ) -> Ident {
         let ident = self.exprs.iter().fold("".to_string(), |acc, item| {
-            format!("{}{}", acc, item.eval(state))
+            let arg = item.eval(state);
+            let replacement = arg_replacements.get(&arg);
+            let arg = match replacement {
+                Some(arg) => arg,
+                None => &arg,
+            };
+            format!("{}{}", acc, arg)
         });
         format_ident!("{}", ident)
     }
@@ -68,9 +78,15 @@ pub(super) struct ComposeIdentsArgs {
 
 impl AliasSpec {
     pub(super) fn replacements(&self, state: &State) -> HashMap<Ident, Ident> {
+        let mut arg_replacements = HashMap::new();
         self.items
             .iter()
-            .map(|item| (item.alias.clone(), item.replacement(state)))
+            .map(|item| {
+                let replacement = item.replacement(state, &arg_replacements);
+                arg_replacements.insert(format!("{}", item.alias), format!("{}", replacement));
+
+                (item.alias.clone(), replacement)
+            })
             .collect()
     }
 }

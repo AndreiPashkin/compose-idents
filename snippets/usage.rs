@@ -16,6 +16,7 @@ compose_idents!(
     // but will be different in different macro calls.
     MY_UNIQUE_STATIC = [hash(0b11001010010111)],
     MY_FORMATTED_STR = [FOO, _, BAR],
+    MY_REUSED_ALIAS = [REUSED, _, FOO, _, my_static],
     {
         fn my_fn_1() -> u32 {
             123
@@ -36,6 +37,7 @@ compose_idents!(
         static MY_UNIQUE_STATIC: u32 = 42;
         // This is an example of string literal formatting.
         static MY_FORMATTED_STR: &str = "This is %MY_FORMATTED_STR%";
+        static MY_REUSED_ALIAS: u32 = 42;
     }
 );
 
@@ -74,3 +76,4 @@ assert_eq!(snake_case, 42);
 assert_eq!(camelCase, 42);
 assert_eq!(PascalCase, 42);
 assert_eq!(FOO_BAR, "This is FOO_BAR");
+assert_eq!(REUSED_FOO_BAR, 42);
