@@ -1,6 +1,8 @@
 //! Implements parsing logic for different internal components.
+
 use super::core::{AliasSpec, AliasSpecItem, Arg, ComposeIdentsArgs, Expr, Func};
 use quote::ToTokens;
+use std::collections::HashSet;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
 use syn::{bracketed, Block, Ident, Token};
@@ -124,11 +126,17 @@ impl Parse for AliasSpecItem {
 
 impl Parse for AliasSpec {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut seen_aliases = HashSet::new();
         let mut items = Vec::new();
         let mut is_comma_used = None;
 
         loop {
             let spec_item: AliasSpecItem = input.parse()?;
+            let alias_name = spec_item.alias.to_string();
+            if seen_aliases.contains(&alias_name) {
+                return Err(input.error(format!(r#"Alias "{}" is already defined"#, alias_name)));
+            }
+            seen_aliases.insert(spec_item.alias.to_string());
             items.push(spec_item);
 
             let is_comma_current_sep = if input.peek(Token![,]) {
