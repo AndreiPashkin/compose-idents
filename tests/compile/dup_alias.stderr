@@ -1,11 +1,11 @@
 error: Alias "my_fn" is already defined
- --> tests/compile/dup_alias.rs:5:28
+ --> tests/compile/dup_alias.rs:3:65
   |
-5 |     my_fn = [gork, _, bork],
-  |                            ^
+3 | compose_idents!(my_fn = [foo, _, "baz"], my_fn = [gork, _, bork], {
+  |                                                                 ^
 
 error[E0425]: cannot find function `foo_baz` in this scope
-  --> tests/compile/dup_alias.rs:13:16
+  --> tests/compile/dup_alias.rs:10:16
    |
-13 |     assert_eq!(foo_baz(), 42);
+10 |     assert_eq!(foo_baz(), 42);
    |                ^^^^^^^ not found in this scope

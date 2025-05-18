@@ -16,13 +16,13 @@ pub struct State {
 }
 
 /// Argument to the [`compose_idents`] macro in form of an ident, underscore or a string literal.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Arg {
     pub(super) value: String,
 }
 
 /// Function call in form of `upper(arg)` or `lower(arg)`, etc.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Func {
     Upper(Expr),
     Lower(Expr),
@@ -30,10 +30,12 @@ pub enum Func {
     CamelCase(Expr),
     PascalCase(Expr),
     Hash(Expr),
+    SignatureMismatch(String),
+    Undefined,
 }
 
 /// Expression in form of an argument or a function call.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(super) enum Expr {
     ArgExpr(Box<Arg>),
     FuncCallExpr(Box<Func>),
