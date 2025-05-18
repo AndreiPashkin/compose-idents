@@ -1,8 +1,9 @@
 use compose_idents::compose_idents;
 
 compose_idents!(
-    // Valid identifiers, underscores, integers and strings are allowed as literal values.
+    // Literal strings are accepted as arguments and their content is parsed.
     my_fn_1 = [foo, _, "baz"],
+    // So as literal integers and underscores (or free-form token sequences).
     my_fn_2 = [spam, _, 1, _, eggs],
     // Functions can be applied to the arguments.
     my_const = [upper(foo), _, lower(BAR)],

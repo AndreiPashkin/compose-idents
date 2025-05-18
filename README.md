@@ -36,7 +36,7 @@ and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capab
 This section contains various usage examples. For even more usage examples look into `tests/` directory
 of the repository.
 
-### Quick start example
+### Quick start
 
 `compose_idents!` works by accepting definitions of aliases and a code block where aliases
 could be used as normal identifiers. When the macro is expanded, the aliases are replaced with their
@@ -111,8 +111,9 @@ This example includes all the features of the macro:
 use compose_idents::compose_idents;
 
 compose_idents!(
-    // Valid identifiers, underscores, integers and strings are allowed as literal values.
+    // Literal strings are accepted as arguments and their content is parsed.
     my_fn_1 = [foo, _, "baz"],
+    // So as literal integers and underscores (or free-form token sequences).
     my_fn_2 = [spam, _, 1, _, eggs],
     // Functions can be applied to the arguments.
     my_const = [upper(foo), _, lower(BAR)],

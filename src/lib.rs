@@ -29,7 +29,8 @@ static COUNTER: Mutex<u64> = Mutex::new(0);
 ///     alias1 = [part1, part2],
 ///     // Multiple aliases could be defined
 ///     // and they could be composed from arbitrary number of arguments
-///     // Which could be identifiers, strings, numbers or underscores
+///     // Which could be identifiers, strings, numbers, underscores or just arbitrary token
+///     // sequences
 ///     alias2 = [part3, _, "part4", _, 1],
 ///     // Functions could applied to the arguments, calls to functions could be nested
 ///     alias3 = [some_func(part5), outer_func(inner_func(part6))],
