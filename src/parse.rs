@@ -157,10 +157,8 @@ impl Parse for AliasSpecItem {
         bracketed!(content in input);
         let mut exprs = Vec::new();
         loop {
-            match content.parse::<Expr>() {
-                Ok(expr) => exprs.push(expr),
-                Err(err) => return Err(err),
-            }
+            let expr = content.parse::<Expr>()?;
+            exprs.push(expr);
             if content.is_empty() {
                 break;
             }
