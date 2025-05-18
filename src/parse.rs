@@ -40,12 +40,12 @@ impl Parse for Func {
         }
 
         match (func_name.as_str(), args.len()) {
-            ("upper", 1) => Ok(Func::Upper(Box::new(args.drain(..).next().unwrap()))),
-            ("lower", 1) => Ok(Func::Lower(Box::new(args.drain(..).next().unwrap()))),
-            ("snake_case", 1) => Ok(Func::SnakeCase(Box::new(args.drain(..).next().unwrap()))),
-            ("camel_case", 1) => Ok(Func::CamelCase(Box::new(args.drain(..).next().unwrap()))),
-            ("pascal_case", 1) => Ok(Func::PascalCase(Box::new(args.drain(..).next().unwrap()))),
-            ("hash", 1) => Ok(Func::Hash(Box::new(args.drain(..).next().unwrap()))),
+            ("upper", 1) => Ok(Func::Upper(args.drain(..).next().unwrap())),
+            ("lower", 1) => Ok(Func::Lower(args.drain(..).next().unwrap())),
+            ("snake_case", 1) => Ok(Func::SnakeCase(args.drain(..).next().unwrap())),
+            ("camel_case", 1) => Ok(Func::CamelCase(args.drain(..).next().unwrap())),
+            ("pascal_case", 1) => Ok(Func::PascalCase(args.drain(..).next().unwrap())),
+            ("hash", 1) => Ok(Func::Hash(args.drain(..).next().unwrap())),
             _ => Err(input.error(
                 r#"Expected "upper()", "lower()", "snake_case()",
                     "camel_case()", "pascal_case()" or "hash()"."#,
@@ -59,13 +59,9 @@ impl Parse for Expr {
         let fork = input.fork();
         if let Ok(func) = fork.parse::<Func>() {
             input.advance_to(&fork);
-            Ok(Expr::FuncCallExpr {
-                value: Box::new(func),
-            })
+            Ok(Expr::FuncCallExpr(Box::new(func)))
         } else if let Ok(arg) = input.parse::<Arg>() {
-            Ok(Expr::ArgExpr {
-                value: Box::new(arg),
-            })
+            Ok(Expr::ArgExpr(Box::new(arg)))
         } else {
             Err(input.error("Expected argument or function call"))
         }
