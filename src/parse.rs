@@ -1,11 +1,52 @@
 //! Implements parsing logic for different internal components.
 
 use super::core::{AliasSpec, AliasSpecItem, Arg, ComposeIdentsArgs, Expr, Func};
+use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
 use std::collections::HashSet;
+use std::marker::PhantomData;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
-use syn::{bracketed, Block, Ident, Token};
+use syn::{bracketed, parenthesized, Block, Ident, Token};
+
+/// A terminator token.
+pub trait Terminator {
+    fn is_terminator(input: &ParseStream) -> bool;
+}
+
+impl Terminator for Token![,] {
+    fn is_terminator(input: &ParseStream) -> bool {
+        input.peek(Token![,])
+    }
+}
+
+/// A sequence of tokens (token-trees more specifically) terminated by a terminator-token.
+struct TerminatedTokens<T: Terminator> {
+    tokens: TokenStream,
+    token_type: PhantomData<T>,
+}
+
+impl<T: Terminator> TerminatedTokens<T> {
+    fn into_token_stream(self) -> TokenStream {
+        self.tokens
+    }
+}
+
+impl<T: Terminator> Parse for TerminatedTokens<T> {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut tokens = TokenStream::new();
+
+        while !input.is_empty() && !T::is_terminator(&input) {
+            let tt = input.parse::<TokenTree>()?;
+            tokens.extend(tt.into_token_stream());
+        }
+
+        Ok(TerminatedTokens {
+            tokens,
+            token_type: PhantomData,
+        })
+    }
+}
 
 impl Parse for Arg {
     fn parse(input: ParseStream) -> syn::Result<Self> {
@@ -23,7 +64,8 @@ impl Parse for Arg {
             let lit_int = input.parse::<syn::LitInt>()?;
             value = lit_int.base10_digits().to_string();
         } else {
-            return Err(input.error("Expected identifier or _"));
+            let tokens = input.parse::<TerminatedTokens<Token![,]>>()?;
+            value = tokens.into_token_stream().to_string();
         }
         Ok(Arg { value })
     }
@@ -31,11 +73,15 @@ impl Parse for Arg {
 
 impl Parse for Func {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let call = input.parse::<syn::ExprCall>()?;
-        let func_name = call.func.to_token_stream().to_string();
-        let raw_args = call.args;
-        let mut args = Vec::new();
-        for arg in raw_args {
+        let ident = input.parse::<Ident>()?;
+        let func_name = ident.to_string();
+        let raw_args;
+        parenthesized!(raw_args in input);
+        let args_tokens =
+            raw_args.parse_terminated(TerminatedTokens::<Token![,]>::parse, Token![,])?;
+
+        let mut args: Vec<Expr> = Vec::new();
+        for arg in args_tokens {
             args.push(syn::parse2::<Expr>(arg.into_token_stream())?);
         }
         match (func_name.as_str(), args.as_slice()) {

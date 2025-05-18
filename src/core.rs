@@ -15,7 +15,12 @@ pub struct State {
     pub(super) seed: u64,
 }
 
-/// Argument to the [`compose_idents`] macro in form of an ident, underscore or a string literal.
+/// Argument to the [`compose_idents`] macro.
+///
+/// Accepted inputs:
+/// - Literal strings (enclosed in double quotes) are recognized and their content is used.
+/// - Identifiers, literal numbers, underscores are used as is.
+/// - Arbitrary sequences of tokens that do not include `,`.
 #[derive(Debug, Clone)]
 pub struct Arg {
     pub(super) value: String,
