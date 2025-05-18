@@ -70,33 +70,50 @@ impl Parse for Func {
 
 impl Parse for Expr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut errors: Vec<syn::Error> = Vec::new();
         let fork = input.fork();
         let span = input.span();
-        if let Ok(func) = fork.parse::<Func>() {
-            match func {
-                Func::Undefined => {
-                    return Err(syn::Error::new(
-                        span,
-                        "Matching function has not been found",
-                    ))
+
+        match fork.parse::<Func>() {
+            Ok(func) => {
+                match func {
+                    Func::Undefined => {
+                        return Err(syn::Error::new(
+                            span,
+                            "Matching function has not been found",
+                        ))
+                    }
+                    Func::SignatureMismatch(err) => {
+                        return Err(syn::Error::new(
+                            span,
+                            format!(
+                                r#"Type constraints for function "{}" are not satisfied"#,
+                                err,
+                            ),
+                        ));
+                    }
+                    _ => {}
                 }
-                Func::SignatureMismatch(err) => {
-                    return Err(syn::Error::new(
-                        span,
-                        format!(
-                            r#"Type constraints for function "{}" are not satisfied"#,
-                            err,
-                        ),
-                    ));
-                }
-                _ => {}
+                input.advance_to(&fork);
+                return Ok(Expr::FuncCallExpr(Box::new(func)));
             }
-            input.advance_to(&fork);
-            Ok(Expr::FuncCallExpr(Box::new(func)))
-        } else if let Ok(arg) = input.parse::<Arg>() {
-            Ok(Expr::ArgExpr(Box::new(arg)))
+            Err(err) => errors.push(err),
+        }
+
+        match input.parse::<Arg>() {
+            Ok(arg) => return Ok(Expr::ArgExpr(Box::new(arg))),
+            Err(err) => errors.push(err),
+        }
+
+        if errors.len() == 1 {
+            Err(errors.pop().unwrap())
         } else {
-            Err(input.error("Expected argument or function call"))
+            let mut error = syn::Error::new(
+                input.span(),
+                "Expected argument or function call (see the errors below)",
+            );
+            errors.iter().for_each(|err| error.combine(err.clone()));
+            Err(error)
         }
     }
 }
