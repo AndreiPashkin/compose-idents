@@ -31,8 +31,8 @@ impl Eval for Func {
 impl Eval for Expr {
     fn eval(&self, state: &State) -> String {
         match self {
-            Expr::ArgExpr { value } => value.eval(state),
-            Expr::FuncCallExpr { value } => value.eval(state),
+            Expr::ArgExpr(value) => value.eval(state),
+            Expr::FuncCallExpr(value) => value.eval(state),
         }
     }
 }

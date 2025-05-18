@@ -24,19 +24,19 @@ pub struct Arg {
 /// Function call in form of `upper(arg)` or `lower(arg)`, etc.
 #[derive(Debug)]
 pub enum Func {
-    Upper(Box<Expr>),
-    Lower(Box<Expr>),
-    SnakeCase(Box<Expr>),
-    CamelCase(Box<Expr>),
-    PascalCase(Box<Expr>),
-    Hash(Box<Expr>),
+    Upper(Expr),
+    Lower(Expr),
+    SnakeCase(Expr),
+    CamelCase(Expr),
+    PascalCase(Expr),
+    Hash(Expr),
 }
 
 /// Expression in form of an argument or a function call.
 #[derive(Debug)]
 pub(super) enum Expr {
-    ArgExpr { value: Box<Arg> },
-    FuncCallExpr { value: Box<Func> },
+    ArgExpr(Box<Arg>),
+    FuncCallExpr(Box<Func>),
 }
 
 /// A single alias specification.
