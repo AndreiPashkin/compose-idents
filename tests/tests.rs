@@ -20,6 +20,8 @@ fn compile_tests() {
     t.pass("tests/compile/format_lit_str.rs");
     t.pass("tests/compile/alias_reuse.rs");
     t.compile_fail("tests/compile/dup_alias.rs");
+    t.compile_fail("tests/compile/func_wrong_arg_num.rs");
+    t.compile_fail("tests/compile/undefined_func.rs");
 }
 
 /// Tests semicolon backwards-compatibility support.

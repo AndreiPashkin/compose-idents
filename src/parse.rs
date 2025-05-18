@@ -38,18 +38,32 @@ impl Parse for Func {
         for arg in raw_args {
             args.push(syn::parse2::<Expr>(arg.into_token_stream())?);
         }
-
-        match (func_name.as_str(), args.len()) {
-            ("upper", 1) => Ok(Func::Upper(args.drain(..).next().unwrap())),
-            ("lower", 1) => Ok(Func::Lower(args.drain(..).next().unwrap())),
-            ("snake_case", 1) => Ok(Func::SnakeCase(args.drain(..).next().unwrap())),
-            ("camel_case", 1) => Ok(Func::CamelCase(args.drain(..).next().unwrap())),
-            ("pascal_case", 1) => Ok(Func::PascalCase(args.drain(..).next().unwrap())),
-            ("hash", 1) => Ok(Func::Hash(args.drain(..).next().unwrap())),
-            _ => Err(input.error(
-                r#"Expected "upper()", "lower()", "snake_case()",
-                    "camel_case()", "pascal_case()" or "hash()"."#,
-            )),
+        match (func_name.as_str(), args.as_slice()) {
+            ("upper", args) => match &args {
+                [expr] => Ok(Func::Upper(expr.clone())),
+                _ => Ok(Func::SignatureMismatch("upper(arg)".to_string())),
+            },
+            ("lower", args) => match &args {
+                [expr] => Ok(Func::Lower(expr.clone())),
+                _ => Ok(Func::SignatureMismatch("lower(arg)".to_string())),
+            },
+            ("snake_case", args) => match &args {
+                [expr] => Ok(Func::SnakeCase(expr.clone())),
+                _ => Ok(Func::SignatureMismatch("snake_case(arg)".to_string())),
+            },
+            ("camel_case", args) => match &args {
+                [expr] => Ok(Func::CamelCase(expr.clone())),
+                _ => Ok(Func::SignatureMismatch("camel_case(arg)".to_string())),
+            },
+            ("pascal_case", args) => match &args {
+                [expr] => Ok(Func::PascalCase(expr.clone())),
+                _ => Ok(Func::SignatureMismatch("pascal_case(arg)".to_string())),
+            },
+            ("hash", args) => match &args {
+                [expr] => Ok(Func::Hash(expr.clone())),
+                _ => Ok(Func::SignatureMismatch("hash(arg)".to_string())),
+            },
+            _ => Ok(Func::Undefined),
         }
     }
 }
@@ -57,7 +71,26 @@ impl Parse for Func {
 impl Parse for Expr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let fork = input.fork();
+        let span = input.span();
         if let Ok(func) = fork.parse::<Func>() {
+            match func {
+                Func::Undefined => {
+                    return Err(syn::Error::new(
+                        span,
+                        "Matching function has not been found",
+                    ))
+                }
+                Func::SignatureMismatch(err) => {
+                    return Err(syn::Error::new(
+                        span,
+                        format!(
+                            r#"Type constraints for function "{}" are not satisfied"#,
+                            err,
+                        ),
+                    ));
+                }
+                _ => {}
+            }
             input.advance_to(&fork);
             Ok(Expr::FuncCallExpr(Box::new(func)))
         } else if let Ok(arg) = input.parse::<Arg>() {

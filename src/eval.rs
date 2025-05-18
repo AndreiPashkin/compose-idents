@@ -24,6 +24,10 @@ impl Eval for Func {
             Func::CamelCase(expr) => to_camel_case(expr.eval(state).as_str()),
             Func::PascalCase(expr) => to_pascal_case(expr.eval(state).as_str()),
             Func::Hash(expr) => hash(expr.eval(state).as_str(), state),
+            Func::Undefined => panic!("Attempt to evaluate an undefined function"),
+            Func::SignatureMismatch(_) => {
+                panic!("Attempt to evaluate a function with a mismatched signature")
+            }
         }
     }
 }

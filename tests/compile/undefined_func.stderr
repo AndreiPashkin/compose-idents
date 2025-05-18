@@ -1,0 +1,11 @@
+error: Matching function has not been found
+ --> tests/compile/undefined_func.rs:3:26
+  |
+3 | compose_idents!(my_fn = [undefined(foo)], {
+  |                          ^^^^^^^^^
+
+error[E0425]: cannot find function `foo_baz` in this scope
+  --> tests/compile/undefined_func.rs:10:16
+   |
+10 |     assert_eq!(foo_baz(), 42);
+   |                ^^^^^^^ not found in this scope
