@@ -109,6 +109,10 @@ impl Parse for Func {
                 [expr] => Ok(Func::Hash(expr.clone())),
                 _ => Ok(Func::SignatureMismatch("hash(arg)".to_string())),
             },
+            ("normalize", args) => match &args {
+                [expr] => Ok(Func::Normalize(expr.clone())),
+                _ => Ok(Func::SignatureMismatch("normalize(tokens)".to_string())),
+            },
             _ => Ok(Func::Undefined),
         }
     }

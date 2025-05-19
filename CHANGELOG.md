@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Explicitly restricted defining duplicate aliases.
 - Made it possible to re-use previously defined aliases as parts of definitions of subsequent aliases.
+- Introduce normalize() function that transforms an arbitrary token sequences into a valid identifiers.
+  Makes possible to use things like `&'static str` in identifiers.
 
 ### Changed
 

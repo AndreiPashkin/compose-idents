@@ -12,6 +12,8 @@ compose_idents!(
     MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)],
     MY_CAMEL_CASE_STATIC = [camel_case(camel_case)],
     MY_PASCAL_CASE_STATIC = [pascal_case(pascal_case)],
+    // normalize() allows to turn an arbitrary sequence of tokens into a valid identifier.
+    MY_NORMALIZED_ALIAS = [my, _, normalize(&'static str)],
     // This function is useful to create identifiers that are unique across multiple macro invocations.
     // `hash(0b11001010010111)` will generate the same value even if called twice in the same macro call,
     // but will be different in different macro calls.
@@ -35,6 +37,7 @@ compose_idents!(
         static MY_SNAKE_CASE_STATIC: u32 = 42;
         static MY_CAMEL_CASE_STATIC: u32 = 42;
         static MY_PASCAL_CASE_STATIC: u32 = 42;
+        static MY_NORMALIZED_ALIAS: &'static str = "This alias is made from a normalized argument";
         static MY_UNIQUE_STATIC: u32 = 42;
         // This is an example of string literal formatting.
         static MY_FORMATTED_STR: &str = "This is %MY_FORMATTED_STR%";
@@ -76,5 +79,9 @@ assert_eq!(BAR, 42);
 assert_eq!(snake_case, 42);
 assert_eq!(camelCase, 42);
 assert_eq!(PascalCase, 42);
+assert_eq!(
+    my_static_str,
+    "This alias is made from a normalized argument"
+);
 assert_eq!(FOO_BAR, "This is FOO_BAR");
 assert_eq!(REUSED_FOO_BAR, 42);

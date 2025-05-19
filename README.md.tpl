@@ -74,34 +74,52 @@ assert_eq!(add_u64(2_u64, 2_u64), 4_u64);
 
 Another practical example for how to auto-generate names for macro-generated tests for different data types:
 ```rust
-use std::ops::Add;
 use compose_idents::compose_idents;
 
-fn add<T: Add<Output = T>>(x: T, y: T) -> T {
-  x + y
+pub trait Frobnicate {
+  type Output;
+
+  fn frobnicate(&self, value: Self) -> Self::Output;
 }
 
-macro_rules! generate_add_tests {
-    ($($type:ty),*) => {
-      $(
-        compose_idents!(test_fn = [test_add_, $type], {
+impl Frobnicate for u32 {
+  type Output = u32;
+
+  fn frobnicate(&self, value: Self) -> Self::Output {
+    self + value
+  }
+}
+
+impl Frobnicate for &'static str {
+  type Output = String;
+
+  fn frobnicate(&self, value: Self) -> Self::Output {
+    format!("{}_{}", self, value)
+  }
+}
+
+macro_rules! generate_frobnicate_test {
+    ($type:ty, $initial:expr, $input:expr, $expected:expr) => {
+        // Notice - we are using normalize() to make `&'static str` fit for
+        // being part of the test function's identifier.
+        compose_idents!(test_fn = [test_frobnicate_, normalize($type)], {
           fn test_fn() {
-            let actual = add(2 as $type, 2 as $type);
-            let expected = (2 + 2) as $type;
+            let actual = ($initial as $type).frobnicate($input);
+            let expected = $expected;
 
             assert_eq!(actual, expected);
           }
         });
-      )*
     };
 }
 
-// Generates tests for u8, u32 and u64 types
-generate_add_tests!(u8, u32, u64);
+// Generates tests for u32 and &'static str types
+generate_frobnicate_test!(u32, 0, 42_u32, 42_u32);
+generate_frobnicate_test!(&'static str, "foo", "bar", "foo_bar".to_string());
 
-test_add_u8();
-test_add_u32();
-test_add_u64();
+test_frobnicate_u32();
+// Notice - "&'static str" has been turned into just "static_str"
+test_frobnicate_static_str();
 ```
 
 ### Reference example
@@ -113,14 +131,15 @@ This example includes all the features of the macro:
 
 ## Functions
 
-| Function          | Description                                                          |
-|-------------------|----------------------------------------------------------------------|
-| `upper(arg)`      | Converts the `arg` to upper case.                                    |
-| `lower(arg)`      | Converts the `arg` to lower case.                                    |
-| `snake_case(arg)` | Converts the `arg` to snake_case.                                    |
-| `camel_case(arg)` | Converts the `arg` to camelCase.                                     |
-| `pascal_case(arg)`| Converts the `arg` to PascalCase.                                   |
-| `hash(arg)`       | Hashes the `arg` deterministically within a single macro invocation. |
+| Function            | Description                                                               |
+|---------------------|---------------------------------------------------------------------------|
+| `upper(arg)`        | Converts the `arg` to upper case.                                         |
+| `lower(arg)`        | Converts the `arg` to lower case.                                         |
+| `snake_case(arg)`   | Converts the `arg` to snake_case.                                         |
+| `camel_case(arg)`   | Converts the `arg` to camelCase.                                          |
+| `pascal_case(arg)`  | Converts the `arg` to PascalCase.                                         |
+| `normalize(tokens)` | Transforms a random sequence of tokens `tokens` into a valid identifier. |
+| `hash(arg)`         | Hashes the `arg` deterministically within a single macro invocation.      |
 
 
 ## Alternatives
