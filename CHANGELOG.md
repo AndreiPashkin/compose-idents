@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+## [v0.1.0] - 2025-05-19
+
+### Added
+
 - Explicitly restricted defining duplicate aliases.
 - Made it possible to re-use previously defined aliases as parts of definitions of subsequent aliases.
 - Introduce normalize() function that transforms an arbitrary token sequences into a valid identifiers.
@@ -104,7 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.7...master
+[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.1.0...master
+[v0.1.0]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.7...v0.1.0
 [v0.0.7]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.6...v0.0.7
 [v0.0.6]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.5...v0.0.6
 [v0.0.5]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.4...v0.0.5
