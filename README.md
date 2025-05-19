@@ -72,7 +72,7 @@ assert_eq!(add_u64(2_u64, 2_u64), 4_u64);
 
 ### Generating tests for different types
 
-Another practical example for how to auto-generate names for macro-generated tests for different data types:
+A practical example for how to auto-generate names for macro-generated tests for different data types:
 ```rust
 use compose_idents::compose_idents;
 
