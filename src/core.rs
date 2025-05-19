@@ -35,6 +35,7 @@ pub enum Func {
     CamelCase(Expr),
     PascalCase(Expr),
     Hash(Expr),
+    Normalize(Expr),
     SignatureMismatch(String),
     Undefined,
 }

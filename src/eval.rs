@@ -1,6 +1,6 @@
 //! Provides the [`Eval`] trait and its implementations for evaluating expressions.
 use crate::core::{Arg, Expr, Func, State};
-use crate::funcs::{hash, to_camel_case, to_pascal_case, to_snake_case};
+use crate::funcs::{hash, normalize, to_camel_case, to_pascal_case, to_snake_case};
 
 /// A syntactic structure that can be evaluated.
 ///
@@ -24,6 +24,7 @@ impl Eval for Func {
             Func::CamelCase(expr) => to_camel_case(expr.eval(state).as_str()),
             Func::PascalCase(expr) => to_pascal_case(expr.eval(state).as_str()),
             Func::Hash(expr) => hash(expr.eval(state).as_str(), state),
+            Func::Normalize(expr) => normalize(expr.eval(state).as_str()),
             Func::Undefined => panic!("Attempt to evaluate an undefined function"),
             Func::SignatureMismatch(_) => {
                 panic!("Attempt to evaluate a function with a mismatched signature")
