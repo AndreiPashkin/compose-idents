@@ -131,15 +131,15 @@ This example includes all the features of the macro:
 
 ## Functions
 
-| Function            | Description                                                               |
-|---------------------|---------------------------------------------------------------------------|
-| `upper(arg)`        | Converts the `arg` to upper case.                                         |
-| `lower(arg)`        | Converts the `arg` to lower case.                                         |
-| `snake_case(arg)`   | Converts the `arg` to snake_case.                                         |
-| `camel_case(arg)`   | Converts the `arg` to camelCase.                                          |
-| `pascal_case(arg)`  | Converts the `arg` to PascalCase.                                         |
-| `normalize(tokens)` | Transforms a random sequence of tokens `tokens` into a valid identifier. |
-| `hash(arg)`         | Hashes the `arg` deterministically within a single macro invocation.      |
+| Function            | Description                                                          |
+|---------------------|----------------------------------------------------------------------|
+| `upper(arg)`        | Converts the `arg` to upper case.                                    |
+| `lower(arg)`        | Converts the `arg` to lower case.                                    |
+| `snake_case(arg)`   | Converts the `arg` to snake_case.                                    |
+| `camel_case(arg)`   | Converts the `arg` to camelCase.                                     |
+| `pascal_case(arg)`  | Converts the `arg` to PascalCase.                                    |
+| `normalize(tokens)` | Transforms a free-form sequence of tokens into a valid identifier.   |
+| `hash(arg)`         | Hashes the `arg` deterministically within a single macro invocation. |
 
 
 ## Alternatives
