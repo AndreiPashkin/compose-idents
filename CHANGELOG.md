@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+### Removed
+
+## [v0.1.1] - 2025-05-22
+
+### Added
+
+### Changed
+
 - Make argument parsing more robust. In particular make `compose_idents!` not fail with arguments such as
   `normalize(Foo::Bar)`, where `Foo::Bar` is an enum variant or anything else that could be ambiguously interpreted
   if not parsed until the end of the token (for example `Foo::Bar` could be interpreted as an ident `Foo` and `::Bar`
@@ -119,7 +127,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.1.0...master
+[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.1.1...master
+[v0.1.1]: https://github.com/AndreiPashkin/compose-idents/compare/v0.1.0...v0.1.1
 [v0.1.0]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.7...v0.1.0
 [v0.0.7]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.6...v0.0.7
 [v0.0.6]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.5...v0.0.6

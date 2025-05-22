@@ -1,6 +1,6 @@
 [package]
 name = "compose-idents"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Andrei Pashkin <andrew.pashkin@gmx.co.uk>"]
 description = "A Rust macro for generating new identifiers (names of variables, functions, traits, etc) by concatenating one or more arbitrary parts and applying other manipulations."
 keywords = ["ident", "identifier", "name", "concatenate", "generate"]
