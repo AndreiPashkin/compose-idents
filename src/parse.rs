@@ -59,16 +59,16 @@ where
 impl Parse for Arg {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let value: String;
-        if input.peek(syn::Ident) && !input.peek2(syn::token::Paren) {
+        if input.peek(syn::Ident) && input.peek2(syn::parse::End) {
             let ident = input.parse::<syn::Ident>()?;
             value = ident.to_string();
-        } else if input.peek(Token![_]) {
+        } else if input.peek(Token![_]) && input.peek2(syn::parse::End) {
             input.parse::<Token![_]>()?;
             value = "_".to_string();
-        } else if input.peek(syn::LitStr) {
+        } else if input.peek(syn::LitStr) && input.peek2(syn::parse::End) {
             let lit_str = input.parse::<syn::LitStr>()?;
             value = lit_str.value();
-        } else if input.peek(syn::LitInt) {
+        } else if input.peek(syn::LitInt) && input.peek2(syn::parse::End) {
             let lit_int = input.parse::<syn::LitInt>()?;
             value = lit_int.base10_digits().to_string();
         } else {
@@ -213,15 +213,12 @@ impl Parse for AliasSpecItem {
         input.parse::<Token![=]>()?;
         let content;
         bracketed!(content in input);
-        let mut exprs = Vec::new();
-        loop {
-            let expr = content.parse::<Expr>()?;
-            exprs.push(expr);
-            if content.is_empty() {
-                break;
-            }
-            content.parse::<Token![,]>()?;
-        }
+        let punctuated =
+            content.parse_terminated(Terminated::<Expr, Token![,]>::parse, Token![,])?;
+        let exprs = punctuated
+            .into_iter()
+            .map(|arg| arg.into_value())
+            .collect::<Vec<_>>();
         Ok(AliasSpecItem { alias, exprs })
     }
 }

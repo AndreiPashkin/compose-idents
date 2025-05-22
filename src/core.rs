@@ -17,6 +17,8 @@ pub struct State {
 
 /// Argument to the [`compose_idents`] macro.
 ///
+/// Its [`Parse`] impl parses the input entirely, until the end.
+///
 /// Accepted inputs:
 /// - Literal strings (enclosed in double quotes) are recognized and their content is used.
 /// - Identifiers, literal numbers, underscores are used as is.
@@ -41,6 +43,8 @@ pub enum Func {
 }
 
 /// Expression in form of an argument or a function call.
+///
+/// Just like [`Arg`] - parses the input entirely, until the end.
 #[derive(Debug, Clone)]
 pub(super) enum Expr {
     ArgExpr(Box<Arg>),

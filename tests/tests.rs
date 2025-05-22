@@ -22,6 +22,7 @@ fn compile_tests() {
     t.pass("tests/compile/alias_reuse.rs");
     t.compile_fail("tests/compile/dup_alias.rs");
     t.compile_fail("tests/compile/func_wrong_arg_num.rs");
+    t.pass("tests/compile/func_enum_variant.rs");
     t.compile_fail("tests/compile/undefined_func.rs");
 }
 
