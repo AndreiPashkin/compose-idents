@@ -9,41 +9,49 @@ use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
 use syn::{bracketed, parenthesized, Block, Ident, Token};
 
-/// A terminator token.
-pub trait Terminator {
-    fn is_terminator(input: &ParseStream) -> bool;
+/// Wraps the token-type `T` and parses it by consuming the input until the terminator `Term` or
+/// the end if the input.
+struct Terminated<T, Term>
+where
+    T: Parse,
+    Term: Parse,
+{
+    value: T,
+    terminator_type: PhantomData<Term>,
 }
 
-impl Terminator for Token![,] {
-    fn is_terminator(input: &ParseStream) -> bool {
-        input.peek(Token![,])
+impl<T, Term> Terminated<T, Term>
+where
+    T: Parse,
+    Term: Parse,
+{
+    fn into_value(self) -> T {
+        self.value
     }
 }
 
-/// A sequence of tokens (token-trees more specifically) terminated by a terminator-token.
-struct TerminatedTokens<T: Terminator> {
-    tokens: TokenStream,
-    token_type: PhantomData<T>,
-}
-
-impl<T: Terminator> TerminatedTokens<T> {
-    fn into_token_stream(self) -> TokenStream {
-        self.tokens
-    }
-}
-
-impl<T: Terminator> Parse for TerminatedTokens<T> {
+impl<T, Term> Parse for Terminated<T, Term>
+where
+    T: Parse,
+    Term: Parse,
+{
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut tokens = TokenStream::new();
-
-        while !input.is_empty() && !T::is_terminator(&input) {
+        while !input.is_empty() {
+            let fork = input.fork();
+            let is_terminator = fork.parse::<Term>().is_ok();
+            if is_terminator {
+                break;
+            }
             let tt = input.parse::<TokenTree>()?;
             tokens.extend(tt.into_token_stream());
         }
 
-        Ok(TerminatedTokens {
-            tokens,
-            token_type: PhantomData,
+        let value = syn::parse2::<T>(tokens)?;
+
+        Ok(Terminated {
+            value,
+            terminator_type: PhantomData,
         })
     }
 }
@@ -64,8 +72,8 @@ impl Parse for Arg {
             let lit_int = input.parse::<syn::LitInt>()?;
             value = lit_int.base10_digits().to_string();
         } else {
-            let tokens = input.parse::<TerminatedTokens<Token![,]>>()?;
-            value = tokens.into_token_stream().to_string();
+            let terminated = input.parse::<Terminated<TokenStream, Token![,]>>()?;
+            value = terminated.into_value().to_string();
         }
         Ok(Arg { value })
     }
@@ -77,13 +85,13 @@ impl Parse for Func {
         let func_name = ident.to_string();
         let raw_args;
         parenthesized!(raw_args in input);
-        let args_tokens =
-            raw_args.parse_terminated(TerminatedTokens::<Token![,]>::parse, Token![,])?;
+        let punctuated =
+            raw_args.parse_terminated(Terminated::<Expr, Token![,]>::parse, Token![,])?;
+        let args = punctuated
+            .into_iter()
+            .map(|arg| arg.into_value())
+            .collect::<Vec<_>>();
 
-        let mut args: Vec<Expr> = Vec::new();
-        for arg in args_tokens {
-            args.push(syn::parse2::<Expr>(arg.into_token_stream())?);
-        }
         match (func_name.as_str(), args.as_slice()) {
             ("upper", args) => match &args {
                 [expr] => Ok(Func::Upper(expr.clone())),
