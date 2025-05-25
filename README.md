@@ -224,7 +224,7 @@ assert_eq!(REUSED_FOO_BAR, 42);
 | `snake_case(arg)`   | Converts the `arg` to snake_case.                                    |
 | `camel_case(arg)`   | Converts the `arg` to camelCase.                                     |
 | `pascal_case(arg)`  | Converts the `arg` to PascalCase.                                    |
-| `normalize(tokens)` | Transforms a free-form sequence of tokens into a valid identifier.   |
+| `normalize(tokens)` | Transforms a free-form sequence of `tokens` into a valid identifier. |
 | `hash(arg)`         | Hashes the `arg` deterministically within a single macro invocation. |
 
 
