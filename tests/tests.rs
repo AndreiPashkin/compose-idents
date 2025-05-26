@@ -32,6 +32,7 @@ fn semicolon_tests() {
     let t = trybuild::TestCases::new();
     t.pass("tests/compile/semicolon/semicolon_syntax.rs");
     t.compile_fail("tests/compile/semicolon/mixed_separators.rs");
+    t.compile_fail("tests/compile/semicolon/semicolon_syntax_warning.rs");
 }
 
 #[test]

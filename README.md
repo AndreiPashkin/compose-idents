@@ -314,6 +314,18 @@ static __10611722954104835980: u32 = 42;
 | `normalize(tokens)` | Transforms a free-form sequence of `tokens` into a valid identifier. |
 | `hash(arg)`         | Hashes the `arg` deterministically within a single macro invocation. |
 
+## Deprecation policy
+
+- As a general rule old functionality is not removed abruptly, but rather deprecated first and removed after
+  a few releases.
+- Deprecation works by injecting `#[deprecated]` attribute to existing syntactic elements of generated code
+  without adding new ones. It might not work in corner cases if there is no place where the attribute could be added.
+
+  Here is how a deprecation warning might look like:
+  ```ignore
+  warning: use of deprecated function `my_function`: compose_idents!: Using semicolons as separators is deprecated, use commas instead
+  ```
+
 ## Alternatives
 
 There some other tools and projects dedicated to identifier manipulation:

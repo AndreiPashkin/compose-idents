@@ -6,7 +6,7 @@ mod eval;
 mod funcs;
 mod parse;
 
-use crate::core::{ComposeIdentsArgs, ComposeIdentsVisitor, State};
+use crate::core::{ComposeIdentsArgs, ComposeIdentsVisitor, DeprecationWarningVisitor, State};
 use proc_macro::TokenStream;
 use quote::quote;
 use std::sync::Mutex;
@@ -64,9 +64,14 @@ pub fn compose_idents(input: TokenStream) -> TokenStream {
     let mut visitor = ComposeIdentsVisitor::new(args.spec.replacements(&state));
     let mut block = args.block;
     visitor.visit_block_mut(&mut block);
+    let mut deprecation_visitor =
+        DeprecationWarningVisitor::new(args.deprecation_warnings, "compose_idents!: ".to_string());
+    deprecation_visitor.visit_block_mut(&mut block);
 
     let block_content = block.stmts;
 
-    let expanded = quote! { #(#block_content)* };
+    let expanded = quote! {
+        #(#block_content)*
+    };
     TokenStream::from(expanded)
 }
