@@ -105,7 +105,13 @@ impl AliasSpec {
 
 /// Visitor that replaces aliases in the provided code block with their definitions.
 pub(super) struct ComposeIdentsVisitor {
-    pub(super) replacements: HashMap<Ident, Ident>,
+    replacements: HashMap<Ident, Ident>,
+}
+
+impl ComposeIdentsVisitor {
+    pub fn new(replacements: HashMap<Ident, Ident>) -> Self {
+        Self { replacements }
+    }
 }
 
 impl VisitMut for ComposeIdentsVisitor {
