@@ -1,9 +1,11 @@
 //! Implements parsing logic for different internal components.
 
-use super::core::{AliasSpec, AliasSpecItem, Arg, ComposeIdentsArgs, Expr, Func};
+use super::core::{
+    AliasSpec, AliasSpecItem, Arg, ComposeIdentsArgs, DeprecationWarning, Expr, Func,
+};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 use std::marker::PhantomData;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
@@ -184,6 +186,14 @@ impl Parse for ComposeIdentsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let spec: AliasSpec = input.parse()?;
         let block: Block = input.parse()?;
+        let mut deprecation_warnings = BTreeSet::new();
+
+        if spec.is_comma_used.is_some_and(|value| !value) {
+            let _ = deprecation_warnings.insert(DeprecationWarning::new(
+                "Using semicolons as separators is deprecated, use commas instead".to_string(),
+                "0.0.5".to_string(),
+            ));
+        }
 
         let is_comma_current_sep = if input.peek(Token![,]) {
             input.parse::<Token![,]>()?;
@@ -203,7 +213,11 @@ impl Parse for ComposeIdentsArgs {
             }
         }
 
-        Ok(ComposeIdentsArgs { spec, block })
+        Ok(ComposeIdentsArgs {
+            spec,
+            block,
+            deprecation_warnings,
+        })
     }
 }
 
