@@ -1,0 +1,18 @@
+error: use of deprecated function `foo_bar`: compose_idents!: Using semicolons as separators is deprecated, use commas instead
+  --> tests/compile/semicolon/semicolon_syntax_warning.rs:23:16
+   |
+23 |     assert_eq!(foo_bar(), 1);
+   |                ^^^^^^^
+   |
+note: the lint level is defined here
+  --> tests/compile/semicolon/semicolon_syntax_warning.rs:1:9
+   |
+1  | #![deny(warnings)]
+   |         ^^^^^^^^
+   = note: `#[deny(deprecated)]` implied by `#[deny(warnings)]`
+
+error: use of deprecated function `foo_baz`: compose_idents!: Using semicolons as separators is deprecated, use commas instead
+  --> tests/compile/semicolon/semicolon_syntax_warning.rs:24:16
+   |
+24 |     assert_eq!(foo_baz(), 2);
+   |                ^^^^^^^
