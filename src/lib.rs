@@ -61,9 +61,7 @@ pub fn compose_idents(input: TokenStream) -> TokenStream {
     *counter += 1;
     let state = State { seed: *counter };
     let args = parse_macro_input!(input as ComposeIdentsArgs);
-    let mut visitor = ComposeIdentsVisitor {
-        replacements: args.spec.replacements(&state),
-    };
+    let mut visitor = ComposeIdentsVisitor::new(args.spec.replacements(&state));
     let mut block = args.block;
     visitor.visit_block_mut(&mut block);
 
