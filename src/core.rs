@@ -54,6 +54,46 @@ pub(super) enum Expr {
     FuncCallExpr(Box<Func>),
 }
 
+/// A value of a form `(foo, (bar, baz))`.
+pub(super) struct Tuple<V> {
+    values: Vec<TupleValue<V>>,
+}
+
+impl<V> Tuple<V> {
+    /// Creates a new tuple.
+    pub fn new(values: Vec<TupleValue<V>>) -> Self {
+        Self { values }
+    }
+
+    pub fn values(&self) -> &[TupleValue<V>] {
+        &self.values
+    }
+}
+
+/// Allowed values in a tuple.
+pub(super) enum TupleValue<V> {
+    Tuple(Tuple<V>),
+    Value(V),
+}
+
+/// Alias produced by a loop.
+pub(super) enum LoopAlias {
+    Simple(Ident),
+    Tuple(Tuple<Ident>),
+}
+
+/// Source value of a loop.
+pub(super) enum LoopSourceValue {
+    Expr(Expr),
+    Tuple(Tuple<Expr>),
+}
+
+/// A single loop specification.
+pub(super) struct LoopSpec {
+    var: LoopAlias,
+    source: Vec<LoopSourceValue>,
+}
+
 /// A single alias specification.
 pub(super) struct AliasSpecItem {
     pub(super) alias: Ident,

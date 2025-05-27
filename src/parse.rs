@@ -1,8 +1,10 @@
 //! Implements parsing logic for different internal components.
 
 use super::core::{
-    AliasSpec, AliasSpecItem, Arg, ComposeIdentsArgs, DeprecationWarning, Expr, Func,
+    AliasSpec, AliasSpecItem, Arg, ComposeIdentsArgs, DeprecationWarning, Expr, Func, Tuple,
+    TupleValue,
 };
+use crate::utils::combine_errors;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
 use std::collections::{BTreeSet, HashSet};
@@ -165,16 +167,11 @@ impl Parse for Expr {
             Err(err) => errors.push(err),
         }
 
-        if errors.len() == 1 {
-            Err(errors.pop().unwrap())
-        } else {
-            let mut error = syn::Error::new(
-                input.span(),
-                "Expected argument or function call (see the errors below)",
-            );
-            errors.iter().for_each(|err| error.combine(err.clone()));
-            Err(error)
-        }
+        Err(combine_errors(
+            "Expected argument or function call (see the errors below)",
+            span,
+            errors,
+        ))
     }
 }
 
@@ -218,6 +215,54 @@ impl Parse for ComposeIdentsArgs {
             block,
             deprecation_warnings,
         })
+    }
+}
+
+impl<V> Parse for Tuple<V>
+where
+    V: Parse,
+{
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut errors = Vec::new();
+        let mut values = Vec::new();
+        let content;
+
+        parenthesized!(content in input);
+
+        let fork = content.fork();
+
+        loop {
+            if fork.is_empty() {
+                break;
+            }
+            match fork.parse::<Tuple<V>>() {
+                Ok(tuple) => {
+                    content.advance_to(&fork);
+                    values.push(TupleValue::<V>::Tuple(tuple));
+                    continue;
+                }
+                Err(err) => {
+                    errors.push(err);
+                }
+            }
+            match fork.parse::<V>() {
+                Ok(value) => {
+                    content.advance_to(&fork);
+                    values.push(TupleValue::<V>::Value(value));
+                    continue;
+                }
+                Err(err) => {
+                    errors.push(err);
+                }
+            }
+            return Err(combine_errors(
+                "Failed to parse a tuple (see errors below)",
+                content.span(),
+                errors,
+            ));
+        }
+
+        Ok(Tuple::<V>::new(values))
     }
 }
 

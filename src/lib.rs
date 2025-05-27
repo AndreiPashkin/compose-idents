@@ -5,6 +5,7 @@ mod core;
 mod eval;
 mod funcs;
 mod parse;
+mod utils;
 
 use crate::core::{ComposeIdentsArgs, ComposeIdentsVisitor, DeprecationWarningVisitor, State};
 use proc_macro::TokenStream;
