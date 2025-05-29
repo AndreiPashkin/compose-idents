@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactored the reference - split a single big usage example into commented thematic Markdown sections.
+
 ### Removed
 
 ## [v0.1.1] - 2025-05-22

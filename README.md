@@ -122,100 +122,174 @@ test_frobnicate_u32();
 test_frobnicate_static_str();
 ```
 
-### Reference example
+## Reference
 
-This example includes all the features of the macro:
+This is a complete reference to the functionality of this library split into thematic sections.
+
+### Basic alias definition
+
+You can define aliases with the syntax `alias = [arg1, arg2, …]`, where args may be identifiers, string literals,
+integers, underscores, or any arbitrary sequences of tokens (like `&'static str`):
 ```rust
 use compose_idents::compose_idents;
 
 compose_idents!(
     // Literal strings are accepted as arguments and their content is parsed.
-    my_fn_1 = [foo, _, "baz"],
-    // So as literal integers and underscores (or free-form token sequences).
+    my_fn_1 = [foo, _, "bar"],
+    // The same applies to literal integers, underscores or free-form token sequences.
     my_fn_2 = [spam, _, 1, _, eggs],
-    // Functions can be applied to the arguments.
-    my_const = [upper(foo), _, lower(BAR)],
-    // Function calls can be arbitrarily nested and combined.
-    my_static = [upper(lower(BAR))],
-    MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)],
-    MY_CAMEL_CASE_STATIC = [camel_case(camel_case)],
-    MY_PASCAL_CASE_STATIC = [pascal_case(pascal_case)],
-    // normalize() allows to turn an arbitrary sequence of tokens into a valid identifier.
-    MY_NORMALIZED_ALIAS = [my, _, normalize(&'static str)],
-    // This function is useful to create identifiers that are unique across multiple macro invocations.
-    // `hash(0b11001010010111)` will generate the same value even if called twice in the same macro call,
-    // but will be different in different macro calls.
-    MY_UNIQUE_STATIC = [hash(0b11001010010111)],
-    MY_FORMATTED_STR = [FOO, _, BAR],
-    MY_REUSED_ALIAS = [REUSED, _, FOO, _, my_static],
     {
         fn my_fn_1() -> u32 {
-            123
+            42
         }
 
-        // You can use %alias% syntax to replace aliases with their replacements
-        // in string literals and doc-attributes.
-        #[doc = "This is a docstring for %my_fn_2%"]
         fn my_fn_2() -> u32 {
-            321
+            42
         }
+    },
+);
 
-        const my_const: u32 = 42;
-        static my_static: u32 = 42;
-        static MY_SNAKE_CASE_STATIC: u32 = 42;
-        static MY_CAMEL_CASE_STATIC: u32 = 42;
-        static MY_PASCAL_CASE_STATIC: u32 = 42;
-        static MY_NORMALIZED_ALIAS: &'static str = "This alias is made from a normalized argument";
-        static MY_UNIQUE_STATIC: u32 = 42;
-        // This is an example of string literal formatting.
-        static MY_FORMATTED_STR: &str = "This is %MY_FORMATTED_STR%";
-        static MY_REUSED_ALIAS: u32 = 42;
+assert_eq!(foo_bar(), 42);
+assert_eq!(spam_1_eggs(), 42);
+```
+
+### Alias reuse
+
+Aliases could also be reused in definitions of other aliases:
+```rust
+use compose_idents::compose_idents;
+
+compose_idents!(base_alias = [FOO], derived_alias = [BAR, _, base_alias], {
+    static base_alias: u32 = 1;
+    static derived_alias: u32 = base_alias;
+},);
+
+assert_eq!(FOO, 1);
+assert_eq!(BAR_FOO, 1);
+```
+
+### Functions
+
+Functions can be applied to the arguments used for the alias definitions:
+```rust
+use compose_idents::compose_idents;
+
+compose_idents!(
+    my_const = [upper(foo), _, lower(BAR)],
+    // Function calls can be arbitrarily nested and combined.
+    my_static = [upper(lower(BAZ))],
+    {
+        const my_const: u8 = 1;
+        static my_static: &str = "hello";
     }
 );
 
-// It's possible to use arguments of declarative macros as parts of the identifiers.
-macro_rules! outer_macro {
-    ($name:tt) => {
-        compose_idents!(my_nested_fn = [nested, _, $name], {
-            fn my_nested_fn() -> u32 {
-                42
-            }
-        });
-    };
-}
+assert_eq!(FOO_bar, 1);
+assert_eq!(BAZ, "hello");
+```
 
-outer_macro!(foo);
+You can find a complete description of all functions below under "Functions" heading.
 
-macro_rules! global_var_macro {
-    () => {
-        // `my_static` is going to be unique in each invocation of `global_var_macro!()`.
-        // But within the same invocation `hash(1)` will yield the same result.
-        compose_idents!(my_static = [foo, _, hash(1)], {
-            static my_static: u32 = 42;
-        });
-    };
-}
+### Casing manipulation
 
-global_var_macro!();
-global_var_macro!();
+There are multiple functions for altering the naming convention of identifiers:
+```rust
+use compose_idents::compose_idents;
 
-assert_eq!(foo_baz(), 123);
-assert_eq!(spam_1_eggs(), 321);
-assert_eq!(nested_foo(), 42);
-assert_eq!(FOO_bar, 42);
-assert_eq!(BAR, 42);
-assert_eq!(snake_case, 42);
-assert_eq!(camelCase, 42);
-assert_eq!(PascalCase, 42);
+compose_idents!(
+    MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)],
+    MY_CAMEL_CASE_STATIC = [camel_case(camel_case)],
+    MY_PASCAL_CASE_STATIC = [pascal_case(pascal_case)],
+    {
+        static MY_SNAKE_CASE_STATIC: u32 = 1;
+        static MY_CAMEL_CASE_STATIC: u32 = 2;
+        static MY_PASCAL_CASE_STATIC: u32 = 3;
+    },
+);
+
+assert_eq!(snake_case, 1);
+assert_eq!(camelCase, 2);
+assert_eq!(PascalCase, 3);
+```
+
+### Token normalization
+
+`normalize()` function is useful for making valid identifiers out of arbitrary tokens:
+```rust
+use compose_idents::compose_idents;
+
+compose_idents!(
+    MY_NORMALIZED_ALIAS = [my, _, normalize(&'static str)],
+    {
+        static MY_NORMALIZED_ALIAS: &str = "This alias is made from a normalized argument";
+    }
+);
+
 assert_eq!(
     my_static_str,
     "This alias is made from a normalized argument"
 );
-assert_eq!(FOO_BAR, "This is FOO_BAR");
-assert_eq!(REUSED_FOO_BAR, 42);
 ```
 
-## Functions
+### String formatting
+
+Aliases could be used in string formatting with `%alias%` syntax. This is useful for generating doc-attributes:
+```rust
+use compose_idents::compose_idents;
+
+compose_idents!(my_fn = [foo, _, "baz"], MY_FORMATTED_STR = [FOO, _, BAR], {
+    static MY_FORMATTED_STR: &str = "This is %MY_FORMATTED_STR%";
+
+    // You can use %alias% syntax to replace aliases with their definitions
+    // in string literals and doc-attributes.
+    #[doc = "This is a docstring for %my_fn%"]
+    fn my_fn() -> u32 {
+        321
+    }
+},);
+
+assert_eq!(FOO_BAR, "This is FOO_BAR");
+```
+
+### Generating unique identifiers
+
+`hash()` function deterministically hashes the input _within a single macro invocation_. It means that within the same
+`compose_idents!` call `hash(foobar)` will always produce the same output. But in another call - the output would be
+different (but also the same for the same input).
+
+It could be used to avoid conflicts between identifiers of global variables, or any other items that are defined in
+global scope.
+
+```rust
+use compose_idents::compose_idents;
+
+macro_rules! create_static {
+    () => {
+        compose_idents!(
+            MY_UNIQUE_STATIC = [hash(1)],
+            MY_OTHER_UNIQUE_STATIC = [hash(2)],
+            {
+                static MY_UNIQUE_STATIC: u32 = 42;
+                static MY_OTHER_UNIQUE_STATIC: u32 = 42;
+            }
+        );
+    };
+}
+
+create_static!();
+create_static!();
+```
+
+This example roughly expands to this:
+```rust
+use compose_idents::compose_idents;
+static __5360156246018494022: u32 = 42;
+static __1421539829453635175: u32 = 42;
+static __17818851730065003648: u32 = 42;
+static __10611722954104835980: u32 = 42;
+```
+
+### Functions
 
 | Function            | Description                                                          |
 |---------------------|----------------------------------------------------------------------|
@@ -224,9 +298,8 @@ assert_eq!(REUSED_FOO_BAR, 42);
 | `snake_case(arg)`   | Converts the `arg` to snake_case.                                    |
 | `camel_case(arg)`   | Converts the `arg` to camelCase.                                     |
 | `pascal_case(arg)`  | Converts the `arg` to PascalCase.                                    |
-| `normalize(tokens)` | Transforms a free-form sequence of tokens into a valid identifier.   |
+| `normalize(tokens)` | Transforms a free-form sequence of `tokens` into a valid identifier. |
 | `hash(arg)`         | Hashes the `arg` deterministically within a single macro invocation. |
-
 
 ## Alternatives
 
