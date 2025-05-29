@@ -11,6 +11,19 @@ It was created as an alternative to `macro_rules!` that doesn't allow creating n
 and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capabilities and has not been stabilized
 [since 2015][2].
 
+```rust
+compose_idents::compose_idents!(
+    my_fn = [foo, _, "baz"],
+    {
+        fn my_fn() -> u32 {
+            42
+        }
+    },
+);
+
+assert_eq!(foo_baz(), 42);
+```
+
 [1]: https://doc.rust-lang.org/std/macro.concat_idents.html
 [2]: https://github.com/rust-lang/rust/issues/29599
 
