@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactored the reference - split a single big usage example into commented thematic Markdown sections.
+- Stripped redundant top-level heading in docs.rs so that level-3 headings ("Functions", "Alias reuse", etc.) are now
+  visible in the sidebar.
 
 ### Removed
 
