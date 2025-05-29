@@ -1,8 +1,3 @@
-{{- define "heading" -}}
-  {{- $hash := strings.Repeat (conv.ToInt (math.Add .headings_level .level)) "#" -}}
-  {{ printf "%s" $hash }}
-{{- end -}}
-
 {{- $h1 := tmpl.Exec "heading" (dict "headings_level" .headings_level "level" 0) -}}
 
 This is a complete reference to the functionality of this library split into thematic sections.
