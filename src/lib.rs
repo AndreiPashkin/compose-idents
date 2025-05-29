@@ -52,11 +52,9 @@ static COUNTER: Mutex<u64> = Mutex::new(0);
 /// Semicolons could also be used as separators between the macro arguments for
 /// backwards-compatibility. Mixing separator styles in the same macro invocation is not allowed.
 ///
-/// # Example
+/// # Reference
 ///
-/// ```rust
-#[doc = include_str!("../snippets/usage.rs")]
-/// ```
+#[doc = include_str!("../snippets/reference_h2.md")]
 #[proc_macro]
 pub fn compose_idents(input: TokenStream) -> TokenStream {
     let mut counter = COUNTER.lock().unwrap();

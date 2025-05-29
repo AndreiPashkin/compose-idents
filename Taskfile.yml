@@ -13,3 +13,4 @@ tasks:
   render:
     cmds:
       - gomplate -f README.md.tpl -o README.md
+      - "echo '{\"headings_level\": 2 }' | gomplate -c .=stdin:///cfg.json -f snippets/reference.md.tpl -o snippets/reference_h2.md"

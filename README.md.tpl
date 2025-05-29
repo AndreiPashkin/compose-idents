@@ -122,25 +122,10 @@ test_frobnicate_u32();
 test_frobnicate_static_str();
 ```
 
-### Reference example
+## Reference
 
-This example includes all the features of the macro:
-```rust
-{{ file.Read "snippets/usage.rs" -}}
-```
-
-## Functions
-
-| Function            | Description                                                          |
-|---------------------|----------------------------------------------------------------------|
-| `upper(arg)`        | Converts the `arg` to upper case.                                    |
-| `lower(arg)`        | Converts the `arg` to lower case.                                    |
-| `snake_case(arg)`   | Converts the `arg` to snake_case.                                    |
-| `camel_case(arg)`   | Converts the `arg` to camelCase.                                     |
-| `pascal_case(arg)`  | Converts the `arg` to PascalCase.                                    |
-| `normalize(tokens)` | Transforms a free-form sequence of tokens into a valid identifier.   |
-| `hash(arg)`         | Hashes the `arg` deterministically within a single macro invocation. |
-
+{{ tpl (file.Read "snippets/reference.md.tpl") (dict "headings_level" 3) -}}
+{{- printf "\n" -}}
 
 ## Alternatives
 
