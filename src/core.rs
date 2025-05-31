@@ -15,7 +15,20 @@ use syn::{
 #[derive(Debug)]
 pub struct State {
     /// Random seed.
-    pub(super) seed: u64,
+    seed: u64,
+}
+
+impl State {
+    /// Creates a new State with the given `seed`.
+    pub fn new(seed: u64) -> Self {
+        Self { seed }
+    }
+
+    /// Reads the seed value.
+    #[inline]
+    pub fn seed(&self) -> u64 {
+        self.seed
+    }
 }
 
 /// Argument to the [`compose_idents`] macro.
@@ -28,7 +41,20 @@ pub struct State {
 /// - Arbitrary sequences of tokens that do not include `,`.
 #[derive(Debug, Clone)]
 pub struct Arg {
-    pub(super) value: String,
+    value: String,
+}
+
+impl Arg {
+    /// Creates a new [`Arg`] with the given `value`.
+    pub fn new(value: String) -> Self {
+        Self { value }
+    }
+
+    /// Reads arg's value.
+    #[inline]
+    pub fn value(&self) -> &str {
+        &self.value
+    }
 }
 
 /// Function call in form of `upper(arg)` or `lower(arg)`, etc.
@@ -49,29 +75,30 @@ pub enum Func {
 ///
 /// Just like [`Arg`] - parses the input entirely, until the end.
 #[derive(Debug, Clone)]
-pub(super) enum Expr {
+pub enum Expr {
     ArgExpr(Box<Arg>),
     FuncCallExpr(Box<Func>),
 }
 
 /// A single alias specification.
-pub(super) struct AliasSpecItem {
-    pub(super) alias: Ident,
-    pub(super) exprs: Vec<Expr>,
-}
-
-/// Specification of aliases provided to the [`compose_idents`] macro by the user.
-pub(super) struct AliasSpec {
-    pub(super) items: Vec<AliasSpecItem>,
-    pub(super) is_comma_used: Option<bool>,
+pub struct AliasSpecItem {
+    alias: Ident,
+    exprs: Vec<Expr>,
 }
 
 impl AliasSpecItem {
-    pub(super) fn replacement(
-        &self,
-        state: &State,
-        arg_replacements: &HashMap<String, String>,
-    ) -> Ident {
+    /// Creates a new [`AliasSpecItem`] with the given alias and expressions.
+    pub fn new(alias: Ident, exprs: Vec<Expr>) -> Self {
+        Self { alias, exprs }
+    }
+
+    /// Reads the alias identifier.
+    #[inline]
+    pub fn alias(&self) -> &Ident {
+        &self.alias
+    }
+
+    pub fn replacement(&self, state: &State, arg_replacements: &HashMap<String, String>) -> Ident {
         let ident = self.exprs.iter().fold("".to_string(), |acc, item| {
             let arg = item.eval(state);
             let replacement = arg_replacements.get(&arg);
@@ -85,8 +112,46 @@ impl AliasSpecItem {
     }
 }
 
+/// Specification of aliases provided to the [`compose_idents`] macro by the user.
+pub struct AliasSpec {
+    items: Vec<AliasSpecItem>,
+    is_comma_used: Option<bool>,
+}
+
+impl AliasSpec {
+    /// Creates a new [`AliasSpec`] with the given items and separator information.
+    pub fn new(items: Vec<AliasSpecItem>, is_comma_used: Option<bool>) -> Self {
+        Self {
+            items,
+            is_comma_used,
+        }
+    }
+
+    /// Whether a comma is used as a separator.
+    #[inline]
+    pub fn is_comma_used(&self) -> Option<bool> {
+        self.is_comma_used
+    }
+
+    /// Replacements that correspond to the aliases.
+    pub fn replacements(&self, state: &State) -> HashMap<Ident, Ident> {
+        let mut arg_replacements = HashMap::new();
+        self.items
+            .iter()
+            .map(|item| {
+                let replacement = item.replacement(state, &arg_replacements);
+                arg_replacements.insert(format!("{}", item.alias), format!("{}", replacement));
+
+                (item.alias.clone(), replacement)
+            })
+            .collect()
+    }
+}
+
+/// Deprecation warning - could be used to warn user about usage of deprecated functionality while
+/// still preserving backwards-compatibility.
 #[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Clone)]
-pub(super) struct DeprecationWarning {
+pub struct DeprecationWarning {
     note: String,
     since: String,
 }
@@ -116,29 +181,48 @@ impl DeprecationWarning {
 }
 
 /// Arguments to the [`compose_idents`] macro.
-pub(super) struct ComposeIdentsArgs {
-    pub(super) spec: AliasSpec,
-    pub(super) block: Block,
-    pub(super) deprecation_warnings: BTreeSet<DeprecationWarning>,
+pub struct ComposeIdentsArgs {
+    spec: AliasSpec,
+    block: Block,
+    deprecation_warnings: BTreeSet<DeprecationWarning>,
 }
 
-impl AliasSpec {
-    pub(super) fn replacements(&self, state: &State) -> HashMap<Ident, Ident> {
-        let mut arg_replacements = HashMap::new();
-        self.items
-            .iter()
-            .map(|item| {
-                let replacement = item.replacement(state, &arg_replacements);
-                arg_replacements.insert(format!("{}", item.alias), format!("{}", replacement));
+/// Arguments to the [`compose_idents`] macro.
+impl ComposeIdentsArgs {
+    /// Creates new ComposeIdentsArgs with the given components.
+    pub fn new(
+        spec: AliasSpec,
+        block: Block,
+        deprecation_warnings: BTreeSet<DeprecationWarning>,
+    ) -> Self {
+        Self {
+            spec,
+            block,
+            deprecation_warnings,
+        }
+    }
 
-                (item.alias.clone(), replacement)
-            })
-            .collect()
+    /// Reads the alias specification.
+    #[inline]
+    pub fn spec(&self) -> &AliasSpec {
+        &self.spec
+    }
+
+    /// Reads a mutable reference to the code block.
+    #[inline]
+    pub fn block_mut(&mut self) -> &mut Block {
+        &mut self.block
+    }
+
+    /// Reads the deprecation warnings.
+    #[inline]
+    pub fn deprecation_warnings(&self) -> &BTreeSet<DeprecationWarning> {
+        &self.deprecation_warnings
     }
 }
 
 /// Visitor that replaces aliases in the provided code block with their definitions.
-pub(super) struct ComposeIdentsVisitor {
+pub struct ComposeIdentsVisitor {
     replacements: HashMap<Ident, Ident>,
 }
 
@@ -170,7 +254,7 @@ impl VisitMut for ComposeIdentsVisitor {
 }
 
 /// Processes the code block tries to add deprecations to existing syntactic elements.
-pub(super) struct DeprecationWarningVisitor {
+pub struct DeprecationWarningVisitor {
     deprecation_warnings: BTreeSet<DeprecationWarning>,
     warning_prefix: String,
 }

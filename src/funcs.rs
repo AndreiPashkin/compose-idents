@@ -122,7 +122,7 @@ pub fn to_pascal_case(input: &str) -> String {
 /// value but different in another macro invocation.
 pub fn hash(input: &str, state: &State) -> String {
     let mut hasher = DefaultHasher::new();
-    state.seed.hash(&mut hasher);
+    state.seed().hash(&mut hasher);
     input.hash(&mut hasher);
     let hash = hasher.finish().to_string();
     let result = format!("__{}", hash);
@@ -254,7 +254,7 @@ mod tests {
 
     #[rstest]
     fn test_random_valid_ident() {
-        let state = State { seed: 1 };
+        let state = State::new(1);
         let actual = hash("1", &state);
         let ident_result = syn::parse_str::<Ident>(actual.as_str());
 
@@ -268,7 +268,7 @@ mod tests {
 
     #[rstest]
     fn test_random_determinism() {
-        let state = State { seed: 1 };
+        let state = State::new(1);
         let expected = hash("1", &state);
         let actual = hash("1", &state);
 

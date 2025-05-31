@@ -59,16 +59,17 @@ static COUNTER: Mutex<u64> = Mutex::new(0);
 pub fn compose_idents(input: TokenStream) -> TokenStream {
     let mut counter = COUNTER.lock().unwrap();
     *counter += 1;
-    let state = State { seed: *counter };
-    let args = parse_macro_input!(input as ComposeIdentsArgs);
-    let mut visitor = ComposeIdentsVisitor::new(args.spec.replacements(&state));
-    let mut block = args.block;
-    visitor.visit_block_mut(&mut block);
+    let state = State::new(*counter);
+    let mut args = parse_macro_input!(input as ComposeIdentsArgs);
+    let mut visitor = ComposeIdentsVisitor::new(args.spec().replacements(&state));
+    let deprecation_warnings = args.deprecation_warnings().clone();
+    let block = args.block_mut();
+    visitor.visit_block_mut(block);
     let mut deprecation_visitor =
-        DeprecationWarningVisitor::new(args.deprecation_warnings, "compose_idents!: ".to_string());
-    deprecation_visitor.visit_block_mut(&mut block);
+        DeprecationWarningVisitor::new(deprecation_warnings, "compose_idents!: ".to_string());
+    deprecation_visitor.visit_block_mut(block);
 
-    let block_content = block.stmts;
+    let block_content = &block.stmts;
 
     let expanded = quote! {
         #(#block_content)*
