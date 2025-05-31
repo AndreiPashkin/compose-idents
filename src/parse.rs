@@ -77,7 +77,7 @@ impl Parse for Arg {
             let terminated = input.parse::<Terminated<TokenStream, Token![,]>>()?;
             value = terminated.into_value().to_string();
         }
-        Ok(Arg { value })
+        Ok(Arg::new(value))
     }
 }
 
@@ -188,7 +188,7 @@ impl Parse for ComposeIdentsArgs {
         let block: Block = input.parse()?;
         let mut deprecation_warnings = BTreeSet::new();
 
-        if spec.is_comma_used.is_some_and(|value| !value) {
+        if spec.is_comma_used().is_some_and(|value| !value) {
             let _ = deprecation_warnings.insert(DeprecationWarning::new(
                 "Using semicolons as separators is deprecated, use commas instead".to_string(),
                 "0.0.5".to_string(),
@@ -206,18 +206,14 @@ impl Parse for ComposeIdentsArgs {
         };
 
         if let (Some(is_comma_current_sep), Some(is_comma_used)) =
-            (is_comma_current_sep, spec.is_comma_used)
+            (is_comma_current_sep, spec.is_comma_used())
         {
             if is_comma_current_sep ^ is_comma_used {
                 return Err(input.error(MIXING_SEP_ERROR));
             }
         }
 
-        Ok(ComposeIdentsArgs {
-            spec,
-            block,
-            deprecation_warnings,
-        })
+        Ok(ComposeIdentsArgs::new(spec, block, deprecation_warnings))
     }
 }
 
@@ -233,7 +229,7 @@ impl Parse for AliasSpecItem {
             .into_iter()
             .map(|arg| arg.into_value())
             .collect::<Vec<_>>();
-        Ok(AliasSpecItem { alias, exprs })
+        Ok(AliasSpecItem::new(alias, exprs))
     }
 }
 
@@ -245,11 +241,11 @@ impl Parse for AliasSpec {
 
         loop {
             let spec_item: AliasSpecItem = input.parse()?;
-            let alias_name = spec_item.alias.to_string();
+            let alias_name = spec_item.alias().to_string();
             if seen_aliases.contains(&alias_name) {
                 return Err(input.error(format!(r#"Alias "{}" is already defined"#, alias_name)));
             }
-            seen_aliases.insert(spec_item.alias.to_string());
+            seen_aliases.insert(spec_item.alias().to_string());
             items.push(spec_item);
 
             let is_comma_current_sep = if input.peek(Token![,]) {
@@ -275,9 +271,6 @@ impl Parse for AliasSpec {
             }
         }
 
-        Ok(AliasSpec {
-            items,
-            is_comma_used,
-        })
+        Ok(AliasSpec::new(items, is_comma_used))
     }
 }

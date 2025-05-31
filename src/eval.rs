@@ -11,7 +11,7 @@ pub trait Eval {
 
 impl Eval for Arg {
     fn eval(&self, _: &State) -> String {
-        self.value.clone()
+        self.value().to_string()
     }
 }
 
