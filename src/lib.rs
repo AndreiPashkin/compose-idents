@@ -5,14 +5,12 @@ mod core;
 mod eval;
 mod funcs;
 mod parse;
+mod unique_id;
 
 use crate::core::{ComposeIdentsArgs, ComposeIdentsVisitor, DeprecationWarningVisitor, State};
 use proc_macro::TokenStream;
 use quote::quote;
-use std::sync::Mutex;
 use syn::{parse_macro_input, visit_mut::VisitMut};
-
-static COUNTER: Mutex<u64> = Mutex::new(0);
 
 /// Compose identifiers from the provided parts and replace their aliases in the code block.
 ///
@@ -57,9 +55,7 @@ static COUNTER: Mutex<u64> = Mutex::new(0);
 #[doc = include_str!("../snippets/reference_h2.md")]
 #[proc_macro]
 pub fn compose_idents(input: TokenStream) -> TokenStream {
-    let mut counter = COUNTER.lock().unwrap();
-    *counter += 1;
-    let state = State::new(*counter);
+    let state = State::new();
     let mut args = parse_macro_input!(input as ComposeIdentsArgs);
     let mut visitor = ComposeIdentsVisitor::new(args.spec().replacements(&state));
     let deprecation_warnings = args.deprecation_warnings().clone();
