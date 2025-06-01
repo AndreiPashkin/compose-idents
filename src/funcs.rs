@@ -254,7 +254,7 @@ mod tests {
 
     #[rstest]
     fn test_random_valid_ident() {
-        let state = State::new(1);
+        let state = State::new();
         let actual = hash("1", &state);
         let ident_result = syn::parse_str::<Ident>(actual.as_str());
 
@@ -268,7 +268,7 @@ mod tests {
 
     #[rstest]
     fn test_random_determinism() {
-        let state = State::new(1);
+        let state = State::new();
         let expected = hash("1", &state);
         let actual = hash("1", &state);
 

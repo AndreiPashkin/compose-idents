@@ -1,5 +1,6 @@
 /// Defines core types used throughout the project.
 use crate::eval::Eval;
+use crate::unique_id::next_unique_id;
 use quote::format_ident;
 use std::collections::{BTreeSet, HashMap};
 use syn::visit_mut::VisitMut;
@@ -20,8 +21,10 @@ pub struct State {
 
 impl State {
     /// Creates a new State with the given `seed`.
-    pub fn new(seed: u64) -> Self {
-        Self { seed }
+    pub fn new() -> Self {
+        Self {
+            seed: next_unique_id(),
+        }
     }
 
     /// Reads the seed value.
