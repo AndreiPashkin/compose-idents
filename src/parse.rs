@@ -1,8 +1,7 @@
 //! Implements parsing logic for different internal components.
 
-use super::core::{
-    AliasSpec, AliasSpecItem, Arg, ComposeIdentsArgs, DeprecationWarning, Expr, Func,
-};
+use crate::ast::{Alias, AliasSpec, AliasSpecItem, AliasValue, Arg, ComposeIdentsArgs, Expr, Func};
+use crate::deprecation::DeprecationWarning;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
 use std::collections::{BTreeSet, HashSet};
@@ -60,24 +59,24 @@ where
 
 impl Parse for Arg {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let value: String;
+        let value: Arg;
         if input.peek(syn::Ident) && input.peek2(syn::parse::End) {
             let ident = input.parse::<syn::Ident>()?;
-            value = ident.to_string();
+            value = Arg::Ident(ident);
         } else if input.peek(Token![_]) && input.peek2(syn::parse::End) {
             input.parse::<Token![_]>()?;
-            value = "_".to_string();
+            value = Arg::Underscore;
         } else if input.peek(syn::LitStr) && input.peek2(syn::parse::End) {
             let lit_str = input.parse::<syn::LitStr>()?;
-            value = lit_str.value();
+            value = Arg::LitStr(lit_str.value());
         } else if input.peek(syn::LitInt) && input.peek2(syn::parse::End) {
             let lit_int = input.parse::<syn::LitInt>()?;
-            value = lit_int.base10_digits().to_string();
+            value = Arg::LitInt(lit_int.base10_parse::<u64>()?);
         } else {
             let terminated = input.parse::<Terminated<TokenStream, Token![,]>>()?;
-            value = terminated.into_value().to_string();
+            value = Arg::Tokens(terminated.into_value());
         }
-        Ok(Arg::new(value))
+        Ok(value)
     }
 }
 
@@ -217,10 +216,16 @@ impl Parse for ComposeIdentsArgs {
     }
 }
 
-impl Parse for AliasSpecItem {
+impl Parse for Alias {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let alias: Ident = input.parse()?;
-        input.parse::<Token![=]>()?;
+        let ident: Ident = input.parse()?;
+        Ok(Alias::new(ident))
+    }
+}
+
+impl Parse for AliasValue {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let span = input.span();
         let content;
         bracketed!(content in input);
         let punctuated =
@@ -229,7 +234,17 @@ impl Parse for AliasSpecItem {
             .into_iter()
             .map(|arg| arg.into_value())
             .collect::<Vec<_>>();
-        Ok(AliasSpecItem::new(alias, exprs))
+        Ok(AliasValue::new(exprs, span))
+    }
+}
+
+impl Parse for AliasSpecItem {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let alias: Alias = input.parse()?;
+        input.parse::<Token![=]>()?;
+        let value: AliasValue = input.parse()?;
+
+        Ok(AliasSpecItem::new(alias, value))
     }
 }
 
@@ -241,11 +256,11 @@ impl Parse for AliasSpec {
 
         loop {
             let spec_item: AliasSpecItem = input.parse()?;
-            let alias_name = spec_item.alias().to_string();
+            let alias_name = spec_item.alias().ident().to_string();
             if seen_aliases.contains(&alias_name) {
                 return Err(input.error(format!(r#"Alias "{}" is already defined"#, alias_name)));
             }
-            seen_aliases.insert(spec_item.alias().to_string());
+            seen_aliases.insert(spec_item.alias().ident().to_string());
             items.push(spec_item);
 
             let is_comma_current_sep = if input.peek(Token![,]) {

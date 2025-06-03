@@ -1,30 +1,87 @@
-//! Provides the [`Eval`] trait and its implementations for evaluating expressions.
-use crate::core::{Arg, Expr, Func, State};
+//! Implementation of eval-phase logic.
+
+use crate::ast::{AliasValue, Arg, Ast, Expr, Func};
+use crate::core::State;
+use crate::error::Error;
 use crate::funcs::{hash, normalize, to_camel_case, to_pascal_case, to_snake_case};
+use std::collections::HashMap;
+
+/// Result of evaluating a statement.
+pub enum Evaluated {
+    /// A singular value
+    Value(String),
+}
+
+/// Runtime context of evaluation.
+#[derive(Default)]
+pub struct Context {
+    context: HashMap<String, Evaluated>,
+}
+
+impl Context {
+    pub fn context_mut(&mut self) -> &mut HashMap<String, Evaluated> {
+        &mut self.context
+    }
+}
 
 /// A syntactic structure that can be evaluated.
 ///
 /// For example, it could be a function call passed by a user to the macro as an argument.
-pub trait Eval {
-    fn eval(&self, state: &State) -> String;
+pub trait Eval: Ast {
+    fn eval(&self, state: &State, context: &mut Context) -> Result<Evaluated, Error>;
 }
 
 impl Eval for Arg {
-    fn eval(&self, _: &State) -> String {
-        self.value().to_string()
+    fn eval(&self, _: &State, context: &mut Context) -> Result<Evaluated, Error> {
+        match self {
+            Arg::Ident(ident) => {
+                let value = ident.to_string();
+                let context_ = context.context_mut();
+                let res = match context_.get(&value) {
+                    Some(Evaluated::Value(v)) => Evaluated::Value(v.clone()),
+                    None => Evaluated::Value(value),
+                };
+                Ok(res)
+            }
+            Arg::LitStr(value) => Ok(Evaluated::Value(value.clone())),
+            Arg::LitInt(value) => Ok(Evaluated::Value(value.to_string())),
+            Arg::Tokens(tokens) => Ok(Evaluated::Value(tokens.to_string())),
+            Arg::Underscore => Ok(Evaluated::Value("_".to_string())),
+        }
     }
 }
 
 impl Eval for Func {
-    fn eval(&self, state: &State) -> String {
+    fn eval(&self, state: &State, context: &mut Context) -> Result<Evaluated, Error> {
         match self {
-            Func::Upper(expr) => expr.eval(state).to_uppercase(),
-            Func::Lower(expr) => expr.eval(state).to_lowercase(),
-            Func::SnakeCase(expr) => to_snake_case(expr.eval(state).as_str()),
-            Func::CamelCase(expr) => to_camel_case(expr.eval(state).as_str()),
-            Func::PascalCase(expr) => to_pascal_case(expr.eval(state).as_str()),
-            Func::Hash(expr) => hash(expr.eval(state).as_str(), state),
-            Func::Normalize(expr) => normalize(expr.eval(state).as_str()),
+            Func::Upper(expr) => {
+                let Evaluated::Value(value) = expr.eval(state, context)?;
+                Ok(Evaluated::Value(value.to_uppercase()))
+            }
+            Func::Lower(expr) => {
+                let Evaluated::Value(value) = expr.eval(state, context)?;
+                Ok(Evaluated::Value(value.to_lowercase()))
+            }
+            Func::SnakeCase(expr) => {
+                let Evaluated::Value(value) = expr.eval(state, context)?;
+                Ok(Evaluated::Value(to_snake_case(value.as_str())))
+            }
+            Func::CamelCase(expr) => {
+                let Evaluated::Value(value) = expr.eval(state, context)?;
+                Ok(Evaluated::Value(to_camel_case(value.as_str())))
+            }
+            Func::PascalCase(expr) => {
+                let Evaluated::Value(value) = expr.eval(state, context)?;
+                Ok(Evaluated::Value(to_pascal_case(value.as_str())))
+            }
+            Func::Hash(expr) => {
+                let Evaluated::Value(value) = expr.eval(state, context)?;
+                Ok(Evaluated::Value(hash(value.as_str(), state)))
+            }
+            Func::Normalize(expr) => {
+                let Evaluated::Value(value) = expr.eval(state, context)?;
+                Ok(Evaluated::Value(normalize(value.as_str())))
+            }
             Func::Undefined => panic!("Attempt to evaluate an undefined function"),
             Func::SignatureMismatch(_) => {
                 panic!("Attempt to evaluate a function with a mismatched signature")
@@ -34,10 +91,29 @@ impl Eval for Func {
 }
 
 impl Eval for Expr {
-    fn eval(&self, state: &State) -> String {
+    fn eval(&self, state: &State, context: &mut Context) -> Result<Evaluated, Error> {
         match self {
-            Expr::ArgExpr(value) => value.eval(state),
-            Expr::FuncCallExpr(value) => value.eval(state),
+            Expr::ArgExpr(value) => value.eval(state, context),
+            Expr::FuncCallExpr(value) => value.eval(state, context),
         }
+    }
+}
+
+impl Eval for AliasValue {
+    fn eval(&self, state: &State, context: &mut Context) -> Result<Evaluated, Error> {
+        let ident = self.exprs().iter().try_fold("".to_string(), |acc, item| {
+            let Evaluated::Value(arg) = item.eval(state, context)?;
+            Ok::<String, Error>(format!("{}{}", acc, arg))
+        })?;
+
+        // Validate that the resulting string is a valid identifier.
+        if syn::parse_str::<syn::Ident>(&ident).is_err() {
+            return Err(Error::EvalError(
+                format!("`{}` is not a valid identifier", ident),
+                self.span(),
+            ));
+        }
+
+        Ok(Evaluated::Value(ident))
     }
 }

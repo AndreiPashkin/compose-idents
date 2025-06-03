@@ -1,16 +1,22 @@
 #![allow(clippy::needless_doctest_main)]
 #![doc = include_str!("../snippets/docs.md")]
 
+mod ast;
 mod core;
+mod deprecation;
+mod error;
 mod eval;
 mod funcs;
+mod interpreter;
 mod parse;
+mod resolve;
 mod unique_id;
 
-use crate::core::{ComposeIdentsArgs, ComposeIdentsVisitor, DeprecationWarningVisitor, State};
+use crate::ast::ComposeIdentsArgs;
+use crate::interpreter::Interpreter;
 use proc_macro::TokenStream;
-use quote::quote;
-use syn::{parse_macro_input, visit_mut::VisitMut};
+use std::convert::TryInto;
+use syn::parse_macro_input;
 
 /// Compose identifiers from the provided parts and replace their aliases in the code block.
 ///
@@ -55,20 +61,15 @@ use syn::{parse_macro_input, visit_mut::VisitMut};
 #[doc = include_str!("../snippets/reference_h2.md")]
 #[proc_macro]
 pub fn compose_idents(input: TokenStream) -> TokenStream {
-    let state = State::new();
-    let mut args = parse_macro_input!(input as ComposeIdentsArgs);
-    let mut visitor = ComposeIdentsVisitor::new(args.spec().replacements(&state));
-    let deprecation_warnings = args.deprecation_warnings().clone();
-    let block = args.block_mut();
-    visitor.visit_block_mut(block);
-    let mut deprecation_visitor =
-        DeprecationWarningVisitor::new(deprecation_warnings, "compose_idents!: ".to_string());
-    deprecation_visitor.visit_block_mut(block);
-
-    let block_content = &block.stmts;
-
-    let expanded = quote! {
-        #(#block_content)*
-    };
-    TokenStream::from(expanded)
+    let args = parse_macro_input!(input as ComposeIdentsArgs);
+    let interpreter = Interpreter::new(args);
+    match interpreter.execute() {
+        Ok(ts) => ts.into(),
+        Err(err) => {
+            let syn_err: syn::Error = err.try_into().unwrap_or_else(|_| {
+                syn::Error::new(proc_macro2::Span::call_site(), "Unknown error")
+            });
+            TokenStream::from(syn_err.into_compile_error())
+        }
+    }
 }
