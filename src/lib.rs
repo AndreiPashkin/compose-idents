@@ -13,6 +13,7 @@ mod resolve;
 mod unique_id;
 
 use crate::ast::ComposeIdentsArgs;
+use crate::deprecation::DeprecationService;
 use crate::interpreter::Interpreter;
 use proc_macro::TokenStream;
 use std::convert::TryInto;
@@ -61,8 +62,9 @@ use syn::parse_macro_input;
 #[doc = include_str!("../snippets/reference_h2.md")]
 #[proc_macro]
 pub fn compose_idents(input: TokenStream) -> TokenStream {
+    let deprecation_service = DeprecationService::scoped();
     let args = parse_macro_input!(input as ComposeIdentsArgs);
-    let interpreter = Interpreter::new(args);
+    let interpreter = Interpreter::new(args, deprecation_service);
     match interpreter.execute() {
         Ok(ts) => ts.into(),
         Err(err) => {

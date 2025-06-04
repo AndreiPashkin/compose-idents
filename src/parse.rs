@@ -1,10 +1,10 @@
 //! Implements parsing logic for different internal components.
 
 use crate::ast::{Alias, AliasSpec, AliasSpecItem, AliasValue, Arg, ComposeIdentsArgs, Expr, Func};
-use crate::deprecation::DeprecationWarning;
+use crate::deprecation::DeprecationService;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
-use std::collections::{BTreeSet, HashSet};
+use std::collections::HashSet;
 use std::marker::PhantomData;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
@@ -189,13 +189,10 @@ impl Parse for ComposeIdentsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let spec: AliasSpec = input.parse()?;
         let block: Block = input.parse()?;
-        let mut deprecation_warnings = BTreeSet::new();
+        let deprecation_service = DeprecationService::scoped();
 
         if spec.is_comma_used().is_some_and(|value| !value) {
-            let _ = deprecation_warnings.insert(DeprecationWarning::new(
-                "Using semicolons as separators is deprecated, use commas instead".to_string(),
-                "0.0.5".to_string(),
-            ));
+            deprecation_service.add_semicolon_separator_warning();
         }
 
         let is_comma_current_sep = if input.peek(Token![,]) {
@@ -216,7 +213,7 @@ impl Parse for ComposeIdentsArgs {
             }
         }
 
-        Ok(ComposeIdentsArgs::new(spec, block, deprecation_warnings))
+        Ok(ComposeIdentsArgs::new(spec, block))
     }
 }
 

@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   visible in the sidebar.
 - Significantly reworked the internal code making it more extensible.
 - Fixed a bug with `snake_case()` when `CamelCase` was converted to `c_amel_case` instead of `camel_case`.
+- Refactored deprecation mechanism - so that it is fully encapsulated within a single module and has a concise
+  external API.
 
 ### Removed
 
