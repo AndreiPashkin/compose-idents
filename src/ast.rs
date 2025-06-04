@@ -1,8 +1,7 @@
 //! Defines the AST nodes that describe the syntax of the macro.
 
-use crate::deprecation::DeprecationWarning;
 use proc_macro2::{Ident, Span, TokenStream};
-use std::collections::{BTreeSet, HashMap};
+use std::collections::HashMap;
 use syn::Block;
 
 /// An AST node that has a syntactic span.
@@ -226,7 +225,6 @@ impl AliasSpec {
 pub struct ComposeIdentsArgs {
     spec: AliasSpec,
     block: Block,
-    deprecation_warnings: BTreeSet<DeprecationWarning>,
 }
 
 impl Ast for ComposeIdentsArgs {
@@ -237,16 +235,8 @@ impl Ast for ComposeIdentsArgs {
 
 impl ComposeIdentsArgs {
     /// Creates new ComposeIdentsArgs with the given components.
-    pub fn new(
-        spec: AliasSpec,
-        block: Block,
-        deprecation_warnings: BTreeSet<DeprecationWarning>,
-    ) -> Self {
-        Self {
-            spec,
-            block,
-            deprecation_warnings,
-        }
+    pub fn new(spec: AliasSpec, block: Block) -> Self {
+        Self { spec, block }
     }
 
     /// Reads the alias specification.
@@ -257,10 +247,5 @@ impl ComposeIdentsArgs {
     /// Reads a mutable reference to the code block.
     pub fn block_mut(&mut self) -> &mut Block {
         &mut self.block
-    }
-
-    /// Reads the deprecation warnings.
-    pub fn deprecation_warnings(&self) -> &BTreeSet<DeprecationWarning> {
-        &self.deprecation_warnings
     }
 }

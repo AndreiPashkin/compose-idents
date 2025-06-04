@@ -1,7 +1,8 @@
 //! Implements the [`Interpreter`] type and the core logic of the library.
 
 use crate::ast::{ComposeIdentsArgs, Scope};
-use crate::core::{ComposeIdentsVisitor, DeprecationWarningVisitor, State};
+use crate::core::{ComposeIdentsVisitor, State};
+use crate::deprecation::DeprecationServiceScope;
 use crate::error::Error;
 use crate::eval::{Context, Eval, Evaluated};
 use crate::resolve::Resolve;
@@ -36,16 +37,18 @@ pub struct Interpreter {
     context: Context,
     /// Generated identifier replacements
     replacements: HashMap<Ident, Ident>,
+    deprecation_service: DeprecationServiceScope,
 }
 
 impl Interpreter {
     /// Creates a new interpreter instance with the AST as an input.
-    pub fn new(args: ComposeIdentsArgs) -> Self {
+    pub fn new(args: ComposeIdentsArgs, deprecation_service: DeprecationServiceScope) -> Self {
         Interpreter {
             args,
             state: State::new(),
             context: Context::default(),
             replacements: HashMap::new(),
+            deprecation_service,
         }
     }
 
@@ -67,17 +70,12 @@ impl Interpreter {
                 .insert(item.alias().ident().clone(), replacement_ident);
         }
 
-        let warnings = self.args.deprecation_warnings().clone();
-
         let block = self.args.block_mut();
 
         let mut visitor = ComposeIdentsVisitor::new(self.replacements);
         visitor.visit_block_mut(block);
 
-        let mut deprecation_visitor =
-            DeprecationWarningVisitor::new(warnings, "compose_idents!: ".to_string());
-        deprecation_visitor.visit_block_mut(block);
-
+        self.deprecation_service.emit("compose_idents!: ", block);
         let block_content = &block.stmts;
         let expanded = quote! { #(#block_content)* };
 
