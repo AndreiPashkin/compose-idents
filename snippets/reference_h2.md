@@ -73,7 +73,7 @@ use compose_idents::compose_idents;
 compose_idents!(
     MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)],
     MY_CAMEL_CASE_STATIC = [camel_case(camel_case)],
-    MY_PASCAL_CASE_STATIC = [pascal_case(pascal_case)],
+    MY_PASCAL_CASE_STATIC = [pascal_case(concat(pascal, _, case))],
     {
         static MY_SNAKE_CASE_STATIC: u32 = 1;
         static MY_CAMEL_CASE_STATIC: u32 = 2;
@@ -163,14 +163,42 @@ static __17818851730065003648: u32 = 42;
 static __10611722954104835980: u32 = 42;
 ```
 
+## Concatenating multiple arguments
+
+The `concat()` function takes multiple arguments and concatenates them together. It provides explicit concatenation
+that can be either nested within other function calls or to aggregate results of other function calls:
+
+```rust
+use compose_idents::compose_idents;
+
+compose_idents!(
+    // Basic example
+    basic_fn = [concat(foo, _, bar, _, baz)],
+    // Mixed with other functions
+    upper_fn = [upper(concat(hello, _, world))],
+    // Complex example
+    complex_fn = [concat("prefix_", normalize(&'static str), "_", snake_case(CamelCase))],
+    {
+        fn basic_fn() -> u32 { 1 }
+        fn upper_fn() -> u32 { 2 }
+        fn complex_fn() -> u32 { 3 }
+    }
+);
+
+assert_eq!(foo_bar_baz(), 1);
+assert_eq!(HELLO_WORLD(), 2);
+assert_eq!(prefix_static_str_camel_case(), 3);
+```
+
 ## Functions
 
-| Function            | Description                                                          |
-|---------------------|----------------------------------------------------------------------|
-| `upper(arg)`        | Converts the `arg` to upper case.                                    |
-| `lower(arg)`        | Converts the `arg` to lower case.                                    |
-| `snake_case(arg)`   | Converts the `arg` to snake_case.                                    |
-| `camel_case(arg)`   | Converts the `arg` to camelCase.                                     |
-| `pascal_case(arg)`  | Converts the `arg` to PascalCase.                                    |
-| `normalize(tokens)` | Transforms a free-form sequence of `tokens` into a valid identifier. |
-| `hash(arg)`         | Hashes the `arg` deterministically within a single macro invocation. |
+| Function                  | Description                                                          |
+|---------------------------|----------------------------------------------------------------------|
+| `upper(arg)`              | Converts the `arg` to upper case.                                    |
+| `lower(arg)`              | Converts the `arg` to lower case.                                    |
+| `snake_case(arg)`         | Converts the `arg` to snake_case.                                    |
+| `camel_case(arg)`         | Converts the `arg` to camelCase.                                     |
+| `pascal_case(arg)`        | Converts the `arg` to PascalCase.                                    |
+| `normalize(tokens)`       | Transforms a free-form sequence of `tokens` into a valid identifier. |
+| `hash(arg)`               | Hashes the `arg` deterministically within a single macro invocation. |
+| `concat(arg1, arg2, ...)` | Concatenates multiple arguments into a single identifier.            |
