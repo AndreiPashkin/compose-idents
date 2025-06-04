@@ -19,6 +19,9 @@ pub fn to_snake_case(input: &str) -> String {
         let b = window[1];
         if i == 0 {
             result.extend(a.to_lowercase());
+            if b.is_lowercase() {
+                skip = true;
+            }
         }
         if (b.is_uppercase() && a.is_lowercase() || a.is_uppercase() && b.is_lowercase()) && !skip {
             result.push('_');
@@ -173,6 +176,7 @@ mod tests {
     use syn::Ident;
 
     #[rstest]
+    #[case("FooBar", "foo_bar")]
     #[case("fooBar", "foo_bar")]
     #[case("foBar", "fo_bar")]
     #[case("fBar", "f_bar")]

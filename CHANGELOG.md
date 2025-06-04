@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stripped redundant top-level heading in docs.rs so that level-3 headings ("Functions", "Alias reuse", etc.) are now
   visible in the sidebar.
 - Significantly reworked the internal code making it more extensible.
+- Fixed a bug with `snake_case()` when `CamelCase` was converted to `c_amel_case` instead of `camel_case`.
 
 ### Removed
 
