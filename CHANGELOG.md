@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Deprecation warning mechanism has been added. Now if a user uses something that is deprecated, the macro
   will try to attach `#[deprecated(...)]` attribute to the generated code if it's possible.
+- New `concat()` function that concatenates multiple arguments together.
 
 ### Changed
 

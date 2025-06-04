@@ -3,7 +3,7 @@
 use crate::ast::{AliasValue, Arg, Ast, Expr, Func};
 use crate::core::State;
 use crate::error::Error;
-use crate::funcs::{hash, normalize, to_camel_case, to_pascal_case, to_snake_case};
+use crate::funcs::{concat, hash, normalize, to_camel_case, to_pascal_case, to_snake_case};
 use std::collections::HashMap;
 
 /// Result of evaluating a statement.
@@ -81,6 +81,18 @@ impl Eval for Func {
             Func::Normalize(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
                 Ok(Evaluated::Value(normalize(value.as_str())))
+            }
+            Func::Concat(exprs) => {
+                let values: Result<Vec<String>, Error> = exprs
+                    .iter()
+                    .map(|expr| {
+                        let Evaluated::Value(value) = expr.eval(state, context)?;
+                        Ok(value)
+                    })
+                    .collect();
+                let values = values?;
+                let string_refs: Vec<&str> = values.iter().map(|s| s.as_str()).collect();
+                Ok(Evaluated::Value(concat(&string_refs)))
             }
             Func::Undefined => panic!("Attempt to evaluate an undefined function"),
             Func::SignatureMismatch(_) => {

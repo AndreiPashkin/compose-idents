@@ -65,14 +65,24 @@ This example roughly expands to this:
 {{ file.Read "snippets/hash_expansion.rs" -}}
 ```
 
+{{ $h1 }} Concatenating multiple arguments
+
+The `concat()` function takes multiple arguments and concatenates them together. It provides explicit concatenation
+that can be either nested within other function calls or to aggregate results of other function calls:
+
+```rust
+{{ file.Read "snippets/concat.rs" -}}
+```
+
 {{ $h1 }} Functions
 
-| Function            | Description                                                          |
-|---------------------|----------------------------------------------------------------------|
-| `upper(arg)`        | Converts the `arg` to upper case.                                    |
-| `lower(arg)`        | Converts the `arg` to lower case.                                    |
-| `snake_case(arg)`   | Converts the `arg` to snake_case.                                    |
-| `camel_case(arg)`   | Converts the `arg` to camelCase.                                     |
-| `pascal_case(arg)`  | Converts the `arg` to PascalCase.                                    |
-| `normalize(tokens)` | Transforms a free-form sequence of `tokens` into a valid identifier. |
-| `hash(arg)`         | Hashes the `arg` deterministically within a single macro invocation. |
+| Function                  | Description                                                          |
+|---------------------------|----------------------------------------------------------------------|
+| `upper(arg)`              | Converts the `arg` to upper case.                                    |
+| `lower(arg)`              | Converts the `arg` to lower case.                                    |
+| `snake_case(arg)`         | Converts the `arg` to snake_case.                                    |
+| `camel_case(arg)`         | Converts the `arg` to camelCase.                                     |
+| `pascal_case(arg)`        | Converts the `arg` to PascalCase.                                    |
+| `normalize(tokens)`       | Transforms a free-form sequence of `tokens` into a valid identifier. |
+| `hash(arg)`               | Hashes the `arg` deterministically within a single macro invocation. |
+| `concat(arg1, arg2, ...)` | Concatenates multiple arguments into a single identifier.            |

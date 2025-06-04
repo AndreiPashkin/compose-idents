@@ -122,6 +122,10 @@ impl Parse for Func {
                 [expr] => Ok(Func::Normalize(expr.clone())),
                 _ => Ok(Func::SignatureMismatch("normalize(tokens)".to_string())),
             },
+            ("concat", args) if !args.is_empty() => Ok(Func::Concat(args.to_vec())),
+            ("concat", _) => Ok(Func::SignatureMismatch(
+                "concat(arg1, arg2, ...)".to_string(),
+            )),
             _ => Ok(Func::Undefined),
         }
     }

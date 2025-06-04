@@ -169,6 +169,11 @@ pub fn normalize(input: &str) -> String {
     result
 }
 
+/// Concatenates multiple string inputs.
+pub fn concat(inputs: &[&str]) -> String {
+    inputs.join("")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -301,5 +306,17 @@ mod tests {
     fn test_normalize(#[case] input: &str, #[case] expected: &str) {
         let actual = normalize(input);
         assert_eq!(actual, expected, "Input: {}", input);
+    }
+
+    #[rstest]
+    #[case(&[], "")]
+    #[case(&["hello"], "hello")]
+    #[case(&["hello", "world"], "helloworld")]
+    #[case(&["foo", "_", "bar"], "foo_bar")]
+    #[case(&["a", "b", "c", "d"], "abcd")]
+    #[case(&["", "hello", "", "world", ""], "helloworld")]
+    fn test_concat(#[case] inputs: &[&str], #[case] expected: &str) {
+        let actual = concat(inputs);
+        assert_eq!(actual, expected, "Inputs: {:?}", inputs);
     }
 }

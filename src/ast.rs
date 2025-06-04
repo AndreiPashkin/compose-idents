@@ -62,6 +62,7 @@ pub enum Func {
     PascalCase(Expr),
     Hash(Expr),
     Normalize(Expr),
+    Concat(Vec<Expr>),
     SignatureMismatch(String),
     Undefined,
 }
@@ -76,6 +77,10 @@ impl Ast for Func {
             Func::PascalCase(expr) => expr.span(),
             Func::Hash(expr) => expr.span(),
             Func::Normalize(expr) => expr.span(),
+            Func::Concat(exprs) => exprs
+                .first()
+                .map(|e| e.span())
+                .unwrap_or_else(Span::call_site),
             Func::SignatureMismatch(_) => Span::call_site(),
             Func::Undefined => Span::call_site(),
         }
