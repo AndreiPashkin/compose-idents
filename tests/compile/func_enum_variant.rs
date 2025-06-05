@@ -5,7 +5,7 @@ enum Foo {
     Baz,
 }
 
-compose_idents!(my_var = [lower(normalize(Foo::Bar))], {
+compose_idents!(my_var = lower(normalize(Foo::Bar)), {
     static my_var: u32 = 42;
 });
 

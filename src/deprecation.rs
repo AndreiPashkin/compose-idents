@@ -182,8 +182,22 @@ impl DeprecationService {
         )
     }
 
+    pub fn make_bracket_syntax_warning() -> DeprecationWarning {
+        DeprecationWarning::new(
+            "Bracket-based syntax for alias definition, `alias = [arg1, func(arg2), ...]`, \
+            is deprecated, use expressions instead: `alias = concat(arg1, arg2, ...)`, \
+            `alias = arg`, `alias = func(arg)`, and so on"
+                .to_string(),
+            "0.2.0".to_string(),
+        )
+    }
+
     pub fn add_semicolon_separator_warning(&mut self) {
         self.add_warning(Self::make_semicolon_separator_warning());
+    }
+
+    pub fn add_bracket_syntax_warning(&mut self) {
+        self.add_warning(Self::make_bracket_syntax_warning());
     }
 
     pub fn clear(&mut self) {
@@ -215,6 +229,11 @@ impl DeprecationServiceScope {
     pub fn add_semicolon_separator_warning(&self) {
         DEPRECATION_SERVICE.with_borrow_mut(|service| service.add_semicolon_separator_warning());
     }
+
+    pub fn add_bracket_syntax_warning(&self) {
+        DEPRECATION_SERVICE.with_borrow_mut(|service| service.add_bracket_syntax_warning());
+    }
+
     pub fn emit(&self, prefix: &str, block: &mut Block) {
         DEPRECATION_SERVICE.with_borrow_mut(|service| {
             service.emit(prefix, block);

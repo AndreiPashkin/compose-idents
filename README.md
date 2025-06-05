@@ -13,7 +13,7 @@ and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capab
 
 ```rust
 compose_idents::compose_idents!(
-    my_fn = [foo, _, "baz"],
+    my_fn = concat(foo, _, "baz"),
     {
         fn my_fn() -> u32 {
             42
@@ -63,8 +63,8 @@ use compose_idents::compose_idents;
 macro_rules! gen_const_add {
     ($T:ty) => {
         compose_idents!(
-            Type = [upper($T)],   // Alias for the type - make it uppercase in addition
-            add_fn = [add_, $T],  // Alias for the function name
+            Type = upper($T),           // Alias for the type - make it uppercase in addition
+            add_fn = concat(add_, $T),  // Alias for the function name
             {
                 // Strings (including in doc-attributes) can be formatted with %alias% syntax.
                 #[doc = "Adds two arguments of type `%Type%` at compile time."]
@@ -115,7 +115,7 @@ macro_rules! generate_frobnicate_test {
     ($type:ty, $initial:expr, $input:expr, $expected:expr) => {
         // Notice - we are using normalize() to make `&'static str` fit for
         // being part of the test function's identifier.
-        compose_idents!(test_fn = [test_frobnicate_, normalize($type)], {
+        compose_idents!(test_fn = concat(test_frobnicate_, normalize($type)), {
           fn test_fn() {
             let actual = ($initial as $type).frobnicate($input);
             let expected = $expected;
@@ -148,9 +148,9 @@ use compose_idents::compose_idents;
 
 compose_idents!(
     // Literal strings are accepted as arguments and their content is parsed.
-    my_fn_1 = [foo, _, "bar"],
+    my_fn_1 = concat(foo, _, "bar"),
     // The same applies to literal integers, underscores or free-form token sequences.
-    my_fn_2 = [spam, _, 1, _, eggs],
+    my_fn_2 = concat(spam, _, 1, _, eggs),
     {
         fn my_fn_1() -> u32 {
             42
@@ -172,10 +172,14 @@ Aliases could also be reused in definitions of other aliases:
 ```rust
 use compose_idents::compose_idents;
 
-compose_idents!(base_alias = [FOO], derived_alias = [BAR, _, base_alias], {
-    static base_alias: u32 = 1;
-    static derived_alias: u32 = base_alias;
-},);
+compose_idents!(
+    base_alias = FOO,
+    derived_alias = concat(BAR, _, base_alias),
+    {
+        static base_alias: u32 = 1;
+        static derived_alias: u32 = base_alias;
+    },
+);
 
 assert_eq!(FOO, 1);
 assert_eq!(BAR_FOO, 1);
@@ -188,9 +192,9 @@ Functions can be applied to the arguments used for the alias definitions:
 use compose_idents::compose_idents;
 
 compose_idents!(
-    my_const = [upper(foo), _, lower(BAR)],
+    my_const = concat(upper(foo), _, lower(BAR)),
     // Function calls can be arbitrarily nested and combined.
-    my_static = [upper(lower(BAZ))],
+    my_static = upper(lower(BAZ)),
     {
         const my_const: u8 = 1;
         static my_static: &str = "hello";
@@ -210,9 +214,9 @@ There are multiple functions for altering the naming convention of identifiers:
 use compose_idents::compose_idents;
 
 compose_idents!(
-    MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)],
-    MY_CAMEL_CASE_STATIC = [camel_case(camel_case)],
-    MY_PASCAL_CASE_STATIC = [pascal_case(concat(pascal, _, case))],
+    MY_SNAKE_CASE_STATIC = snake_case(snakeCase),
+    MY_CAMEL_CASE_STATIC = camel_case(camel_case),
+    MY_PASCAL_CASE_STATIC = pascal_case(concat(pascal, _, case)),
     {
         static MY_SNAKE_CASE_STATIC: u32 = 1;
         static MY_CAMEL_CASE_STATIC: u32 = 2;
@@ -232,7 +236,7 @@ assert_eq!(PascalCase, 3);
 use compose_idents::compose_idents;
 
 compose_idents!(
-    MY_NORMALIZED_ALIAS = [my, _, normalize(&'static str)],
+    MY_NORMALIZED_ALIAS = concat(my, _, normalize(&'static str)),
     {
         static MY_NORMALIZED_ALIAS: &str = "This alias is made from a normalized argument";
     }
@@ -250,16 +254,20 @@ Aliases could be used in string formatting with `%alias%` syntax. This is useful
 ```rust
 use compose_idents::compose_idents;
 
-compose_idents!(my_fn = [foo, _, "baz"], MY_FORMATTED_STR = [FOO, _, BAR], {
-    static MY_FORMATTED_STR: &str = "This is %MY_FORMATTED_STR%";
+compose_idents!(
+    my_fn = concat(foo, _, "baz"),
+    MY_FORMATTED_STR = concat(FOO, _, BAR),
+    {
+        static MY_FORMATTED_STR: &str = "This is %MY_FORMATTED_STR%";
 
-    // You can use %alias% syntax to replace aliases with their definitions
-    // in string literals and doc-attributes.
-    #[doc = "This is a docstring for %my_fn%"]
-    fn my_fn() -> u32 {
-        321
-    }
-},);
+        // You can use %alias% syntax to replace aliases with their definitions
+        // in string literals and doc-attributes.
+        #[doc = "This is a docstring for %my_fn%"]
+        fn my_fn() -> u32 {
+            321
+        }
+    },
+);
 
 assert_eq!(FOO_BAR, "This is FOO_BAR");
 ```
@@ -279,8 +287,8 @@ use compose_idents::compose_idents;
 macro_rules! create_static {
     () => {
         compose_idents!(
-            MY_UNIQUE_STATIC = [hash(1)],
-            MY_OTHER_UNIQUE_STATIC = [hash(2)],
+            MY_UNIQUE_STATIC = hash(1),
+            MY_OTHER_UNIQUE_STATIC = hash(2),
             {
                 static MY_UNIQUE_STATIC: u32 = 42;
                 static MY_OTHER_UNIQUE_STATIC: u32 = 42;
@@ -312,11 +320,11 @@ use compose_idents::compose_idents;
 
 compose_idents!(
     // Basic example
-    basic_fn = [concat(foo, _, bar, _, baz)],
+    basic_fn = concat(foo, _, bar, _, baz),
     // Mixed with other functions
-    upper_fn = [upper(concat(hello, _, world))],
+    upper_fn = upper(concat(hello, _, world)),
     // Complex example
-    complex_fn = [concat("prefix_", normalize(&'static str), "_", snake_case(CamelCase))],
+    complex_fn = concat("prefix_", normalize(&'static str), "_", snake_case(CamelCase)),
     {
         fn basic_fn() -> u32 { 1 }
         fn upper_fn() -> u32 { 2 }

@@ -1,8 +1,8 @@
 use compose_idents::compose_idents;
 
 compose_idents!(
-    my_unique_var = [foo, _, hash(1)],
-    my_var = [SPAM, _, EGGS],
+    my_unique_var = concat(foo, _, hash(1)),
+    my_var = concat(SPAM, _, EGGS),
     {
         const my_unique_var: u32 = 42;
         const my_var: u32 = my_unique_var;
@@ -10,8 +10,8 @@ compose_idents!(
 );
 
 compose_idents!(
-    my_unique_var = [foo, _, hash(1)],
-    my_var = [BORK, _, GORK],
+    my_unique_var = concat(foo, _, hash(1)),
+    my_var = concat(BORK, _, GORK),
     {
         const my_unique_var: u32 = 42;
         const my_var: u32 = my_unique_var;
@@ -21,9 +21,9 @@ compose_idents!(
 macro_rules! my_macro {
     () => {
         compose_idents!(
-            my_local = [foo, _, hash(1)],
-            my_same_local = [foo, _, hash(1)],
-            my_other_local = [foo, _, hash(2)],
+            my_local = concat(foo, _, hash(1)),
+            my_same_local = concat(foo, _, hash(1)),
+            my_other_local = concat(foo, _, hash(2)),
             {
                 let my_local: u32 = 42;
                 let my_other_local: u32 = my_same_local;

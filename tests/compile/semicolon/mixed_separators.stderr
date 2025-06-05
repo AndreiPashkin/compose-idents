@@ -1,8 +1,8 @@
 error: Mixing "," and ";" as separators is not allowed
- --> tests/compile/semicolon/mixed_separators.rs:6:32
+ --> tests/compile/semicolon/mixed_separators.rs:6:38
   |
-6 |     my_fn_2 = [spam, _, eggs]; {
-  |                                ^
+6 |     my_fn_2 = concat(spam, _, eggs); {
+  |                                      ^
 
 error[E0425]: cannot find function `foo_baz` in this scope
   --> tests/compile/semicolon/mixed_separators.rs:17:16
