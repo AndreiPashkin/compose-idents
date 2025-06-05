@@ -33,7 +33,7 @@ compose-idents = {{ path = "{}" }}
     let test_code = r#"
 use compose_idents::compose_idents;
 
-compose_idents!(test_fn = [test], {
+compose_idents!(test_fn = test, {
     fn test_fn() -> &'static str {
         "success"
     }

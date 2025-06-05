@@ -8,6 +8,7 @@ use std::collections::HashSet;
 use std::marker::PhantomData;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
+use syn::token::Bracket;
 use syn::{bracketed, parenthesized, Block, Ident, Token};
 
 /// Wraps the token-type `T` and parses it by consuming the input until the terminator `Term` or
@@ -226,15 +227,29 @@ impl Parse for Alias {
 
 impl Parse for AliasValue {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let deprecation_service = DeprecationService::scoped();
         let span = input.span();
-        let content;
-        bracketed!(content in input);
-        let punctuated =
-            content.parse_terminated(Terminated::<Expr, Token![,]>::parse, Token![,])?;
-        let exprs = punctuated
-            .into_iter()
-            .map(|arg| arg.into_value())
-            .collect::<Vec<_>>();
+        let mut exprs = Vec::new();
+
+        if input.peek(Bracket) {
+            // Fall back to the deprecated bracket-based syntax
+            let content;
+            bracketed!(content in input);
+            let punctuated =
+                content.parse_terminated(Terminated::<Expr, Token![,]>::parse, Token![,])?;
+            exprs.extend(
+                punctuated
+                    .into_iter()
+                    .map(|arg| arg.into_value())
+                    .collect::<Vec<_>>(),
+            );
+
+            deprecation_service.add_bracket_syntax_warning();
+        } else {
+            let expr = input.parse::<Expr>()?;
+            exprs.push(expr);
+        }
+
         Ok(AliasValue::new(exprs, span))
     }
 }

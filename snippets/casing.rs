@@ -1,9 +1,9 @@
 use compose_idents::compose_idents;
 
 compose_idents!(
-    MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)],
-    MY_CAMEL_CASE_STATIC = [camel_case(camel_case)],
-    MY_PASCAL_CASE_STATIC = [pascal_case(concat(pascal, _, case))],
+    MY_SNAKE_CASE_STATIC = snake_case(snakeCase),
+    MY_CAMEL_CASE_STATIC = camel_case(camel_case),
+    MY_PASCAL_CASE_STATIC = pascal_case(concat(pascal, _, case)),
     {
         static MY_SNAKE_CASE_STATIC: u32 = 1;
         static MY_CAMEL_CASE_STATIC: u32 = 2;

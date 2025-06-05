@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug with `snake_case()` when `CamelCase` was converted to `c_amel_case` instead of `camel_case`.
 - Refactored deprecation mechanism - so that it is fully encapsulated within a single module and has a concise
   external API.
+- Deprecated `alias = [arg1, arg2, ...]` syntax in favor of expression-based syntax `alias = arg`,
+  `alias = concat(arg1, arg2, ...)` - where any expression could be used after `=`. The old syntax will still work,
+  but it will cause a deprecation warning.
 
 ### Removed
 

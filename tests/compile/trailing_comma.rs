@@ -1,6 +1,6 @@
 use compose_idents::compose_idents;
 
-compose_idents!(my_fn = [foo, _, "baz"], {
+compose_idents!(my_fn = concat(foo, _, "baz"), {
     fn my_fn() -> u32 {
         42
     }

@@ -1,6 +1,6 @@
 use compose_idents::compose_idents;
 
-compose_idents!(my_var = [lower(upper(FOO))], {
+compose_idents!(my_var = lower(upper(FOO)), {
     const my_var: u32 = 42;
 });
 

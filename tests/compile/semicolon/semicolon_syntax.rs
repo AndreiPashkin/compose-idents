@@ -1,14 +1,14 @@
 use compose_idents::compose_idents;
 
-compose_idents!(my_fn = [foo, _, "bar"]; {
+compose_idents!(my_fn = concat(foo, _, "bar"); {
     fn my_fn() -> u32 {
         1
     }
 });
 
 compose_idents!(
-    my_fn_1 = [foo, _, "baz"];
-    my_fn_2 = [spam, _, eggs]; {
+    my_fn_1 = concat(foo, _, "baz");
+    my_fn_2 = concat(spam, _, eggs); {
     fn my_fn_1() -> u32 {
         2
     }
