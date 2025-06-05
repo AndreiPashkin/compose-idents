@@ -1,6 +1,6 @@
 use compose_idents::compose_idents;
 
-compose_idents!(DATA_LEN = [FOO, _, BAR], {
+compose_idents!(DATA_LEN = concat(FOO, _, BAR), {
     fn my_fn<T, const DATA_LEN: usize>(_data: &[T; DATA_LEN]) -> usize {
         DATA_LEN
     }

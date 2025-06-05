@@ -1,6 +1,6 @@
 use compose_idents::compose_idents;
 
-compose_idents!(my_fn = [undefined(foo)], {
+compose_idents!(my_fn = undefined(foo), {
     fn my_fn() -> u32 {
         42
     }

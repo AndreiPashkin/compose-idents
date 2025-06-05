@@ -2,24 +2,24 @@ use compose_idents::compose_idents;
 
 compose_idents!(
     // Literal strings are accepted as arguments and their content is parsed.
-    my_fn_1 = [foo, _, "baz"],
+    my_fn_1 = concat(foo, _, "baz"),
     // So as literal integers and underscores (or free-form token sequences).
-    my_fn_2 = [spam, _, 1, _, eggs],
+    my_fn_2 = concat(spam, _, 1, _, eggs),
     // Functions can be applied to the arguments.
-    my_const = [upper(foo), _, lower(BAR)],
+    my_const = concat(upper(foo), _, lower(BAR)),
     // Function calls can be arbitrarily nested and combined.
-    my_static = [upper(lower(BAR))],
-    MY_SNAKE_CASE_STATIC = [snake_case(snakeCase)],
-    MY_CAMEL_CASE_STATIC = [camel_case(camel_case)],
-    MY_PASCAL_CASE_STATIC = [pascal_case(pascal_case)],
+    my_static = upper(lower(BAR)),
+    MY_SNAKE_CASE_STATIC = snake_case(snakeCase),
+    MY_CAMEL_CASE_STATIC = camel_case(camel_case),
+    MY_PASCAL_CASE_STATIC = pascal_case(pascal_case),
     // normalize() allows to turn an arbitrary sequence of tokens into a valid identifier.
-    MY_NORMALIZED_ALIAS = [my, _, normalize(&'static str)],
+    MY_NORMALIZED_ALIAS = concat(my, _, normalize(&'static str)),
     // This function is useful to create identifiers that are unique across multiple macro invocations.
     // `hash(0b11001010010111)` will generate the same value even if called twice in the same macro call,
     // but will be different in different macro calls.
-    MY_UNIQUE_STATIC = [hash(0b11001010010111)],
-    MY_FORMATTED_STR = [FOO, _, BAR],
-    MY_REUSED_ALIAS = [REUSED, _, FOO, _, my_static],
+    MY_UNIQUE_STATIC = hash(0b11001010010111),
+    MY_FORMATTED_STR = concat(FOO, _, BAR),
+    MY_REUSED_ALIAS = concat(REUSED, _, FOO, _, my_static),
     {
         fn my_fn_1() -> u32 {
             123
@@ -48,7 +48,7 @@ compose_idents!(
 // It's possible to use arguments of declarative macros as parts of the identifiers.
 macro_rules! outer_macro {
     ($name:tt) => {
-        compose_idents!(my_nested_fn = [nested, _, $name], {
+        compose_idents!(my_nested_fn = concat(nested, _, $name), {
             fn my_nested_fn() -> u32 {
                 42
             }
@@ -62,7 +62,7 @@ macro_rules! global_var_macro {
     () => {
         // `my_static` is going to be unique in each invocation of `global_var_macro!()`.
         // But within the same invocation `hash(1)` will yield the same result.
-        compose_idents!(my_static = [foo, _, hash(1)], {
+        compose_idents!(my_static = concat(foo, _, hash(1)), {
             static my_static: u32 = 42;
         });
     };

@@ -1,6 +1,6 @@
 use compose_idents::compose_idents;
 
-compose_idents!(my_alias = [foo, _, "baz"], {
+compose_idents!(my_alias = concat(foo, _, "baz"), {
     static MY_STRING: &str = "Hello, %my_alias%!";
 });
 

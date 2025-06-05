@@ -1,0 +1,12 @@
+error: use of deprecated function `foo_baz`: compose_idents!: Bracket-based syntax for alias definition, `alias = [arg1, func(arg2), ...]`, is deprecated, use expressions instead: `alias = concat(arg1, arg2, ...)`, `alias = arg`, `alias = func(arg)`, and so on
+  --> tests/compile/brackets/bracket_syntax_warning.rs:11:16
+   |
+11 |     assert_eq!(foo_baz(), 42);
+   |                ^^^^^^^
+   |
+note: the lint level is defined here
+  --> tests/compile/brackets/bracket_syntax_warning.rs:1:9
+   |
+1  | #![deny(warnings)]
+   |         ^^^^^^^^
+   = note: `#[deny(deprecated)]` implied by `#[deny(warnings)]`

@@ -10,7 +10,7 @@ and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capab
 
 ```rust
 compose_idents::compose_idents!(
-    my_fn = [foo, _, "baz"],
+    my_fn = concat(foo, _, "baz"),
     {
         fn my_fn() -> u32 {
             42
@@ -60,8 +60,8 @@ use compose_idents::compose_idents;
 macro_rules! gen_const_add {
     ($T:ty) => {
         compose_idents!(
-            Type = [upper($T)],   // Alias for the type - make it uppercase in addition
-            add_fn = [add_, $T],  // Alias for the function name
+            Type = upper($T),           // Alias for the type - make it uppercase in addition
+            add_fn = concat(add_, $T),  // Alias for the function name
             {
                 // Strings (including in doc-attributes) can be formatted with %alias% syntax.
                 #[doc = "Adds two arguments of type `%Type%` at compile time."]
@@ -112,7 +112,7 @@ macro_rules! generate_frobnicate_test {
     ($type:ty, $initial:expr, $input:expr, $expected:expr) => {
         // Notice - we are using normalize() to make `&'static str` fit for
         // being part of the test function's identifier.
-        compose_idents!(test_fn = [test_frobnicate_, normalize($type)], {
+        compose_idents!(test_fn = concat(test_frobnicate_, normalize($type)), {
           fn test_fn() {
             let actual = ($initial as $type).frobnicate($input);
             let expected = $expected;

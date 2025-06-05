@@ -1,6 +1,6 @@
 use compose_idents::compose_idents;
 
-compose_idents!(my_var = [foo, _, var], {
+compose_idents!(my_var = concat(foo, _, var), {
     const my_var: u32 = 42;
 });
 
