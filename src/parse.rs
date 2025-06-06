@@ -233,7 +233,7 @@ impl Parse for Expr {
 
         Err(combine_errors(
             "Expected argument or function call (see the errors below)",
-            input.span(),
+            span,
             errors,
         ))
     }
