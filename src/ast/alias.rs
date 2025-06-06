@@ -41,11 +41,6 @@ impl AliasValue {
     pub fn exprs(&self) -> &[Expr] {
         self.exprs.as_slice()
     }
-
-    /// Reads the span of the alias value.
-    pub fn span(&self) -> Span {
-        self.span
-    }
 }
 
 impl Ast for AliasValue {
