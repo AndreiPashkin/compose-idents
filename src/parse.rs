@@ -2,6 +2,7 @@
 
 use crate::ast::{Alias, AliasSpec, AliasSpecItem, AliasValue, Arg, ComposeIdentsArgs, Expr, Func};
 use crate::deprecation::DeprecationService;
+use crate::error::combine_errors;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
 use std::collections::HashSet;
@@ -169,16 +170,11 @@ impl Parse for Expr {
             Err(err) => errors.push(err),
         }
 
-        if errors.len() == 1 {
-            Err(errors.pop().unwrap())
-        } else {
-            let mut error = syn::Error::new(
-                input.span(),
-                "Expected argument or function call (see the errors below)",
-            );
-            errors.iter().for_each(|err| error.combine(err.clone()));
-            Err(error)
-        }
+        Err(combine_errors(
+            "Expected argument or function call (see the errors below)",
+            span,
+            errors,
+        ))
     }
 }
 
