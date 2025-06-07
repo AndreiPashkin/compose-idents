@@ -2,7 +2,7 @@ use crate::ast::{Ast, Expr};
 use proc_macro2::{Ident, Span};
 
 /// Alias declaration.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Alias {
     ident: Ident,
 }
