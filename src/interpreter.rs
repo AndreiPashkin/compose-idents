@@ -33,10 +33,7 @@ pub struct Interpreter {
     args: ComposeIdentsArgs,
     /// Interpreter state
     state: State,
-    /// Runtime context
-    context: Context,
     /// Generated identifier replacements
-    replacements: HashMap<Ident, Ident>,
     deprecation_service: DeprecationServiceScope,
 }
 
@@ -46,8 +43,6 @@ impl Interpreter {
         Interpreter {
             args,
             state: State::new(),
-            context: Context::default(),
-            replacements: HashMap::new(),
             deprecation_service,
         }
     }
@@ -56,28 +51,59 @@ impl Interpreter {
     pub fn execute(mut self) -> Result<TokenStream, Error> {
         let mut scope = Scope::default();
         self.args.spec().resolve(&mut scope)?;
+        let mut loop_context = Context::default();
+        let bindings = match self.args.loops() {
+            Some(loops) => {
+                loops.resolve(&mut scope)?;
+                let Evaluated::List(bindings) = loops.eval(&self.state, &mut loop_context)? else {
+                    unreachable!()
+                };
+                bindings
+                    .iter()
+                    .map(|item| {
+                        let Evaluated::Bindings(item) = item else {
+                            unreachable!()
+                        };
+                        item.clone()
+                    })
+                    .collect::<Vec<_>>()
+            }
+            None => vec![HashMap::new()],
+        };
 
-        for item in self.args.spec().items() {
-            let Evaluated::Value(value_str) = item.value().eval(&self.state, &mut self.context)?;
+        let mut blocks = Vec::new();
+        for bindings_item in bindings {
+            let mut context = Context::default();
+            context.context_mut().extend(bindings_item);
 
-            self.context.context_mut().insert(
-                item.alias().ident().to_string(),
-                Evaluated::Value(value_str.clone()),
-            );
+            let mut replacements: HashMap<Ident, Ident> = HashMap::new();
 
-            let replacement_ident: Ident = syn::parse_str(&value_str).expect("Invalid ident");
-            self.replacements
-                .insert(item.alias().ident().clone(), replacement_ident);
+            for item in self.args.spec().items() {
+                let Evaluated::Value(value_str) = item.value().eval(&self.state, &mut context)?
+                else {
+                    unreachable!()
+                };
+
+                context.context_mut().insert(
+                    item.alias().ident().to_string(),
+                    Evaluated::Value(value_str.clone()),
+                );
+
+                let replacement_ident: Ident = syn::parse_str(&value_str).expect("Invalid ident");
+                replacements.insert(item.alias().ident().clone(), replacement_ident);
+
+            }
+            let mut block = self.args.block_mut().clone();
+
+            let mut visitor = ComposeIdentsVisitor::new(replacements);
+            visitor.visit_block_mut(&mut block);
+
+            self.deprecation_service.emit("compose_idents!: ", &mut block);
+            let block_content = &block.stmts;
+            blocks.push(quote! { #(#block_content)* });
         }
 
-        let block = self.args.block_mut();
-
-        let mut visitor = ComposeIdentsVisitor::new(self.replacements);
-        visitor.visit_block_mut(block);
-
-        self.deprecation_service.emit("compose_idents!: ", block);
-        let block_content = &block.stmts;
-        let expanded = quote! { #(#block_content)* };
+        let expanded = quote! { #(#blocks)* };
 
         Ok(expanded)
     }

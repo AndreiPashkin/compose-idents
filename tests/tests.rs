@@ -27,6 +27,12 @@ fn compile_tests() {
     t.compile_fail("tests/compile/undefined_func.rs");
 }
 
+#[test]
+fn loops() {
+    let t = trybuild::TestCases::new();
+    t.pass("tests/compile/loops/simple.rs");
+}
+
 /// Tests semicolon backwards-compatibility support.
 #[test]
 fn semicolon_tests() {

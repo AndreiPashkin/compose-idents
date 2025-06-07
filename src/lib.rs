@@ -9,6 +9,7 @@ mod eval;
 mod funcs;
 mod interpreter;
 mod parse;
+mod product;
 mod resolve;
 mod unique_id;
 

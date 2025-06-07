@@ -1,9 +1,10 @@
-use crate::ast::{AliasSpec, Ast};
+use crate::ast::{AliasSpec, Ast, LoopSpec};
 use proc_macro2::Span;
 use syn::Block;
 
 /// Arguments to the [`compose_idents`] macro.
 pub struct ComposeIdentsArgs {
+    loops: Option<LoopSpec>,
     spec: AliasSpec,
     block: Block,
 }
@@ -16,8 +17,13 @@ impl Ast for ComposeIdentsArgs {
 
 impl ComposeIdentsArgs {
     /// Creates new ComposeIdentsArgs with the given components.
-    pub fn new(spec: AliasSpec, block: Block) -> Self {
-        Self { spec, block }
+    pub fn new(loops: Option<LoopSpec>, spec: AliasSpec, block: Block) -> Self {
+        Self { loops, spec, block }
+    }
+
+    /// Reads the loop specification if any.
+    pub fn loops(&self) -> Option<&LoopSpec> {
+        self.loops.as_ref()
     }
 
     /// Reads the alias specification.
