@@ -60,10 +60,9 @@ impl Interpreter {
         for item in self.args.spec().items() {
             let Evaluated::Value(value_str) = item.value().eval(&self.state, &mut self.context)?;
 
-            self.context.context_mut().insert(
-                item.alias().ident().to_string(),
-                Evaluated::Value(value_str.clone()),
-            );
+            self.context
+                .context_mut()
+                .insert(item.alias().clone(), Evaluated::Value(value_str.clone()));
 
             let replacement_ident: Ident = syn::parse_str(&value_str).expect("Invalid ident");
             self.replacements

@@ -1,6 +1,6 @@
 //! Implementation of eval-phase logic.
 
-use crate::ast::{AliasValue, Arg, Ast, Expr, Func};
+use crate::ast::{Alias, AliasValue, Arg, Ast, Expr, Func};
 use crate::core::State;
 use crate::error::Error;
 use crate::funcs::{concat, hash, normalize, to_camel_case, to_pascal_case, to_snake_case};
@@ -15,11 +15,11 @@ pub enum Evaluated {
 /// Runtime context of evaluation.
 #[derive(Default)]
 pub struct Context {
-    context: HashMap<String, Evaluated>,
+    context: HashMap<Alias, Evaluated>,
 }
 
 impl Context {
-    pub fn context_mut(&mut self) -> &mut HashMap<String, Evaluated> {
+    pub fn context_mut(&mut self) -> &mut HashMap<Alias, Evaluated> {
         &mut self.context
     }
 }
@@ -35,11 +35,11 @@ impl Eval for Arg {
     fn eval(&self, _: &State, context: &mut Context) -> Result<Evaluated, Error> {
         match self {
             Arg::Ident(ident) => {
-                let value = ident.to_string();
+                let alias = Alias::new(ident.clone());
                 let context_ = context.context_mut();
-                let res = match context_.get(&value) {
+                let res = match context_.get(&alias) {
                     Some(Evaluated::Value(v)) => Evaluated::Value(v.clone()),
-                    None => Evaluated::Value(value),
+                    None => Evaluated::Value(ident.to_string()),
                 };
                 Ok(res)
             }
