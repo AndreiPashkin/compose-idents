@@ -1,0 +1,17 @@
+error: Invalid alias value: 1
+ --> tests/compile/loops/invalid_alias.rs:5:25
+  |
+5 |     for suffix in [foo, 1]
+  |                         ^
+
+error[E0425]: cannot find function `my_foo` in this scope
+  --> tests/compile/loops/invalid_alias.rs:16:16
+   |
+16 |     assert_eq!(my_foo(), 42);
+   |                ^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `my_bar` in this scope
+  --> tests/compile/loops/invalid_alias.rs:17:16
+   |
+17 |     assert_eq!(my_bar(), 42);
+   |                ^^^^^^ not found in this scope

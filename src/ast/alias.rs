@@ -1,11 +1,26 @@
-use crate::ast::{Ast, Expr};
+use crate::ast::{Ast, Expr, Spanned};
 use proc_macro2::{Ident, Span};
 use std::fmt::Display;
+use std::hash::Hash;
 
 /// Alias declaration.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone)]
 pub struct Alias {
     ident: Ident,
+}
+
+impl PartialEq for Alias {
+    fn eq(&self, other: &Self) -> bool {
+        self.ident.to_string() == other.ident.to_string()
+    }
+}
+
+impl Eq for Alias {}
+
+impl Hash for Alias {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.ident.to_string().hash(state);
+    }
 }
 
 impl Display for Alias {
@@ -14,11 +29,13 @@ impl Display for Alias {
     }
 }
 
-impl Ast for Alias {
+impl Spanned for Alias {
     fn span(&self) -> Span {
         self.ident.span()
     }
 }
+
+impl Ast for Alias {}
 
 impl Alias {
     /// Creates a new [`Alias`] with the given identifier.
@@ -33,6 +50,7 @@ impl Alias {
 }
 
 /// Alias value, which is a sequence of expressions that form the value of the alias.
+#[derive(Debug)]
 pub struct AliasValue {
     span: Span,
     exprs: Vec<Expr>,
@@ -50,11 +68,13 @@ impl AliasValue {
     }
 }
 
-impl Ast for AliasValue {
+impl Spanned for AliasValue {
     fn span(&self) -> Span {
         self.span
     }
 }
+
+impl Ast for AliasValue {}
 
 /// A single alias specification.
 pub struct AliasSpecItem {
@@ -62,11 +82,13 @@ pub struct AliasSpecItem {
     value: AliasValue,
 }
 
-impl Ast for AliasSpecItem {
+impl Spanned for AliasSpecItem {
     fn span(&self) -> Span {
         self.alias.span()
     }
 }
+
+impl Ast for AliasSpecItem {}
 
 impl AliasSpecItem {
     /// Creates a new [`AliasSpecItem`] with the given alias and expressions.
@@ -91,7 +113,7 @@ pub struct AliasSpec {
     is_comma_used: Option<bool>,
 }
 
-impl Ast for AliasSpec {
+impl Spanned for AliasSpec {
     fn span(&self) -> Span {
         self.items
             .first()
@@ -99,6 +121,8 @@ impl Ast for AliasSpec {
             .unwrap_or_else(Span::call_site)
     }
 }
+
+impl Ast for AliasSpec {}
 
 impl AliasSpec {
     /// Creates a new [`AliasSpec`] with the given items and separator information.

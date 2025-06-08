@@ -1,4 +1,4 @@
-use crate::ast::Ast;
+use crate::ast::{Ast, Spanned};
 use proc_macro2::{Ident, Span, TokenStream};
 
 /// Argument to the [`compose_idents`] macro.
@@ -16,7 +16,7 @@ pub enum Arg {
     Underscore(Span),
 }
 
-impl Ast for Arg {
+impl Spanned for Arg {
     fn span(&self) -> Span {
         match self {
             Arg::Ident(ident) => ident.span(),
@@ -27,6 +27,8 @@ impl Ast for Arg {
         }
     }
 }
+
+impl Ast for Arg {}
 
 /// Function call in form of `upper(arg)` or `lower(arg)`, etc.
 #[derive(Debug, Clone)]
@@ -43,7 +45,7 @@ pub enum Func {
     Undefined,
 }
 
-impl Ast for Func {
+impl Spanned for Func {
     fn span(&self) -> Span {
         match self {
             Func::Upper(expr) => expr.span(),
@@ -63,6 +65,8 @@ impl Ast for Func {
     }
 }
 
+impl Ast for Func {}
+
 /// Expression in form of an argument or a function call.
 #[derive(Debug, Clone)]
 pub enum Expr {
@@ -70,7 +74,7 @@ pub enum Expr {
     FuncCallExpr(Box<Func>),
 }
 
-impl Ast for Expr {
+impl Spanned for Expr {
     fn span(&self) -> Span {
         match self {
             Expr::ArgExpr(arg) => arg.span(),
@@ -78,3 +82,5 @@ impl Ast for Expr {
         }
     }
 }
+
+impl Ast for Expr {}

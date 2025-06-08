@@ -1,4 +1,4 @@
-error: `42` is not a valid identifier
+error: Invalid alias value: 42
  --> tests/compile/invalid_alias.rs:3:25
   |
 3 | compose_idents!(alias = lower(42), {

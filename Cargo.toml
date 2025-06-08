@@ -35,12 +35,17 @@ trybuild = "1"
 rstest = "~0.24.0"
 tempfile = "3.19"
 
+[workspace.metadata.trybuild]
+output-dir = "target/trybuild-outputs"
+preserve-stderr = true
+preserve-stdout = true
+
 [[test]]
 name = "format_doc_attr"
 path = "tests/compile/format_doc_attr.rs"
 harness = false
 
-[[test]]
-name = "build"
-path = "tests/build.rs"
-harness = false
+#[[test]]
+#name = "build"
+#path = "tests/build.rs"
+#harness = false

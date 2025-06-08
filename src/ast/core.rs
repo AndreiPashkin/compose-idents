@@ -2,11 +2,13 @@ use crate::ast::Alias;
 use proc_macro2::Span;
 use std::collections::HashMap;
 
-/// An AST node that has a syntactic span.
-pub trait Ast {
+pub trait Spanned {
     /// Returns the span of the item.
     fn span(&self) -> Span;
 }
+
+/// An AST node that has a syntactic span.
+pub trait Ast: Spanned {}
 
 /// Lexical scope.
 #[derive(Default, Clone)]

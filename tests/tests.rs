@@ -29,6 +29,24 @@ fn compile_tests() {
     t.compile_fail("tests/compile/invalid_alias.rs");
 }
 
+#[test]
+fn loops() {
+    let t = trybuild::TestCases::new();
+    t.pass("tests/compile/loops/simple.rs");
+    t.pass("tests/compile/loops/nested.rs");
+    t.pass("tests/compile/loops/tuple.rs");
+    t.pass("tests/compile/loops/nested_tuples.rs");
+    t.pass("tests/compile/loops/nested_mixed.rs");
+    t.pass("tests/compile/loops/deep_tuples.rs");
+    t.pass("tests/compile/loops/mixed.rs");
+    t.pass("tests/compile/loops/tuple_mixed.rs");
+    t.pass("tests/compile/loops/alias_reuse.rs");
+    t.pass("tests/compile/loops/direct_alias_use.rs");
+    t.compile_fail("tests/compile/loops/tuple_destructure_error.rs");
+    t.pass("tests/compile/loops/full.rs");
+    t.compile_fail("tests/compile/loops/invalid_alias.rs");
+}
+
 /// Tests semicolon backwards-compatibility support.
 #[test]
 fn semicolon_tests() {

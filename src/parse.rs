@@ -1,15 +1,19 @@
 //! Implements parsing logic for different internal components.
 
-use crate::ast::{Alias, AliasSpec, AliasSpecItem, AliasValue, Arg, ComposeIdentsArgs, Expr, Func};
+use crate::ast::{
+    Alias, AliasSpec, AliasSpecItem, AliasValue, Arg, ComposeIdentsArgs, Expr, Func, LoopAlias,
+    LoopSourceValue, LoopSourceValueList, LoopSpec, LoopSpecItem, Tuple, TupleValue,
+};
 use crate::deprecation::DeprecationService;
 use crate::error::combine_errors;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
 use std::collections::HashSet;
+use std::fmt::Debug;
 use std::marker::PhantomData;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
-use syn::token::Bracket;
+use syn::token::{Bracket, Paren};
 use syn::{bracketed, parenthesized, Block, Ident, Token};
 
 /// Wraps the token-type `T` and parses it by consuming the input until the terminator `Term` or
@@ -77,6 +81,7 @@ where
     B: Parse,
 {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        eprintln!("Parsing Arg from input: {:?}", input);
         let span = input.span();
         let mut errors = Vec::new();
         let fork = input.fork();
@@ -132,6 +137,7 @@ impl Parse for Arg {
             let tokens = input.parse::<TokenStream>()?;
             value = Arg::Tokens(span, tokens);
         }
+        eprintln!("Parsed Arg: {:?}", value);
         Ok(value)
     }
 }
@@ -247,12 +253,24 @@ const MIXING_SEP_ERROR: &str = r#"Mixing "," and ";" as separators is not allowe
 
 impl Parse for ComposeIdentsArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let spec: AliasSpec = input.parse()?;
+        let loops = if input.peek(Token![for]) {
+            Some(input.parse::<LoopSpec>()?)
+        } else {
+            None
+        };
+        let spec = if input.peek(Ident) {
+            Some(input.parse::<AliasSpec>()?)
+        } else {
+            None
+        };
         let block: Block = input.parse()?;
         let deprecation_service = DeprecationService::scoped();
 
-        if spec.is_comma_used().is_some_and(|value| !value) {
-            deprecation_service.add_semicolon_separator_warning();
+        match &spec {
+            Some(spec) if spec.is_comma_used().is_some_and(|v| !v) => {
+                deprecation_service.add_semicolon_separator_warning();
+            }
+            _ => {}
         }
 
         let is_comma_current_sep = if input.peek(Token![,]) {
@@ -265,15 +283,13 @@ impl Parse for ComposeIdentsArgs {
             None
         };
 
-        if let (Some(is_comma_current_sep), Some(is_comma_used)) =
-            (is_comma_current_sep, spec.is_comma_used())
-        {
-            if is_comma_current_sep ^ is_comma_used {
+        if let (Some(is_comma_current_sep), Some(spec)) = (is_comma_current_sep, &spec) {
+            if is_comma_current_sep ^ spec.is_comma_used().is_some_and(|value| value) {
                 return Err(input.error(MIXING_SEP_ERROR));
             }
         }
 
-        Ok(ComposeIdentsArgs::new(spec, block))
+        Ok(ComposeIdentsArgs::new(loops, spec, block))
     }
 }
 
@@ -294,6 +310,8 @@ impl Parse for AliasValue {
             // Fall back to the deprecated bracket-based syntax
             let content;
             bracketed!(content in input);
+            // TODO: this thing won't work with multi-argument function because it would consume up
+            //       until the first comma and then feed the result to `Expr::parse`.
             let punctuated =
                 content.parse_terminated(Terminated::<Expr, Token![,]>::parse, Token![,])?;
             exprs.extend(
@@ -362,6 +380,145 @@ impl Parse for AliasSpec {
         }
 
         Ok(AliasSpec::new(items, is_comma_used))
+    }
+}
+
+impl<V> Parse for Tuple<V>
+where
+    V: Parse + Clone + Debug,
+{
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let span = input.span();
+        let content;
+
+        parenthesized!(content in input);
+
+        let punctuated =
+            content.parse_terminated(Terminated::<TupleValue<V>, Token![,]>::parse, Token![,])?;
+        let values: Vec<TupleValue<V>> = punctuated
+            .into_iter()
+            .map(|item| item.into_value())
+            .collect();
+
+        Ok(Tuple::<V>::new(values, span))
+    }
+}
+
+impl<V> Parse for TupleValue<V>
+where
+    V: Parse + Clone + Debug,
+{
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        if input.peek(Paren) {
+            let tuple = input.parse::<Tuple<V>>()?;
+            Ok(TupleValue::Tuple(tuple))
+        } else {
+            let value = input.parse::<V>()?;
+            Ok(TupleValue::Value(value))
+        }
+    }
+}
+
+impl Parse for LoopAlias {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut errors: Vec<syn::Error> = Vec::new();
+
+        let fork = input.fork();
+        match fork.parse::<Tuple<Alias>>() {
+            Ok(tuple) => {
+                input.advance_to(&fork);
+                return Ok(LoopAlias::Tuple(tuple));
+            }
+            Err(err) => errors.push(err),
+        }
+
+        let fork = input.fork();
+        match fork.parse::<Alias>() {
+            Ok(alias) => {
+                input.advance_to(&fork);
+                return Ok(LoopAlias::Simple(alias));
+            }
+            Err(err) => errors.push(err),
+        }
+
+        Err(combine_errors(
+            "Failed to parse loop alias (see errors below)",
+            input.span(),
+            errors,
+        ))
+    }
+}
+
+impl Parse for LoopSourceValue {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut errors: Vec<syn::Error> = Vec::new();
+
+        let fork = input.fork();
+        match fork.parse::<Tuple<Expr>>() {
+            Ok(tuple) => {
+                input.advance_to(&fork);
+                return Ok(LoopSourceValue::Tuple(tuple));
+            }
+            Err(err) => errors.push(err),
+        }
+
+        let fork = input.fork();
+        match fork.parse::<Terminated<Expr, Token![,]>>() {
+            Ok(expr) => {
+                input.advance_to(&fork);
+                return Ok(LoopSourceValue::Simple(expr.into_value()));
+            }
+            Err(err) => errors.push(err),
+        }
+
+        Err(combine_errors(
+            "Failed to parse loop source value (see errors below)",
+            input.span(),
+            errors,
+        ))
+    }
+}
+
+impl Parse for LoopSourceValueList {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let span = input.span();
+        let content;
+        bracketed!(content in input);
+
+        let punctuated = content.parse_terminated(LoopSourceValue::parse, Token![,])?;
+        let source_values: Vec<LoopSourceValue> = punctuated.into_iter().collect();
+
+        Ok(LoopSourceValueList::new(source_values, span))
+    }
+}
+
+impl Parse for LoopSpecItem {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let span = input.span();
+        input.parse::<Token![for]>()?;
+
+        let alias = input.parse::<LoopAlias>()?;
+
+        input.parse::<Token![in]>()?;
+
+        let list = input.parse::<LoopSourceValueList>()?;
+
+        Ok(LoopSpecItem::new(alias, list, span))
+    }
+}
+
+impl Parse for LoopSpec {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut loops: Vec<LoopSpecItem> = Vec::new();
+
+        while input.peek(Token![for]) {
+            let loop_spec: LoopSpecItem = input.parse()?;
+            loops.push(loop_spec);
+        }
+        if loops.is_empty() {
+            return Err(input.error("Failed to parse any loops"));
+        }
+        Ok(LoopSpec::new(loops))
     }
 }
 

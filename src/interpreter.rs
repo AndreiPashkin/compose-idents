@@ -1,6 +1,6 @@
 //! Implements the [`Interpreter`] type and the core logic of the library.
 
-use crate::ast::{ComposeIdentsArgs, Scope};
+use crate::ast::{Alias, ComposeIdentsArgs, Scope};
 use crate::core::{ComposeIdentsVisitor, State};
 use crate::deprecation::DeprecationServiceScope;
 use crate::error::Error;
@@ -9,6 +9,8 @@ use crate::resolve::Resolve;
 use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
+use std::io;
+use std::io::Write;
 use syn::{visit_mut::VisitMut, Ident};
 
 /// Executes the lifecycle of the macro starting from analyzing the AST down to generating the
@@ -33,10 +35,7 @@ pub struct Interpreter {
     args: ComposeIdentsArgs,
     /// Interpreter state
     state: State,
-    /// Runtime context
-    context: Context,
     /// Generated identifier replacements
-    replacements: HashMap<Ident, Ident>,
     deprecation_service: DeprecationServiceScope,
 }
 
@@ -46,37 +45,110 @@ impl Interpreter {
         Interpreter {
             args,
             state: State::new(),
-            context: Context::default(),
-            replacements: HashMap::new(),
             deprecation_service,
         }
+    }
+
+    /// Executes the loops and returns resulting bindings.
+    fn make_loop_bindings<'a>(
+        &'a self,
+        scope: &mut Scope<'a>,
+        context: &mut Context,
+    ) -> Result<Vec<HashMap<Alias, Evaluated>>, Error> {
+        let bindings = match self.args.loops() {
+            Some(loops) => {
+                loops.resolve(scope)?;
+                let Evaluated::List(_, bindings) = loops.eval(&self.state, context)? else {
+                    unreachable!()
+                };
+                bindings
+                    .iter()
+                    .map(|item| {
+                        let Evaluated::Bindings(_, item) = item else {
+                            unreachable!()
+                        };
+                        item.clone()
+                    })
+                    .collect::<Vec<_>>()
+            }
+            None => vec![HashMap::new()],
+        };
+        Ok(bindings)
+    }
+
+    /// Creates initial version of identifier replacement map.
+    fn make_replacements(bindings: &HashMap<Alias, Evaluated>) -> HashMap<Ident, Ident> {
+        bindings
+            .iter()
+            .map(|(alias, value)| {
+                let Evaluated::Value(span, value) = value else {
+                    unreachable!()
+                };
+                (alias.ident().clone(), Ident::new(value.as_str(), *span))
+            })
+            .collect()
     }
 
     /// Executes the interpreter - main entry-point of the library.
     pub fn execute(mut self) -> Result<TokenStream, Error> {
         let mut scope = Scope::default();
-        self.args.spec().resolve(&mut scope)?;
+        if let Some(spec) = self.args.spec() {
+            spec.resolve(&mut scope)?;
+        }
+        let mut loop_context = Context::default();
+        eprintln!("Executing macro with loops: {:?}", self.args.loops());
+        let bindings = self.make_loop_bindings(&mut scope, &mut loop_context)?;
 
-        for item in self.args.spec().items() {
-            let Evaluated::Value(value_str) = item.value().eval(&self.state, &mut self.context)?;
+        let mut blocks = Vec::new();
 
-            self.context
-                .context_mut()
-                .insert(item.alias().clone(), Evaluated::Value(value_str.clone()));
+        // if self.args.loops().is_none() {
+        //     panic!("No loops have been specified..");
+        // }
 
-            let replacement_ident: Ident = syn::parse_str(&value_str).expect("Invalid ident");
-            self.replacements
-                .insert(item.alias().ident().clone(), replacement_ident);
+        for bindings_item in bindings {
+            let mut replacements = Self::make_replacements(&bindings_item);
+            let mut context = Context::default();
+            eprintln!("Loop bindings: {:?}", bindings_item);
+            context.context_mut().extend(bindings_item);
+
+            let spec_items = match self.args.spec() {
+                Some(spec) => spec.items(),
+                None => &[],
+            };
+
+            for item in spec_items {
+                eprintln!("Evaluating alias: {}", item.alias());
+                eprintln!("Context: {:?}", context);
+                io::stderr().flush().unwrap();
+                let Evaluated::Value(span, value_str) =
+                    item.value().eval(&self.state, &mut context)?
+                else {
+                    unreachable!()
+                };
+
+                context.context_mut().insert(
+                    item.alias().clone(),
+                    Evaluated::Value(span, value_str.clone()),
+                );
+
+                let replacement_ident: Ident = syn::parse_str(&value_str).expect("Invalid ident");
+                replacements.insert(item.alias().ident().clone(), replacement_ident);
+            }
+            let mut block = self.args.block_mut().clone();
+
+            let mut visitor = ComposeIdentsVisitor::new(replacements);
+            visitor.visit_block_mut(&mut block);
+
+            self.deprecation_service
+                .emit("compose_idents!: ", &mut block);
+            let block_content = &block.stmts;
+
+            blocks.push(quote! { #(#block_content)* });
         }
 
-        let block = self.args.block_mut();
+        let expanded = quote! { #(#blocks)* };
 
-        let mut visitor = ComposeIdentsVisitor::new(self.replacements);
-        visitor.visit_block_mut(block);
-
-        self.deprecation_service.emit("compose_idents!: ", block);
-        let block_content = &block.stmts;
-        let expanded = quote! { #(#block_content)* };
+        eprintln!("Expanded code:\n{}", expanded);
 
         Ok(expanded)
     }
