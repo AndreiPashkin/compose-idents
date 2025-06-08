@@ -120,7 +120,7 @@ where
 {
     pub fn new(tuple: &Tuple<V>) -> Self {
         Self {
-            stack: VecDeque::from_iter(tuple.values().into_iter().cloned()),
+            stack: VecDeque::from_iter(tuple.values().iter().cloned()),
         }
     }
 }

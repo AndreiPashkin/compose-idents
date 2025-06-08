@@ -31,6 +31,15 @@ fn compile_tests() {
 fn loops() {
     let t = trybuild::TestCases::new();
     t.pass("tests/compile/loops/simple.rs");
+    t.pass("tests/compile/loops/nested.rs");
+    t.pass("tests/compile/loops/tuple.rs");
+    t.pass("tests/compile/loops/nested_tuples.rs");
+    t.pass("tests/compile/loops/nested_mixed.rs");
+    t.pass("tests/compile/loops/deep_tuples.rs");
+    t.pass("tests/compile/loops/different_values.rs");
+    t.pass("tests/compile/loops/tuple_different_values.rs");
+    t.compile_fail("tests/compile/loops/tuple_destructure_error.rs");
+    t.pass("tests/compile/loops/full.rs");
 }
 
 /// Tests semicolon backwards-compatibility support.

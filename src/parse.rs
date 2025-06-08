@@ -321,8 +321,7 @@ where
 
         parenthesized!(content in input);
 
-        let punctuated =
-            content.parse_terminated(TupleValue::<V>::parse, Token![,])?;
+        let punctuated = content.parse_terminated(TupleValue::<V>::parse, Token![,])?;
         let values: Vec<TupleValue<V>> = punctuated.into_iter().collect();
 
         Ok(Tuple::<V>::new(values, span))

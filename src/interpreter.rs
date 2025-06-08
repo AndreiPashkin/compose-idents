@@ -91,14 +91,14 @@ impl Interpreter {
 
                 let replacement_ident: Ident = syn::parse_str(&value_str).expect("Invalid ident");
                 replacements.insert(item.alias().ident().clone(), replacement_ident);
-
             }
             let mut block = self.args.block_mut().clone();
 
             let mut visitor = ComposeIdentsVisitor::new(replacements);
             visitor.visit_block_mut(&mut block);
 
-            self.deprecation_service.emit("compose_idents!: ", &mut block);
+            self.deprecation_service
+                .emit("compose_idents!: ", &mut block);
             let block_content = &block.stmts;
             blocks.push(quote! { #(#block_content)* });
         }
