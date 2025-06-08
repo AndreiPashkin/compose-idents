@@ -1,3 +1,4 @@
+use crate::ast::Alias;
 use proc_macro2::Span;
 use std::collections::HashMap;
 
@@ -10,11 +11,11 @@ pub trait Ast {
 /// Lexical scope.
 #[derive(Default, Clone)]
 pub struct Scope<'a> {
-    aliases: HashMap<String, &'a dyn Ast>,
+    aliases: HashMap<Alias, &'a dyn Ast>,
 }
 
 impl<'a> Scope<'a> {
-    pub fn names_mut(&mut self) -> &mut HashMap<String, &'a dyn Ast> {
+    pub fn names_mut(&mut self) -> &mut HashMap<Alias, &'a dyn Ast> {
         &mut self.aliases
     }
 }

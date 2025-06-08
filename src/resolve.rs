@@ -19,8 +19,8 @@ impl Resolve for AliasSpec {
     fn resolve<'a>(&'a self, scope: &mut Scope<'a>) -> Result<(), Error> {
         let names = scope.names_mut();
         for item in self.items() {
-            let name = item.alias().ident().to_string();
-            match names.entry(name) {
+            let alias = item.alias();
+            match names.entry(alias.clone()) {
                 Entry::Occupied(_) => {
                     return Err(Error::TypeError(
                         format!("Alias `{}` is already defined", item.alias().ident()),
