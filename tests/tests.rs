@@ -26,6 +26,7 @@ fn compile_tests() {
     t.compile_fail("tests/compile/func_wrong_arg_num.rs");
     t.pass("tests/compile/func_enum_variant.rs");
     t.compile_fail("tests/compile/undefined_func.rs");
+    t.compile_fail("tests/compile/invalid_alias.rs");
 }
 
 /// Tests semicolon backwards-compatibility support.

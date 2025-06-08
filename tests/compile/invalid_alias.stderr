@@ -1,0 +1,11 @@
+error: `42` is not a valid identifier
+ --> tests/compile/invalid_alias.rs:3:25
+  |
+3 | compose_idents!(alias = lower(42), {
+  |                         ^^^^^
+
+error[E0425]: cannot find function `qux_foo_baz` in this scope
+  --> tests/compile/invalid_alias.rs:10:16
+   |
+10 |     assert_eq!(qux_foo_baz(), 42);
+   |                ^^^^^^^^^^^ not found in this scope
