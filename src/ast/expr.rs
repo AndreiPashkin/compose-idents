@@ -10,20 +10,20 @@ use proc_macro2::{Ident, Span, TokenStream};
 #[derive(Debug, Clone)]
 pub enum Arg {
     Ident(Ident),
-    LitStr(String),
-    LitInt(u64),
-    Tokens(TokenStream),
-    Underscore,
+    LitStr(Span, String),
+    LitInt(Span, u64),
+    Tokens(Span, TokenStream),
+    Underscore(Span),
 }
 
 impl Ast for Arg {
     fn span(&self) -> Span {
         match self {
             Arg::Ident(ident) => ident.span(),
-            Arg::LitStr(_) => Span::call_site(),
-            Arg::LitInt(_) => Span::call_site(),
-            Arg::Tokens(_) => Span::call_site(),
-            Arg::Underscore => Span::call_site(),
+            Arg::LitStr(span, _) => *span,
+            Arg::LitInt(span, _) => *span,
+            Arg::Tokens(span, _) => *span,
+            Arg::Underscore(span) => *span,
         }
     }
 }

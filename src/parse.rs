@@ -114,22 +114,23 @@ pub(crate) use combine;
 impl Parse for Arg {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let is_terminated = input.peek2(syn::parse::End);
+        let span = input.span();
         let value: Arg;
         if input.peek(syn::Ident) && is_terminated {
             let ident = input.parse::<syn::Ident>()?;
             value = Arg::Ident(ident);
         } else if input.peek(Token![_]) && is_terminated {
             input.parse::<Token![_]>()?;
-            value = Arg::Underscore;
+            value = Arg::Underscore(span);
         } else if input.peek(syn::LitStr) && is_terminated {
             let lit_str = input.parse::<syn::LitStr>()?;
-            value = Arg::LitStr(lit_str.value());
+            value = Arg::LitStr(span, lit_str.value());
         } else if input.peek(syn::LitInt) && is_terminated {
             let lit_int = input.parse::<syn::LitInt>()?;
-            value = Arg::LitInt(lit_int.base10_parse::<u64>()?);
+            value = Arg::LitInt(span, lit_int.base10_parse::<u64>()?);
         } else {
             let tokens = input.parse::<TokenStream>()?;
-            value = Arg::Tokens(tokens);
+            value = Arg::Tokens(span, tokens);
         }
         Ok(value)
     }
@@ -141,6 +142,7 @@ impl Parse for Func {
         let func_name = ident.to_string();
         let raw_args;
         parenthesized!(raw_args in input);
+        let args_span = raw_args.span();
         let punctuated = raw_args
             .fork()
             .parse_terminated(Terminated::<Expr, Token![,]>::parse, Token![,]);
@@ -156,7 +158,7 @@ impl Parse for Func {
         let tokens = raw_args
             .parse::<TokenStream>()
             .ok()
-            .map(|tokens| Expr::ArgExpr(Box::new(Arg::Tokens(tokens))));
+            .map(|tokens| Expr::ArgExpr(Box::new(Arg::Tokens(args_span, tokens))));
 
         match (func_name.as_str(), args.as_deref(), tokens) {
             ("upper", Some(args), _) => match &args {

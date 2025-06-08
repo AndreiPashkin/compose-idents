@@ -43,10 +43,10 @@ impl Eval for Arg {
                 };
                 Ok(res)
             }
-            Arg::LitStr(value) => Ok(Evaluated::Value(value.clone())),
-            Arg::LitInt(value) => Ok(Evaluated::Value(value.to_string())),
-            Arg::Tokens(tokens) => Ok(Evaluated::Value(tokens.to_string())),
-            Arg::Underscore => Ok(Evaluated::Value("_".to_string())),
+            Arg::LitStr(_, value) => Ok(Evaluated::Value(value.clone())),
+            Arg::LitInt(_, value) => Ok(Evaluated::Value(value.to_string())),
+            Arg::Tokens(_, tokens) => Ok(Evaluated::Value(tokens.to_string())),
+            Arg::Underscore(_) => Ok(Evaluated::Value("_".to_string())),
         }
     }
 }
