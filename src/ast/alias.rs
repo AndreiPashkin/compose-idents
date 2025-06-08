@@ -1,10 +1,17 @@
 use crate::ast::{Ast, Expr};
 use proc_macro2::{Ident, Span};
+use std::fmt::Display;
 
 /// Alias declaration.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Alias {
     ident: Ident,
+}
+
+impl Display for Alias {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.ident)
+    }
 }
 
 impl Ast for Alias {
