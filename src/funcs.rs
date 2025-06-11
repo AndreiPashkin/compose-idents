@@ -162,6 +162,9 @@ pub fn normalize(input: &str) -> String {
             inserted_underscore = true;
         }
     }
+    if inserted_underscore {
+        result.pop();
+    }
     if result.is_empty() {
         result.push('_');
     }
@@ -303,6 +306,10 @@ mod tests {
     #[case("a.b.c", "a_b_c")]
     #[case("a!@#b$%^c", "a_b_c")]
     #[case("a_!@#_b", "a___b")]
+    #[case("&'static str", "static_str")]
+    #[case("&'static str ", "static_str")]
+    #[case("Result<T, E>", "Result_T_E")]
+    #[case("Result< T, E >", "Result_T_E")]
     fn test_normalize(#[case] input: &str, #[case] expected: &str) {
         let actual = normalize(input);
         assert_eq!(actual, expected, "Input: {}", input);
