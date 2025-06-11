@@ -23,28 +23,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stripped redundant top-level heading in docs.rs so that level-3 headings ("Functions", "Alias reuse", etc.) are now
   visible in the sidebar.
 - Significantly reworked the internal code making it more extensible.
-- Fixed a bug with `snake_case()` when `CamelCase` was converted to `c_amel_case` instead of `camel_case`.
 - Refactored deprecation mechanism - so that it is fully encapsulated within a single module and has a concise
   external API.
-- Deprecated `alias = [arg1, arg2, ...]` syntax in favor of expression-based.
-- Fixed a bug in `normalize()` function that could append an extra trailing underscore to the result.
 - Hardened parsing of alias values.
-- Fixed a bug where certain inputs (like `Result<T, E>`) could be erroneously rejected by `normalize()`.
 
-### Removed
+### Deprecated
+
+- Deprecated `alias = [arg1, arg2, ...]` syntax in favor of expression-based: `alias = concat(arg1, arg2, ...)` or
+  `alias = upper(arg)` or `alias = arg`, etc.
+
+### Fixed
+
+- Fixed a bug with `snake_case()` when `CamelCase` was converted to `c_amel_case` instead of `camel_case`.
+- Fixed a bug in `normalize()` function that could append an extra trailing underscore to the result.
+- Fixed a bug where certain inputs (like `Result<T, E>`) could be erroneously rejected by `normalize()`.
 
 ## [v0.1.1] - 2025-05-22
 
-### Added
+### Fixed
 
-### Changed
-
-- Make argument parsing more robust. In particular make `compose_idents!` not fail with arguments such as
-  `normalize(Foo::Bar)`, where `Foo::Bar` is an enum variant or anything else that could be ambiguously interpreted
-  if not parsed until the end of the token (for example `Foo::Bar` could be interpreted as an ident `Foo` and `::Bar`
-  as a next completely different token).
-
-### Removed
+- Fixed argument parsing so that `compose_idents!` doesn't fail with arguments such as `normalize(Foo::Bar)`, where
+  `Foo::Bar` is an enum variant or anything else that could be ambiguously interpreted if not parsed until the end of
+  the token (for example `Foo::Bar` could be interpreted as an ident `Foo` and `::Bar` as a next completely different
+  token).
 
 ## [v0.1.0] - 2025-05-19
 
@@ -59,17 +60,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Made it possible to pass arbitrary token sequences as arguments.
 
-### Removed
-
 ## [v0.0.7] - 2025-04-22
 
-### Added
-
-### Changed
+### Fixed
 
 - Fixed a critical bug - incorrectly configured feature flags of "syn" dependency.
-
-### Removed
 
 ## [v0.0.6] - 2025-04-20
 
@@ -77,60 +72,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - New `pascal_case()` function.
 
-### Changed
-
-### Removed
-
 ## [v0.0.5] - 2025-04-20
 
-### Added
-
 ### Changed
 
-- Semicolon as the argument separator has been replaced with comma. Semicolon support
+- Semicolon as the alias-definition terminator symbol has been replaced with comma. Semicolon support
   has been preserved for backwards-compatibility.
-- Fixed edge case bugs in the `snake_case` and `camel_case` functions.
 
-### Removed
+### Deprecated
+
+- Deprecated usage of a semicolon as a terminator-symbol for alias-definitions.
+
+### Fixed
+
+- Fixed edge case bugs in the `snake_case` and `camel_case` functions.
 
 ## [v0.0.4] - 2025-03-21
 
 ### Added
 
 - Documented functions and add more clarity to the docs in general.
-- Updated syn version to 2.
-- Fixed handling of trailing semicolons in the macro.
 - Introduced string formatting with `%alias%` syntax useful for generating doc-attributes.
 
 ### Changed
 
-### Removed
+- Updated syn version to 2.
+
+### Fixed
+
+- Fixed handling of trailing semicolons in the macro.
 
 ## [v0.0.3] - 2025-02-11
 
 ### Added
 
-- Docs/tests fixes.
 - Added "functions" functionality that allows to apply functions over arguments.
 - Made it possible to pass integers as arguments.
-- Added "upper()", "lower()", "snake_case()" and "camel_case()" functions for case-manipulation.
-- Added "hash()" function that hashes an input value deterministically within the scope
+- Added `upper()`, `lower()`, `snake_case()` and `camel_case()` functions for case-manipulation.
+- Added `hash()` function that hashes an input value deterministically within the scope
   of a single macro invocation.
 
-### Changed
+### Fixed
 
-### Removed
+- Docs/tests fixes.
 
 ## [v0.0.2] - 2025-02-05
 
 ### Added
+
 - New tests.
 - Support for specifying types as parts for the composed identifiers.
 - Crates.io/Docs.rs badges to the README.md.
-
-### Changed
-
-### Removed
 
 ## [v0.0.1] - 2025-01-22
 
