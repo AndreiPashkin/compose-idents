@@ -100,7 +100,6 @@ where
 }
 
 /// Combines tokens into a single one that has a speculative [`Parse`] implemented for it.
-#[allow(unused_macros)]
 macro_rules! combine {
     ($A:ty, $B:ty) => {
         Combined::<$A, $B>
@@ -109,27 +108,28 @@ macro_rules! combine {
         conbine!(Combined::<$A, $B>, $($T)*)
     };
 }
-#[allow(unused_imports)]
 pub(crate) use combine;
 
+/// Parses the argument until the end of the input.
 impl Parse for Arg {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let is_terminated = input.peek2(syn::parse::End);
         let value: Arg;
-        if input.peek(syn::Ident) && input.peek2(syn::parse::End) {
+        if input.peek(syn::Ident) && is_terminated {
             let ident = input.parse::<syn::Ident>()?;
             value = Arg::Ident(ident);
-        } else if input.peek(Token![_]) && input.peek2(syn::parse::End) {
+        } else if input.peek(Token![_]) && is_terminated {
             input.parse::<Token![_]>()?;
             value = Arg::Underscore;
-        } else if input.peek(syn::LitStr) && input.peek2(syn::parse::End) {
+        } else if input.peek(syn::LitStr) && is_terminated {
             let lit_str = input.parse::<syn::LitStr>()?;
             value = Arg::LitStr(lit_str.value());
-        } else if input.peek(syn::LitInt) && input.peek2(syn::parse::End) {
+        } else if input.peek(syn::LitInt) && is_terminated {
             let lit_int = input.parse::<syn::LitInt>()?;
             value = Arg::LitInt(lit_int.base10_parse::<u64>()?);
         } else {
-            let terminated = input.parse::<Terminated<TokenStream, Token![,]>>()?;
-            value = Arg::Tokens(terminated.into_value());
+            let tokens = input.parse::<TokenStream>()?;
+            value = Arg::Tokens(tokens);
         }
         Ok(value)
     }
@@ -186,6 +186,7 @@ impl Parse for Func {
     }
 }
 
+/// Just like impl of [`Parse`] for [`Arg`] - parses the input either until the end or a comma.
 impl Parse for Expr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut errors: Vec<syn::Error> = Vec::new();
@@ -295,8 +296,8 @@ impl Parse for AliasValue {
 
             deprecation_service.add_bracket_syntax_warning();
         } else {
-            let expr = input.parse::<Expr>()?;
-            exprs.push(expr);
+            let expr = input.parse::<Terminated<Expr, combine!(Token![,], Token![;])>>()?;
+            exprs.push(expr.into_value());
         }
 
         Ok(AliasValue::new(exprs, span))
@@ -420,6 +421,36 @@ mod tests {
         assert!(
             matches!(actual_expr, Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_)))
         );
+    }
+
+    /// Tests that a simple identifier can be parsed as an [`AliasValue`].
+    #[test]
+    fn parse_alias_value_ident_terminated() {
+        let parser = |input: ParseStream| {
+            let item: AliasValue = input.parse()?;
+            let rest: TokenStream = input.parse()?;
+            Ok((item, rest))
+        };
+        let result = parser.parse_str("foo,");
+        assert!(
+            result.is_ok(),
+            "Expected identifier to be successfully parsed"
+        );
+
+        let (alias_value, tokens) = result.unwrap();
+        let actual_exprs = alias_value.exprs();
+        assert_eq!(
+            actual_exprs.len(),
+            1,
+            "Expected one expression in AliasValue"
+        );
+
+        let actual_expr = &actual_exprs[0];
+
+        assert!(
+            matches!(actual_expr, Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_))),
+        );
+        assert_eq!(tokens.to_string(), ",");
     }
 
     /// Tests that a simple func call can be parsed as a [`Func`].

@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `alias = concat(arg1, arg2, ...)` - where any expression could be used after `=`. The old syntax will still work,
   but it will cause a deprecation warning.
 - Fixed a bug in `normalize()` function that could append an extra trailing underscore to the result.
+- Hardened parsing of alias values.
 
 ### Removed
 

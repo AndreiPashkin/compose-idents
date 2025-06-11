@@ -24,8 +24,6 @@ impl<'a> Scope<'a> {
 
 /// Argument to the [`compose_idents`] macro.
 ///
-/// Its [`Parse`] impl parses the input entirely, until the end.
-///
 /// Accepted inputs:
 /// - Literal strings (enclosed in double quotes) are recognized and their content is used.
 /// - Identifiers, literal numbers, underscores are used as is.
@@ -87,8 +85,6 @@ impl Ast for Func {
 }
 
 /// Expression in form of an argument or a function call.
-///
-/// Just like [`Arg`] - parses the input entirely, until the end.
 #[derive(Debug, Clone)]
 pub enum Expr {
     ArgExpr(Box<Arg>),
