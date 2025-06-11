@@ -15,6 +15,7 @@ exclude = [
     "Taskfile.yml",
     "README.md.tpl",
     ".gitignore",
+    "AGENTS.md",
 ]
 
 [lib]
