@@ -145,7 +145,7 @@ test_frobnicate_static_str();
   without adding new ones. It might not work in corner cases if there is no place where the attribute could be added.
 
   Here is how a deprecation warning might look like:
-  ```ignore
+  ```text,ignore
   warning: use of deprecated function `my_function`: compose_idents!: Using semicolons as separators is deprecated, use commas instead
   ```
 
