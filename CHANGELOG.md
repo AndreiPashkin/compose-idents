@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored deprecation mechanism - so that it is fully encapsulated within a single module and has a concise
   external API.
 - Hardened parsing of alias values.
+- **⚠️ BREAKING**: case-conversion functions - `snake_case()`, `camel_case()`, `pascal_case()` have been re-implemented
+  using the excellent [`heck`][1] crate. It will bring more correctness but also might introduce some small changes in
+  how these functions work.
+
+[1]: https://crates.io/crates/heck
 
 ### Deprecated
 
