@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [v0.2.0] - 2025-06-11
+
 ### Added
 
 - It is now possible to define aliases directly from expressions without surrounding brackets,
@@ -144,7 +146,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.1.1...master
+[unreleased]: https://github.com/AndreiPashkin/compose-idents/compare/v0.2.0...master
+[v0.2.0]: https://github.com/AndreiPashkin/compose-idents/compare/v0.1.1...master
 [v0.1.1]: https://github.com/AndreiPashkin/compose-idents/compare/v0.1.0...v0.1.1
 [v0.1.0]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.7...v0.1.0
 [v0.0.7]: https://github.com/AndreiPashkin/compose-idents/compare/v0.0.6...v0.0.7
