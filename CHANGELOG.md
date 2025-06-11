@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   but it will cause a deprecation warning.
 - Fixed a bug in `normalize()` function that could append an extra trailing underscore to the result.
 - Hardened parsing of alias values.
+- Fixed a bug where certain inputs (like `Result<T, E>`) could be erroneously rejected by `normalize()`.
 
 ### Removed
 
