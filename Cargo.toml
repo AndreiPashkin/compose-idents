@@ -13,7 +13,9 @@ exclude = [
     ".github/*",
     ".pre-commit-config.yaml",
     "Taskfile.yml",
-    "README.md.tpl",
+    "*.tpl",
+    "snippets/*.tpl",
+    "snippets/*.rs",
     ".gitignore",
     "AGENTS.md",
 ]
