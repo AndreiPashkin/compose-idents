@@ -141,44 +141,51 @@ impl Parse for Func {
         let func_name = ident.to_string();
         let raw_args;
         parenthesized!(raw_args in input);
-        let punctuated =
-            raw_args.parse_terminated(Terminated::<Expr, Token![,]>::parse, Token![,])?;
-        let args = punctuated
-            .into_iter()
-            .map(|arg| arg.into_value())
-            .collect::<Vec<_>>();
+        let punctuated = raw_args
+            .fork()
+            .parse_terminated(Terminated::<Expr, Token![,]>::parse, Token![,]);
+        let args = match punctuated {
+            Ok(punctuated) => Some(
+                punctuated
+                    .into_iter()
+                    .map(|arg| arg.into_value())
+                    .collect::<Vec<_>>(),
+            ),
+            Err(_) => None,
+        };
+        let tokens = raw_args
+            .parse::<TokenStream>()
+            .ok()
+            .map(|tokens| Expr::ArgExpr(Box::new(Arg::Tokens(tokens))));
 
-        match (func_name.as_str(), args.as_slice()) {
-            ("upper", args) => match &args {
+        match (func_name.as_str(), args.as_deref(), tokens) {
+            ("upper", Some(args), _) => match &args {
                 [expr] => Ok(Func::Upper(expr.clone())),
                 _ => Ok(Func::SignatureMismatch("upper(arg)".to_string())),
             },
-            ("lower", args) => match &args {
+            ("lower", Some(args), _) => match &args {
                 [expr] => Ok(Func::Lower(expr.clone())),
                 _ => Ok(Func::SignatureMismatch("lower(arg)".to_string())),
             },
-            ("snake_case", args) => match &args {
+            ("snake_case", Some(args), _) => match &args {
                 [expr] => Ok(Func::SnakeCase(expr.clone())),
                 _ => Ok(Func::SignatureMismatch("snake_case(arg)".to_string())),
             },
-            ("camel_case", args) => match &args {
+            ("camel_case", Some(args), _) => match &args {
                 [expr] => Ok(Func::CamelCase(expr.clone())),
                 _ => Ok(Func::SignatureMismatch("camel_case(arg)".to_string())),
             },
-            ("pascal_case", args) => match &args {
+            ("pascal_case", Some(args), _) => match &args {
                 [expr] => Ok(Func::PascalCase(expr.clone())),
                 _ => Ok(Func::SignatureMismatch("pascal_case(arg)".to_string())),
             },
-            ("hash", args) => match &args {
+            ("hash", Some(args), _) => match &args {
                 [expr] => Ok(Func::Hash(expr.clone())),
                 _ => Ok(Func::SignatureMismatch("hash(arg)".to_string())),
             },
-            ("normalize", args) => match &args {
-                [expr] => Ok(Func::Normalize(expr.clone())),
-                _ => Ok(Func::SignatureMismatch("normalize(tokens)".to_string())),
-            },
-            ("concat", args) if !args.is_empty() => Ok(Func::Concat(args.to_vec())),
-            ("concat", _) => Ok(Func::SignatureMismatch(
+            ("normalize", _, Some(tokens)) => Ok(Func::Normalize(tokens.clone())),
+            ("concat", Some(args), _) if !args.is_empty() => Ok(Func::Concat(args.to_vec())),
+            ("concat", _, _) => Ok(Func::SignatureMismatch(
                 "concat(arg1, arg2, ...)".to_string(),
             )),
             _ => Ok(Func::Undefined),
