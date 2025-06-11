@@ -301,3 +301,85 @@ impl Parse for AliasSpec {
         Ok(AliasSpec::new(items, is_comma_used))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::ast::{AliasValue, Arg, Expr, Func};
+    use crate::parse::Terminated;
+    use proc_macro2::TokenStream;
+    use syn::parse::{ParseStream, Parser};
+    use syn::Token;
+
+    /// Tests a simple case where [`Arg`] is parsed as an identifier.
+    #[test]
+    fn parse_arg_ident() {
+        let result = syn::parse_str::<Arg>("foo");
+        assert!(
+            result.is_ok(),
+            "Expected identifier to be successfully parsed"
+        );
+        let actual = result.unwrap();
+
+        assert!(matches!(actual, Arg::Ident(ident) if ident == "foo"));
+    }
+
+    /// Tests that it should be possible to parse terminated [`Arg`] with [`Terminated`] helper.
+    #[test]
+    fn parse_arg_ident_terminated() {
+        let parser = |input: ParseStream| {
+            let item: Terminated<Arg, Token![,]> = input.parse()?;
+            let rest: TokenStream = input.parse()?;
+            Ok((item, rest))
+        };
+
+        let result = parser.parse_str("foo,");
+        assert!(
+            result.is_ok(),
+            "Expected identifier terminated to be successfully parsed"
+        );
+
+        let (terminated_arg, actual_tail) = result.unwrap();
+        let actual_arg = terminated_arg.into_value();
+
+        assert!(matches!(&actual_arg, Arg::Ident(ident) if ident == "foo"));
+        assert_eq!(actual_tail.to_string(), ",");
+    }
+
+    /// Tests that a simple identifier can be parsed as an [`AliasValue`].
+    #[test]
+    fn parse_alias_value_ident() {
+        let result = syn::parse_str::<AliasValue>("foo");
+        assert!(
+            result.is_ok(),
+            "Expected identifier to be successfully parsed"
+        );
+
+        let alias_value = result.unwrap();
+        let actual_exprs = alias_value.exprs();
+        assert_eq!(
+            actual_exprs.len(),
+            1,
+            "Expected one expression in AliasValue"
+        );
+
+        let actual_expr = &actual_exprs[0];
+
+        assert!(
+            matches!(actual_expr, Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_)))
+        );
+    }
+
+    /// Tests that a simple func call can be parsed as a [`Func`].
+    #[test]
+    fn parse_func_upper() {
+        let result = syn::parse_str::<Func>("upper(foo)");
+        assert!(result.is_ok(), "Expected func to be successfully parsed");
+        let actual = result.unwrap();
+
+        assert!(matches!(
+            actual,
+            Func::Upper(Expr::ArgExpr(boxed_arg))
+            if matches!(boxed_arg.as_ref(), Arg::Ident(ident) if ident == "foo")
+        ));
+    }
+}
