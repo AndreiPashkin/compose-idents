@@ -353,7 +353,7 @@ assert_eq!(prefix_static_str_camel_case(), 3);
 ## Deprecation policy
 
 - As a general rule old functionality is not removed abruptly, but rather deprecated first and removed after
-  a few releases.
+  a few releases. This applies to pre-1.0.0 releases as well.
 - Deprecation works by injecting `#[deprecated]` attribute to existing syntactic elements of generated code
   without adding new ones. It might not work in corner cases if there is no place where the attribute could be added.
 
