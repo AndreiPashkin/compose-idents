@@ -9,9 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- It is now possible to define aliases directly from expressions without surrounding brackets,
+  for example: `alias = expr` or `alias = concat(arg1, arg2, ...)`. The old syntax will continue to work, but will
+  emit a deprecation warning.
+- New `concat()` function that concatenates multiple arguments together.
 - Deprecation warning mechanism has been added. Now if a user uses something that is deprecated, the macro
   will try to attach `#[deprecated(...)]` attribute to the generated code if it's possible.
-- New `concat()` function that concatenates multiple arguments together.
 
 ### Changed
 
@@ -23,9 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug with `snake_case()` when `CamelCase` was converted to `c_amel_case` instead of `camel_case`.
 - Refactored deprecation mechanism - so that it is fully encapsulated within a single module and has a concise
   external API.
-- Deprecated `alias = [arg1, arg2, ...]` syntax in favor of expression-based syntax `alias = arg`,
-  `alias = concat(arg1, arg2, ...)` - where any expression could be used after `=`. The old syntax will still work,
-  but it will cause a deprecation warning.
+- Deprecated `alias = [arg1, arg2, ...]` syntax in favor of expression-based.
 - Fixed a bug in `normalize()` function that could append an extra trailing underscore to the result.
 - Hardened parsing of alias values.
 - Fixed a bug where certain inputs (like `Result<T, E>`) could be erroneously rejected by `normalize()`.
