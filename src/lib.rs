@@ -30,16 +30,19 @@ use syn::parse_macro_input;
 /// use compose_idents::compose_idents;
 ///
 /// compose_idents!(
-///     // Alias is defined one or more arguments that are supposed to be concatenated
-///     alias1 = [part1, part2],
-///     // Multiple aliases could be defined
-///     // and they could be composed from arbitrary number of arguments
-///     // Which could be identifiers, strings, numbers, underscores or just arbitrary token
-///     // sequences
-///     alias2 = [part3, _, "part4", _, 1],
-///     // Functions could applied to the arguments, calls to functions could be nested
-///     alias3 = [some_func(part5), outer_func(inner_func(part6))],
-///     // ... more aliases
+///     // Alias is defined as an expression that could be a value or a function call that evaluates
+///     // in a valid identifier.
+///     alias1 = concat(foo, _, bar),
+///     alias2 = foo,
+///     // Function calls could be nested.
+///     alias3 = upper(snake_case(fooBarBaz)),
+///     // Values could be idents, string or integer literals, underscores or free-form tokens.
+///     alias4 = concat(foo, _, "bar", _, 42),
+///     // Values could be converted to valid identifiers using `normalize()` function.
+///     alias5 = concat(my, _, fn, _, normalize(My::Enum)),
+///     // Bracket-based legacy syntax is still supported but deprecated.
+///     alias6 = [part3, _, "part4", _, 1],
+///     // ... more alias definitions
 ///     {
 ///         // Code block that uses aliases as identifiers
 ///         // The aliases will be replaced with their replacements when the code is expanded

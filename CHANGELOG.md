@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed `Combined` parser-combinator helper type and `combine!` macro.
+- Corrected the syntax section in the docs for `compose_idents!` macro - made it up to date with the recent major
+  syntax change that deprecated the bracket-based syntax in favor of expression-based one.
 
 ## [v0.2.0] - 2025-06-11
 
