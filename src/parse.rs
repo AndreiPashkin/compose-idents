@@ -81,13 +81,19 @@ where
         let mut errors = Vec::new();
         let fork = input.fork();
         match fork.parse::<A>() {
-            Ok(a) => return Ok(Self::A(a)),
+            Ok(a) => {
+                input.advance_to(&fork);
+                return Ok(Self::A(a));
+            }
             Err(err) => errors.push(err),
         }
 
         let fork = input.fork();
         match fork.parse::<B>() {
-            Ok(b) => return Ok(Self::B(b)),
+            Ok(b) => {
+                input.advance_to(&fork);
+                return Ok(Self::B(b));
+            }
             Err(err) => errors.push(err),
         }
 
@@ -102,10 +108,10 @@ where
 /// Combines tokens into a single one that has a speculative [`Parse`] implemented for it.
 macro_rules! combine {
     ($A:ty, $B:ty) => {
-        Combined::<$A, $B>
+        $crate::parse::Combined::<$A, $B>
     };
-    ($A:ty, $B:ty $(,$($T:ty),*)?) => {
-        combine!(Combined::<$A, $B>, $($T)*)
+    ($A:ty, $B:ty $(, $tail:ty)+) => {
+        $crate::parse::Combined::<$A, combine!($B $(, $tail)+)>
     };
 }
 pub(crate) use combine;
@@ -472,5 +478,30 @@ mod tests {
             Func::Upper(Expr::ArgExpr(boxed_arg))
             if matches!(boxed_arg.as_ref(), Arg::Ident(ident) if ident == "foo")
         ));
+    }
+
+    /// Tests usage of [`crate::parse::Combined`] parser-combinator and [`crate::parse::combine`]
+    /// macro helper.
+    #[test]
+    fn combine() {
+        type CombinedType = combine!(syn::Ident, syn::LitStr, syn::LitInt);
+
+        let parser = |input: ParseStream| {
+            let item: CombinedType = input.parse()?;
+            let rest: TokenStream = input.parse()?;
+            Ok((item, rest))
+        };
+
+        let result = parser.parse_str("foo");
+        assert!(result.is_ok(), "Failed to parse the expression");
+
+        let (actual_combined, actual_tail) = result.unwrap();
+        assert_eq!(actual_tail.to_string(), "");
+
+        assert!(matches!(
+            actual_combined,
+            CombinedType::A(ident) if ident == "foo"
+        ));
+        assert_eq!(actual_tail.to_string(), "");
     }
 }
