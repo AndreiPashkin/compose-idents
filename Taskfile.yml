@@ -15,3 +15,22 @@ tasks:
       - gomplate --template heading=snippets/heading.tpl -f README.md.tpl -o README.md
       - "echo '{\"headings_level\": 2 }' | gomplate --template heading=snippets/heading.tpl -c .=stdin:///cfg.json -f snippets/reference.md.tpl -o snippets/reference_h2.md"
       - "echo '{\"headings_level\": 1 }' | gomplate --template heading=snippets/heading.tpl -c .=stdin:///cfg.json -f snippets/docs.md.tpl -o snippets/docs.md"
+  publish:
+    desc: Publish the crate to crates.io
+    cmds:
+      - |
+        set -euo pipefail
+
+        tmpdir=$(mktemp -d)
+        echo "Cloning repository to temporary directory: $tmpdir"
+        git clone --depth 1 . "$tmpdir"
+        cd "$tmpdir"
+        # Run sanity checks
+        task lint
+        cargo build --release
+        cargo doc --no-deps
+        # Publish to crates.io if all checks pass
+        cargo publish
+        # Cleanup
+        cd -
+        rm -rf "$tmpdir"
