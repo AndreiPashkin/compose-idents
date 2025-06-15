@@ -2,8 +2,9 @@ This is a complete reference to the functionality of this library split into the
 
 ## Basic alias definition
 
-You can define aliases with the syntax `alias = [arg1, arg2, …]`, where args may be identifiers, string literals,
-integers, underscores, or any arbitrary sequences of tokens (like `&'static str`):
+You can define aliases with the syntax `alias = concat(arg1, normalize(arg2), ...)`, `alias = lower(ARG)`,
+`alias = arg`, etc., where args may be identifiers, string literals, integers, underscores, or any arbitrary sequences
+of tokens (like `&'static str`):
 ```rust
 use compose_idents::compose_idents;
 

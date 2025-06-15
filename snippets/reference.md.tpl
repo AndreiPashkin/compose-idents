@@ -4,8 +4,9 @@ This is a complete reference to the functionality of this library split into the
 
 {{ $h1 }} Basic alias definition
 
-You can define aliases with the syntax `alias = [arg1, arg2, …]`, where args may be identifiers, string literals,
-integers, underscores, or any arbitrary sequences of tokens (like `&'static str`):
+You can define aliases with the syntax `alias = concat(arg1, normalize(arg2), ...)`, `alias = lower(ARG)`,
+`alias = arg`, etc., where args may be identifiers, string literals, integers, underscores, or any arbitrary sequences
+of tokens (like `&'static str`, `My::Enum` and so on - such values would be recognized as just tokens):
 ```rust
 {{ file.Read "snippets/basic.rs" -}}
 ```
