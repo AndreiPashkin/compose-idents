@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixed
+
+- Fixed outdated alias definition instructions in the documentation.
+
 ## [v0.2.1] - 2025-06-13
 
 ### Fixed
