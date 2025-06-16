@@ -4,7 +4,7 @@ This is a complete reference to the functionality of this library split into the
 
 You can define aliases with the syntax `alias = concat(arg1, normalize(arg2), ...)`, `alias = lower(ARG)`,
 `alias = arg`, etc., where args may be identifiers, string literals, integers, underscores, or any arbitrary sequences
-of tokens (like `&'static str`):
+of tokens (like `&'static str`, `My::Enum` and so on - such values would be recognized as just tokens):
 ```rust
 use compose_idents::compose_idents;
 
