@@ -18,6 +18,7 @@ It uses such tools as Task, Gomplate, Pre-commit, Clippy, Rustfmt besides Cargo.
     - `/ast`: Types that represent AST elements of the syntax accepted by the macro
     - `/resolve.rs`: Implementation of the resolve-phase if the interpreter - it performs static-analysis.
     - `/eval.rs`: Implementation of the eval-phase of the interpreter - it performs execution of the code.
+    - `/util`: Contains various auxiliary utilities.
 - `/tests`: Tests of the project. Most tests rely on [`trybuild`][1] crate.
 
 ## General Instructions

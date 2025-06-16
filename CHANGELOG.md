@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+
+- Moved all the internal utilities to the `util` module.
+
 ## [v0.2.2] - 2025-06-16
 
 ### Fixed

@@ -3,21 +3,20 @@
 
 mod ast;
 mod core;
-mod deprecation;
 mod error;
 mod eval;
 mod funcs;
 mod interpreter;
 mod parse;
 mod resolve;
-mod unique_id;
+mod util;
 
 use crate::ast::ComposeIdentsArgs;
-use crate::deprecation::DeprecationService;
 use crate::interpreter::Interpreter;
 use proc_macro::TokenStream;
 use std::convert::TryInto;
 use syn::parse_macro_input;
+use util::deprecation::DeprecationService;
 
 /// Compose identifiers from the provided parts and replace their aliases in the code block.
 ///

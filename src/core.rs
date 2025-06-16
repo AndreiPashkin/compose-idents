@@ -1,6 +1,6 @@
 //! Defines core types used throughout the project.
 
-use crate::unique_id::next_unique_id;
+use crate::util::unique_id::next_unique_id;
 use std::collections::HashMap;
 use syn::visit_mut::VisitMut;
 use syn::{Ident, LitStr};

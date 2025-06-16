@@ -1,120 +1,16 @@
 //! Implements parsing logic for different internal components.
 
 use crate::ast::{Alias, AliasSpec, AliasSpecItem, AliasValue, Arg, ComposeIdentsArgs, Expr, Func};
-use crate::deprecation::DeprecationService;
 use crate::error::combine_errors;
-use proc_macro2::{TokenStream, TokenTree};
-use quote::ToTokens;
+use crate::util::combined::combine;
+use crate::util::deprecation::DeprecationService;
+use crate::util::terminated::Terminated;
+use proc_macro2::TokenStream;
 use std::collections::HashSet;
-use std::marker::PhantomData;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
 use syn::token::Bracket;
 use syn::{bracketed, parenthesized, Block, Ident, Token};
-
-/// Wraps the token-type `T` and parses it by consuming the input until the terminator `Term` or
-/// the end if the input.
-struct Terminated<T, Term>
-where
-    T: Parse,
-    Term: Parse,
-{
-    value: T,
-    terminator_type: PhantomData<Term>,
-}
-
-impl<T, Term> Terminated<T, Term>
-where
-    T: Parse,
-    Term: Parse,
-{
-    fn into_value(self) -> T {
-        self.value
-    }
-}
-
-impl<T, Term> Parse for Terminated<T, Term>
-where
-    T: Parse,
-    Term: Parse,
-{
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let mut tokens = TokenStream::new();
-        while !input.is_empty() {
-            let fork = input.fork();
-            let is_terminator = fork.parse::<Term>().is_ok();
-            if is_terminator {
-                break;
-            }
-            let tt = input.parse::<TokenTree>()?;
-            tokens.extend(tt.into_token_stream());
-        }
-
-        let value = syn::parse2::<T>(tokens)?;
-
-        Ok(Terminated {
-            value,
-            terminator_type: PhantomData,
-        })
-    }
-}
-
-/// Combines two syntactic elements into a single one and enables parsing them speculatively.
-///
-/// Useful for parsing multiple alternative kinds of terminators in one go.
-pub enum Combined<A, B>
-where
-    A: Parse,
-    B: Parse,
-{
-    A(A),
-    B(B),
-}
-
-impl<A, B> Parse for Combined<A, B>
-where
-    A: Parse,
-    B: Parse,
-{
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let span = input.span();
-        let mut errors = Vec::new();
-        let fork = input.fork();
-        match fork.parse::<A>() {
-            Ok(a) => {
-                input.advance_to(&fork);
-                return Ok(Self::A(a));
-            }
-            Err(err) => errors.push(err),
-        }
-
-        let fork = input.fork();
-        match fork.parse::<B>() {
-            Ok(b) => {
-                input.advance_to(&fork);
-                return Ok(Self::B(b));
-            }
-            Err(err) => errors.push(err),
-        }
-
-        Err(combine_errors(
-            "Unable to parse any of the combined tokens (see the errors below)",
-            span,
-            errors,
-        ))
-    }
-}
-
-/// Combines tokens into a single one that has a speculative [`Parse`] implemented for it.
-macro_rules! combine {
-    ($A:ty, $B:ty) => {
-        $crate::parse::Combined::<$A, $B>
-    };
-    ($A:ty, $B:ty $(, $tail:ty)+) => {
-        $crate::parse::Combined::<$A, combine!($B $(, $tail)+)>
-    };
-}
-pub(crate) use combine;
 
 /// Parses the argument until the end of the input.
 impl Parse for Arg {
@@ -373,6 +269,7 @@ impl Parse for AliasSpec {
 mod tests {
     use crate::ast::{AliasValue, Arg, Expr, Func};
     use crate::parse::Terminated;
+    use crate::util::combined::combine;
     use proc_macro2::TokenStream;
     use syn::parse::{ParseStream, Parser};
     use syn::Token;
