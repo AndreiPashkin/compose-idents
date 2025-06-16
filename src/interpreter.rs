@@ -2,10 +2,10 @@
 
 use crate::ast::{ComposeIdentsArgs, Scope};
 use crate::core::{ComposeIdentsVisitor, State};
-use crate::deprecation::DeprecationServiceScope;
 use crate::error::Error;
 use crate::eval::{Context, Eval, Evaluated};
 use crate::resolve::Resolve;
+use crate::util::deprecation::DeprecationServiceScope;
 use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
