@@ -35,12 +35,21 @@ trybuild = "1"
 rstest = "~0.24.0"
 tempfile = "3.19"
 
+[features]
+# Features are disabled by default so that special tests are opt-in only.
+# Run them with `cargo test --features special-tests`.
+default = []
+_build-test = []
+_format-doc-attr-test = []
+
 [[test]]
 name = "format_doc_attr"
 path = "tests/compile/format_doc_attr.rs"
 harness = false
+required-features = ["_format-doc-attr-test"]
 
 [[test]]
 name = "build"
 path = "tests/build.rs"
 harness = false
+required-features = ["_build-test"]

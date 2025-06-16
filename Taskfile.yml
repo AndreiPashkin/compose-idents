@@ -6,7 +6,7 @@ tasks:
     env:
       RUST_BACKTRACE: full
     cmds:
-      - cargo test --verbose
+      - cargo test --all-features --verbose
   lint:
     cmds:
       - pre-commit run --all

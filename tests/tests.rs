@@ -51,7 +51,13 @@ fn test_format_doc_attr() {
     use std::process::Command;
 
     let output = Command::new("cargo")
-        .args(&["expand", "--test", "format_doc_attr"])
+        .args(&[
+            "expand",
+            "--features",
+            "_format-doc-attr-test",
+            "--test",
+            "format_doc_attr",
+        ])
         .output()
         .expect("Failed to execute cargo expand");
 
