@@ -11,6 +11,9 @@ It uses such tools as Task, Gomplate, Pre-commit, Clippy, Rustfmt besides Cargo.
 ## Project Structure
 
 - `README.md`: User-facing documentation of the project.
+- `/adr`: Contains Architecture Decision Records (ADRs) in MADR format that document significant architectural decisions
+          made during the development of the project.
+    - `/template.md`: A template for new ADR-files.
 - `/src`: Source code that OpenAI Codex should analyze
     - `/interpreter.rs`: Implementation of the interpreter for the macro. It executes the code passed by the user to
                          the macro, and it loosely follows the tree-walk interpreter design as described in:
