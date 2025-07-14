@@ -3,6 +3,16 @@ use crate::core::State;
 use heck::{ToLowerCamelCase, ToPascalCase, ToSnakeCase};
 use std::hash::{DefaultHasher, Hash, Hasher};
 
+/// Converts the input string to uppercase.
+pub fn upper(input: &str) -> String {
+    input.to_uppercase()
+}
+
+/// Converts the input string to lowercase.
+pub fn lower(input: &str) -> String {
+    input.to_lowercase()
+}
+
 /// Converts the input string to snake_case.
 pub fn to_snake_case(input: &str) -> String {
     input.to_snake_case()

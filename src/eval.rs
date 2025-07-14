@@ -3,7 +3,9 @@
 use crate::ast::{AliasValue, Arg, Ast, Expr, Func};
 use crate::core::State;
 use crate::error::Error;
-use crate::funcs::{concat, hash, normalize, to_camel_case, to_pascal_case, to_snake_case};
+use crate::funcs::{
+    concat, hash, lower, normalize, to_camel_case, to_pascal_case, to_snake_case, upper,
+};
 use std::collections::HashMap;
 
 /// Result of evaluating a statement.
@@ -56,11 +58,11 @@ impl Eval for Func {
         match self {
             Func::Upper(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
-                Ok(Evaluated::Value(value.to_uppercase()))
+                Ok(Evaluated::Value(upper(value.as_str())))
             }
             Func::Lower(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
-                Ok(Evaluated::Value(value.to_lowercase()))
+                Ok(Evaluated::Value(lower(value.as_str())))
             }
             Func::SnakeCase(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
