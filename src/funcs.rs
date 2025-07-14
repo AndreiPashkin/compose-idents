@@ -59,7 +59,7 @@ pub fn normalize(input: &str) -> String {
         let should_strip = is_first || is_last;
 
         if char.is_alphanumeric() || char == '_' {
-            if i == 0 && char.is_numeric() && !inserted_underscore {
+            if result.is_empty() && char.is_numeric() && !inserted_underscore {
                 result.push('_');
             } else if char == '_' && should_strip {
                 continue;
@@ -119,6 +119,7 @@ mod tests {
     #[rstest]
     #[case("hello_world", "hello_world")]
     #[case("$hello_world", "hello_world")]
+    #[case("_hello_world", "hello_world")]
     #[case("hello_world$", "hello_world")]
     #[case("hello world", "hello_world")]
     #[case("hello__world", "hello__world")]
@@ -127,6 +128,8 @@ mod tests {
     #[case("hello...world", "hello_world")]
     #[case("hello-_-world", "hello___world")]
     #[case("123hello", "_123hello")]
+    #[case("123", "_123")]
+    #[case("_123", "_123")]
     #[case("#$%^&*", "_")]
     #[case("", "_")]
     #[case("a__b___c", "a__b___c")]
