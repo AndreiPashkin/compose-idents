@@ -188,10 +188,11 @@ impl Parse for AliasValue {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let deprecation_service = DeprecationService::scoped();
         let span = input.span();
-        let mut exprs = Vec::new();
+        let expr;
 
         if input.peek(Bracket) {
             // Fall back to the deprecated bracket-based syntax
+            let mut exprs = Vec::new();
             let content;
             bracketed!(content in input);
             let punctuated =
@@ -202,14 +203,15 @@ impl Parse for AliasValue {
                     .map(|arg| arg.into_value())
                     .collect::<Vec<_>>(),
             );
+            expr = Expr::FuncCallExpr(Box::new(Func::Concat(exprs)));
 
             deprecation_service.add_bracket_syntax_warning();
         } else {
-            let expr = input.parse::<Terminated<Expr, combine!(Token![,], Token![;])>>()?;
-            exprs.push(expr.into_value());
+            let terminated = input.parse::<Terminated<Expr, combine!(Token![,], Token![;])>>()?;
+            expr = terminated.into_value();
         }
 
-        Ok(AliasValue::new(exprs, span))
+        Ok(AliasValue::new(expr, span))
     }
 }
 
@@ -319,14 +321,7 @@ mod tests {
         );
 
         let alias_value = result.unwrap();
-        let actual_exprs = alias_value.exprs();
-        assert_eq!(
-            actual_exprs.len(),
-            1,
-            "Expected one expression in AliasValue"
-        );
-
-        let actual_expr = &actual_exprs[0];
+        let actual_expr = alias_value.expr();
 
         assert!(
             matches!(actual_expr, Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_)))
@@ -348,14 +343,7 @@ mod tests {
         );
 
         let (alias_value, tokens) = result.unwrap();
-        let actual_exprs = alias_value.exprs();
-        assert_eq!(
-            actual_exprs.len(),
-            1,
-            "Expected one expression in AliasValue"
-        );
-
-        let actual_expr = &actual_exprs[0];
+        let actual_expr = alias_value.expr();
 
         assert!(
             matches!(actual_expr, Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_))),

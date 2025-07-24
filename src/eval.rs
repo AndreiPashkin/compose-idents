@@ -115,19 +115,16 @@ impl Eval for Expr {
 
 impl Eval for AliasValue {
     fn eval(&self, state: &State, context: &mut Context) -> Result<Evaluated, Error> {
-        let ident = self.exprs().iter().try_fold("".to_string(), |acc, item| {
-            let Evaluated::Value(arg) = item.eval(state, context)?;
-            Ok::<String, Error>(format!("{}{}", acc, arg))
-        })?;
+        let Evaluated::Value(value) = self.expr().eval(state, context)?;
 
         // Validate that the resulting string is a valid identifier.
-        if syn::parse_str::<syn::Ident>(&ident).is_err() {
+        if syn::parse_str::<syn::Ident>(&value).is_err() {
             return Err(Error::EvalError(
-                format!("`{}` is not a valid identifier", ident),
+                format!("`{}` is not a valid identifier", value),
                 self.span(),
             ));
         }
 
-        Ok(Evaluated::Value(ident))
+        Ok(Evaluated::Value(value))
     }
 }

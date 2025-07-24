@@ -127,18 +127,18 @@ impl Alias {
 /// Alias value, which is a sequence of expressions that form the value of the alias.
 pub struct AliasValue {
     span: Span,
-    exprs: Vec<Expr>,
+    expr: Expr,
 }
 
 impl AliasValue {
     /// Creates a new [`AliasValue`] with the given expressions.
-    pub fn new(exprs: Vec<Expr>, span: Span) -> Self {
-        Self { span, exprs }
+    pub fn new(expr: Expr, span: Span) -> Self {
+        Self { span, expr }
     }
 
     /// Reads the expressions.
-    pub fn exprs(&self) -> &[Expr] {
-        self.exprs.as_slice()
+    pub fn expr(&self) -> &Expr {
+        &self.expr
     }
 
     /// Reads the span of the alias value.
