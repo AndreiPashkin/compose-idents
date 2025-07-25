@@ -6,26 +6,27 @@ use thiserror::Error as ThisError;
 /// Project-wise error type.
 #[derive(Debug, ThisError, Clone)]
 pub enum Error {
-    #[error("{0}")]
+    #[error("TypeError: {0}")]
     TypeError(String, Span),
-    #[error("{0}")]
+    #[error("EvalError: {0}")]
     EvalError(String, Span),
+}
+
+impl Error {
+    pub fn span(&self) -> Span {
+        match self {
+            Error::TypeError(_, span) => *span,
+            Error::EvalError(_, span) => *span,
+        }
+    }
 }
 
 impl TryFrom<Error> for SynError {
     type Error = SynError;
 
     fn try_from(value: Error) -> Result<Self, Self::Error> {
-        match value {
-            Error::TypeError(msg, span) => {
-                let syn_error = SynError::new(span, msg);
-                Ok(syn_error)
-            }
-            Error::EvalError(msg, span) => {
-                let syn_error = SynError::new(span, msg);
-                Ok(syn_error)
-            }
-        }
+        let message = value.to_string();
+        Ok(SynError::new(value.span(), message))
     }
 }
 
