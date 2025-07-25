@@ -53,3 +53,6 @@ name = "build"
 path = "tests/build.rs"
 harness = false
 required-features = ["_build-test"]
+
+[lints.clippy]
+enum_variant_names = "allow"

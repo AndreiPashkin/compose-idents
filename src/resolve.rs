@@ -22,8 +22,8 @@ impl Resolve for AliasSpec {
             let name = item.alias().ident().to_string();
             match names.entry(name) {
                 Entry::Occupied(_) => {
-                    return Err(Error::TypeError(
-                        format!("Alias `{}` is already defined", item.alias().ident()),
+                    return Err(Error::RedefinedNameError(
+                        item.alias().ident().to_string(),
                         item.span(),
                     ));
                 }

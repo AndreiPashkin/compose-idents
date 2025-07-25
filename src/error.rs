@@ -10,6 +10,8 @@ pub enum Error {
     TypeError(String, Span),
     #[error("EvalError: {0}")]
     EvalError(String, Span),
+    #[error("RedefinedNameError: name {0} has already been defined")]
+    RedefinedNameError(String, Span),
 }
 
 impl Error {
@@ -17,6 +19,7 @@ impl Error {
         match self {
             Error::TypeError(_, span) => *span,
             Error::EvalError(_, span) => *span,
+            Error::RedefinedNameError(_, span) => *span,
         }
     }
 }
