@@ -5,6 +5,7 @@ authors = ["Andrei Pashkin <andrew.pashkin@gmx.co.uk>"]
 description = "A Rust macro for generating new identifiers (names of variables, functions, traits, etc) by concatenating one or more arbitrary parts and applying other manipulations."
 keywords = ["ident", "identifier", "name", "concatenate", "generate"]
 edition = "2018"
+rust-version = "1.80.0"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/AndreiPashkin/compose-idents"

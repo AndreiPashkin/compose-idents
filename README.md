@@ -1,6 +1,7 @@
 ![Build](https://github.com/AndreiPashkin/compose-idents/actions/workflows/build.yml/badge.svg)
 [![Crates.io Version](https://img.shields.io/crates/v/compose-idents)](https://crates.io/crates/compose-idents)
 [![docs.rs](https://img.shields.io/docsrs/compose-idents)](https://docs.rs/compose-idents)
+[![MSRV](https://img.shields.io/badge/MSRV-1.85.0-blue.svg)](https://github.com/rust-lang/rust/releases/tag/1.85.0)
 
 # compose-idents
 
