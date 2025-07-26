@@ -2,6 +2,7 @@
 
 use proc_macro2::{Ident, Span, TokenStream};
 use std::collections::HashMap;
+use std::rc::Rc;
 use syn::Block;
 
 /// An AST node that has a syntactic span.
@@ -12,12 +13,12 @@ pub trait Ast {
 
 /// Lexical scope.
 #[derive(Default, Clone)]
-pub struct Scope<'a> {
-    aliases: HashMap<String, &'a dyn Ast>,
+pub struct Scope {
+    aliases: HashMap<String, Rc<dyn Ast>>,
 }
 
-impl<'a> Scope<'a> {
-    pub fn names_mut(&mut self) -> &mut HashMap<String, &'a dyn Ast> {
+impl Scope {
+    pub fn names_mut(&mut self) -> &mut HashMap<String, Rc<dyn Ast>> {
         &mut self.aliases
     }
 }
@@ -127,18 +128,18 @@ impl Alias {
 /// Alias value, which is a sequence of expressions that form the value of the alias.
 pub struct AliasValue {
     span: Span,
-    expr: Expr,
+    expr: Rc<Expr>,
 }
 
 impl AliasValue {
     /// Creates a new [`AliasValue`] with the given expressions.
-    pub fn new(expr: Expr, span: Span) -> Self {
+    pub fn new(expr: Rc<Expr>, span: Span) -> Self {
         Self { span, expr }
     }
 
     /// Reads the expressions.
-    pub fn expr(&self) -> &Expr {
-        &self.expr
+    pub fn expr(&self) -> Rc<Expr> {
+        self.expr.clone()
     }
 
     /// Reads the span of the alias value.
@@ -155,8 +156,8 @@ impl Ast for AliasValue {
 
 /// A single alias specification.
 pub struct AliasSpecItem {
-    alias: Alias,
-    value: AliasValue,
+    alias: Rc<Alias>,
+    value: Rc<AliasValue>,
 }
 
 impl Ast for AliasSpecItem {
@@ -167,24 +168,24 @@ impl Ast for AliasSpecItem {
 
 impl AliasSpecItem {
     /// Creates a new [`AliasSpecItem`] with the given alias and expressions.
-    pub fn new(alias: Alias, value: AliasValue) -> Self {
+    pub fn new(alias: Rc<Alias>, value: Rc<AliasValue>) -> Self {
         Self { alias, value }
     }
 
     /// Reads the alias identifier.
-    pub fn alias(&self) -> &Alias {
-        &self.alias
+    pub fn alias(&self) -> Rc<Alias> {
+        self.alias.clone()
     }
 
     /// Reads the alias value.
-    pub fn value(&self) -> &AliasValue {
-        &self.value
+    pub fn value(&self) -> Rc<AliasValue> {
+        self.value.clone()
     }
 }
 
 /// Specification of aliases provided to the [`compose_idents`] macro.
 pub struct AliasSpec {
-    items: Vec<AliasSpecItem>,
+    items: Vec<Rc<AliasSpecItem>>,
     is_comma_used: Option<bool>,
 }
 
@@ -199,7 +200,7 @@ impl Ast for AliasSpec {
 
 impl AliasSpec {
     /// Creates a new [`AliasSpec`] with the given items and separator information.
-    pub fn new(items: Vec<AliasSpecItem>, is_comma_used: Option<bool>) -> Self {
+    pub fn new(items: Vec<Rc<AliasSpecItem>>, is_comma_used: Option<bool>) -> Self {
         Self {
             items,
             is_comma_used,
@@ -207,7 +208,7 @@ impl AliasSpec {
     }
 
     /// Reads the individual items in the alias specification.
-    pub fn items(&self) -> &[AliasSpecItem] {
+    pub fn items(&self) -> &[Rc<AliasSpecItem>] {
         &self.items
     }
 
@@ -219,7 +220,7 @@ impl AliasSpec {
 
 /// Arguments to the [`compose_idents`] macro.
 pub struct ComposeIdentsArgs {
-    spec: AliasSpec,
+    spec: Rc<AliasSpec>,
     block: Block,
 }
 
@@ -231,13 +232,13 @@ impl Ast for ComposeIdentsArgs {
 
 impl ComposeIdentsArgs {
     /// Creates new ComposeIdentsArgs with the given components.
-    pub fn new(spec: AliasSpec, block: Block) -> Self {
+    pub fn new(spec: Rc<AliasSpec>, block: Block) -> Self {
         Self { spec, block }
     }
 
     /// Reads the alias specification.
-    pub fn spec(&self) -> &AliasSpec {
-        &self.spec
+    pub fn spec(&self) -> Rc<AliasSpec> {
+        self.spec.clone()
     }
 
     /// Reads a mutable reference to the code block.
