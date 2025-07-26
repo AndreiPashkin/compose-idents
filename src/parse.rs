@@ -7,6 +7,7 @@ use crate::util::deprecation::DeprecationService;
 use crate::util::terminated::Terminated;
 use proc_macro2::TokenStream;
 use std::collections::HashSet;
+use std::rc::Rc;
 use syn::parse::discouraged::Speculative;
 use syn::parse::{Parse, ParseStream};
 use syn::token::Bracket;
@@ -173,7 +174,7 @@ impl Parse for ComposeIdentsArgs {
             }
         }
 
-        Ok(ComposeIdentsArgs::new(spec, block))
+        Ok(ComposeIdentsArgs::new(Rc::new(spec), block))
     }
 }
 
@@ -211,7 +212,7 @@ impl Parse for AliasValue {
             expr = terminated.into_value();
         }
 
-        Ok(AliasValue::new(expr, span))
+        Ok(AliasValue::new(Rc::new(expr), span))
     }
 }
 
@@ -221,7 +222,7 @@ impl Parse for AliasSpecItem {
         input.parse::<Token![=]>()?;
         let value: AliasValue = input.parse()?;
 
-        Ok(AliasSpecItem::new(alias, value))
+        Ok(AliasSpecItem::new(Rc::new(alias), Rc::new(value)))
     }
 }
 
@@ -263,7 +264,10 @@ impl Parse for AliasSpec {
             }
         }
 
-        Ok(AliasSpec::new(items, is_comma_used))
+        Ok(AliasSpec::new(
+            items.into_iter().map(Rc::new).collect(),
+            is_comma_used,
+        ))
     }
 }
 
@@ -273,6 +277,7 @@ mod tests {
     use crate::parse::Terminated;
     use crate::util::combined::combine;
     use proc_macro2::TokenStream;
+    use std::ops::Deref;
     use syn::parse::{ParseStream, Parser};
     use syn::Token;
 
@@ -324,7 +329,7 @@ mod tests {
         let actual_expr = alias_value.expr();
 
         assert!(
-            matches!(actual_expr, Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_)))
+            matches!(actual_expr.deref(), Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_)))
         );
     }
 
@@ -346,7 +351,7 @@ mod tests {
         let actual_expr = alias_value.expr();
 
         assert!(
-            matches!(actual_expr, Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_))),
+            matches!(actual_expr.deref(), Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_))),
         );
         assert_eq!(tokens.to_string(), ",");
     }

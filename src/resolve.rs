@@ -12,11 +12,11 @@ use std::collections::hash_map::Entry;
 ///
 /// Right now the only job of the implementation is to publish the aliases defined by the AST node.
 pub trait Resolve: Ast {
-    fn resolve<'a>(&'a self, scope: &mut Scope<'a>) -> Result<(), Error>;
+    fn resolve(&self, scope: &mut Scope) -> Result<(), Error>;
 }
 
 impl Resolve for AliasSpec {
-    fn resolve<'a>(&'a self, scope: &mut Scope<'a>) -> Result<(), Error> {
+    fn resolve(&self, scope: &mut Scope) -> Result<(), Error> {
         let names = scope.names_mut();
         for item in self.items() {
             let name = item.alias().ident().to_string();
@@ -28,7 +28,7 @@ impl Resolve for AliasSpec {
                     ));
                 }
                 Entry::Vacant(entry) => {
-                    entry.insert(item);
+                    entry.insert(item.clone());
                 }
             }
         }
