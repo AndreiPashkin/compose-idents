@@ -5,6 +5,7 @@ use crate::error::combine_errors;
 use crate::util::combined::combine;
 use crate::util::deprecation::DeprecationService;
 use crate::util::terminated::Terminated;
+use crate::util::unique_id::next_unique_id;
 use proc_macro2::TokenStream;
 use std::collections::HashSet;
 use std::rc::Rc;
@@ -17,31 +18,29 @@ use syn::{bracketed, parenthesized, Block, Ident, Token};
 impl Parse for Arg {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let is_terminated = input.peek2(syn::parse::End);
-        let value: Arg;
         if input.peek(syn::Ident) && is_terminated {
             let ident = input.parse::<syn::Ident>()?;
-            value = Arg::Ident(ident);
+            Ok(Arg::from_ident(ident))
         } else if input.peek(Token![_]) && is_terminated {
             input.parse::<Token![_]>()?;
-            value = Arg::Underscore;
+            Ok(Arg::from_underscore())
         } else if input.peek(syn::LitStr) && is_terminated {
             let lit_str = input.parse::<syn::LitStr>()?;
-            value = Arg::LitStr(lit_str.value());
+            Ok(Arg::from_lit_str(lit_str.value()))
         } else if input.peek(syn::LitInt) && is_terminated {
             let lit_int = input.parse::<syn::LitInt>()?;
-            value = Arg::LitInt(lit_int.base10_parse::<u64>()?);
+            Ok(Arg::from_lit_int(lit_int.base10_parse::<u64>()?))
         } else {
             let tokens = input.parse::<TokenStream>()?;
-            value = Arg::Tokens(tokens);
+            Ok(Arg::from_tokens(tokens))
         }
-        Ok(value)
     }
 }
 
 impl Parse for Func {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let ident = input.parse::<Ident>()?;
-        let func_name = ident.to_string();
+        let span = input.span();
+        let name = input.parse::<Ident>()?;
         let raw_args;
         parenthesized!(raw_args in input);
         let punctuated = raw_args
@@ -51,7 +50,7 @@ impl Parse for Func {
             Ok(punctuated) => Some(
                 punctuated
                     .into_iter()
-                    .map(|arg| arg.into_value())
+                    .map(|arg| Rc::new(arg.into_value()))
                     .collect::<Vec<_>>(),
             ),
             Err(_) => None,
@@ -59,40 +58,9 @@ impl Parse for Func {
         let tokens = raw_args
             .parse::<TokenStream>()
             .ok()
-            .map(|tokens| Expr::ArgExpr(Box::new(Arg::Tokens(tokens))));
+            .map(|tokens| Rc::new(Expr::ArgExpr(Box::new(Arg::from_tokens(tokens)))));
 
-        match (func_name.as_str(), args.as_deref(), tokens) {
-            ("upper", Some(args), _) => match &args {
-                [expr] => Ok(Func::Upper(expr.clone())),
-                _ => Ok(Func::SignatureMismatch("upper(arg)".to_string())),
-            },
-            ("lower", Some(args), _) => match &args {
-                [expr] => Ok(Func::Lower(expr.clone())),
-                _ => Ok(Func::SignatureMismatch("lower(arg)".to_string())),
-            },
-            ("snake_case", Some(args), _) => match &args {
-                [expr] => Ok(Func::SnakeCase(expr.clone())),
-                _ => Ok(Func::SignatureMismatch("snake_case(arg)".to_string())),
-            },
-            ("camel_case", Some(args), _) => match &args {
-                [expr] => Ok(Func::CamelCase(expr.clone())),
-                _ => Ok(Func::SignatureMismatch("camel_case(arg)".to_string())),
-            },
-            ("pascal_case", Some(args), _) => match &args {
-                [expr] => Ok(Func::PascalCase(expr.clone())),
-                _ => Ok(Func::SignatureMismatch("pascal_case(arg)".to_string())),
-            },
-            ("hash", Some(args), _) => match &args {
-                [expr] => Ok(Func::Hash(expr.clone())),
-                _ => Ok(Func::SignatureMismatch("hash(arg)".to_string())),
-            },
-            ("normalize", _, Some(tokens)) => Ok(Func::Normalize(tokens.clone())),
-            ("concat", Some(args), _) if !args.is_empty() => Ok(Func::Concat(args.to_vec())),
-            ("concat", _, _) => Ok(Func::SignatureMismatch(
-                "concat(arg1, arg2, ...)".to_string(),
-            )),
-            _ => Ok(Func::Undefined),
-        }
+        Ok(Func::new(next_unique_id(), name, args, tokens, span))
     }
 }
 
@@ -101,28 +69,9 @@ impl Parse for Expr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut errors: Vec<syn::Error> = Vec::new();
         let fork = input.fork();
-        let span = input.span();
 
         match fork.parse::<Func>() {
             Ok(func) => {
-                match func {
-                    Func::Undefined => {
-                        return Err(syn::Error::new(
-                            span,
-                            "Matching function has not been found",
-                        ))
-                    }
-                    Func::SignatureMismatch(err) => {
-                        return Err(syn::Error::new(
-                            span,
-                            format!(
-                                r#"Type constraints for function "{}" are not satisfied"#,
-                                err,
-                            ),
-                        ));
-                    }
-                    _ => {}
-                }
                 input.advance_to(&fork);
                 return Ok(Expr::FuncCallExpr(Box::new(func)));
             }
@@ -174,14 +123,18 @@ impl Parse for ComposeIdentsArgs {
             }
         }
 
-        Ok(ComposeIdentsArgs::new(Rc::new(spec), block))
+        Ok(ComposeIdentsArgs::new(
+            next_unique_id(),
+            Rc::new(spec),
+            block,
+        ))
     }
 }
 
 impl Parse for Alias {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let ident: Ident = input.parse()?;
-        Ok(Alias::new(ident))
+        Ok(Alias::new(next_unique_id(), ident))
     }
 }
 
@@ -201,10 +154,17 @@ impl Parse for AliasValue {
             exprs.extend(
                 punctuated
                     .into_iter()
-                    .map(|arg| arg.into_value())
+                    .map(|arg| Rc::new(arg.into_value()))
                     .collect::<Vec<_>>(),
             );
-            expr = Expr::FuncCallExpr(Box::new(Func::Concat(exprs)));
+            let func = Func::new(
+                next_unique_id(),
+                Ident::new("concat", span),
+                Some(exprs),
+                None,
+                span,
+            );
+            expr = Expr::FuncCallExpr(Box::new(func));
 
             deprecation_service.add_bracket_syntax_warning();
         } else {
@@ -212,7 +172,7 @@ impl Parse for AliasValue {
             expr = terminated.into_value();
         }
 
-        Ok(AliasValue::new(Rc::new(expr), span))
+        Ok(AliasValue::new(next_unique_id(), Rc::new(expr), span))
     }
 }
 
@@ -222,7 +182,11 @@ impl Parse for AliasSpecItem {
         input.parse::<Token![=]>()?;
         let value: AliasValue = input.parse()?;
 
-        Ok(AliasSpecItem::new(Rc::new(alias), Rc::new(value)))
+        Ok(AliasSpecItem::new(
+            next_unique_id(),
+            Rc::new(alias),
+            Rc::new(value),
+        ))
     }
 }
 
@@ -265,6 +229,7 @@ impl Parse for AliasSpec {
         }
 
         Ok(AliasSpec::new(
+            next_unique_id(),
             items.into_iter().map(Rc::new).collect(),
             is_comma_used,
         ))
@@ -273,11 +238,10 @@ impl Parse for AliasSpec {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::{AliasValue, Arg, Expr, Func};
+    use crate::ast::{AliasValue, Arg, ArgInner, Expr, Func};
     use crate::parse::Terminated;
     use crate::util::combined::combine;
     use proc_macro2::TokenStream;
-    use std::ops::Deref;
     use syn::parse::{ParseStream, Parser};
     use syn::Token;
 
@@ -291,7 +255,7 @@ mod tests {
         );
         let actual = result.unwrap();
 
-        assert!(matches!(actual, Arg::Ident(ident) if ident == "foo"));
+        assert!(matches!(actual.inner(), ArgInner::Ident(ident) if ident == "foo"));
     }
 
     /// Tests that it should be possible to parse terminated [`Arg`] with [`Terminated`] helper.
@@ -312,7 +276,7 @@ mod tests {
         let (terminated_arg, actual_tail) = result.unwrap();
         let actual_arg = terminated_arg.into_value();
 
-        assert!(matches!(&actual_arg, Arg::Ident(ident) if ident == "foo"));
+        assert!(matches!(&actual_arg.inner(), ArgInner::Ident(ident) if ident == "foo"));
         assert_eq!(actual_tail.to_string(), ",");
     }
 
@@ -329,7 +293,7 @@ mod tests {
         let actual_expr = alias_value.expr();
 
         assert!(
-            matches!(actual_expr.deref(), Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_)))
+            matches!(actual_expr.as_ref(), Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.inner(), ArgInner::Ident(_)))
         );
     }
 
@@ -351,7 +315,7 @@ mod tests {
         let actual_expr = alias_value.expr();
 
         assert!(
-            matches!(actual_expr.deref(), Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.as_ref(), Arg::Ident(_))),
+            matches!(actual_expr.as_ref(), Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.inner(), ArgInner::Ident(_))),
         );
         assert_eq!(tokens.to_string(), ",");
     }
@@ -363,11 +327,10 @@ mod tests {
         assert!(result.is_ok(), "Expected func to be successfully parsed");
         let actual = result.unwrap();
 
-        assert!(matches!(
-            actual,
-            Func::Upper(Expr::ArgExpr(boxed_arg))
-            if matches!(boxed_arg.as_ref(), Arg::Ident(ident) if ident == "foo")
-        ));
+        assert_eq!(actual.name(), "upper");
+        assert!(
+            matches!(actual.args(), Some(args) if args.len() == 1 && matches!(args[0].as_ref(), Expr::ArgExpr(boxed_arg) if matches!(boxed_arg.inner(), ArgInner::Ident(ident) if ident == "foo"))),
+        );
     }
 
     /// Tests usage of [`crate::parse::Combined`] parser-combinator and [`crate::parse::combine`]

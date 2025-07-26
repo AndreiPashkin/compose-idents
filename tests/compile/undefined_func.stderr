@@ -1,4 +1,4 @@
-error: Matching function has not been found
+error: UndefinedFunctionError: function "undefined(...)" is undefined
  --> tests/compile/undefined_func.rs:3:25
   |
 3 | compose_idents!(my_fn = undefined(foo), {
