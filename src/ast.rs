@@ -1,5 +1,6 @@
 //! Defines the AST nodes that describe the syntax of the macro.
 
+use crate::error::Error;
 use proc_macro2::{Ident, Span, TokenStream};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -18,8 +19,12 @@ pub struct Scope {
 }
 
 impl Scope {
-    pub fn names_mut(&mut self) -> &mut HashMap<String, Rc<dyn Ast>> {
-        &mut self.aliases
+    pub fn try_add_name(&mut self, name: String, item: Rc<dyn Ast>) -> Result<(), Error> {
+        if self.aliases.contains_key(&name) {
+            return Err(Error::RedefinedNameError(name, item.span()));
+        }
+        self.aliases.insert(name, item);
+        Ok(())
     }
 }
 
