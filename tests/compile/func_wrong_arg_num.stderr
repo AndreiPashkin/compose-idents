@@ -1,4 +1,4 @@
-error: Type constraints for function "snake_case(arg)" are not satisfied
+error: SignatureError: function snake_case(arg) has been called with incompatible arguments: snake_case(fooBar, barBaz)
  --> tests/compile/func_wrong_arg_num.rs:3:25
   |
 3 | compose_idents!(my_fn = snake_case(fooBar, barBaz), {

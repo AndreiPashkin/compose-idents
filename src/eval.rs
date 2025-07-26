@@ -1,12 +1,15 @@
 //! Implementation of eval-phase logic.
 
-use crate::ast::{AliasValue, Arg, Ast, Expr, Func};
+use crate::ast::{AliasValue, Arg, ArgInner, Ast, AstMetadata, Expr, Func, FuncInner};
 use crate::core::State;
-use crate::error::Error;
+use crate::error::{internal_error, Error};
 use crate::funcs::{
     concat, hash, lower, normalize, to_camel_case, to_pascal_case, to_snake_case, upper,
 };
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::ops::Deref;
+use std::rc::Rc;
 
 /// Result of evaluating a statement.
 pub enum Evaluated {
@@ -18,11 +21,25 @@ pub enum Evaluated {
 #[derive(Default)]
 pub struct Context {
     context: HashMap<String, Evaluated>,
+    metadata: Rc<RefCell<AstMetadata>>,
 }
 
 impl Context {
     pub fn context_mut(&mut self) -> &mut HashMap<String, Evaluated> {
         &mut self.context
+    }
+
+    /// Creates a new Context with the given metadata.
+    pub fn new(metadata: Rc<RefCell<AstMetadata>>) -> Self {
+        Self {
+            context: HashMap::new(),
+            metadata,
+        }
+    }
+
+    /// Gets a reference to the AST metadata.
+    pub fn metadata(&self) -> Rc<RefCell<AstMetadata>> {
+        self.metadata.clone()
     }
 }
 
@@ -35,8 +52,8 @@ pub trait Eval: Ast {
 
 impl Eval for Arg {
     fn eval(&self, _: &State, context: &mut Context) -> Result<Evaluated, Error> {
-        match self {
-            Arg::Ident(ident) => {
+        match self.inner() {
+            ArgInner::Ident(ident) => {
                 let value = ident.to_string();
                 let context_ = context.context_mut();
                 let res = match context_.get(&value) {
@@ -45,46 +62,54 @@ impl Eval for Arg {
                 };
                 Ok(res)
             }
-            Arg::LitStr(value) => Ok(Evaluated::Value(value.clone())),
-            Arg::LitInt(value) => Ok(Evaluated::Value(value.to_string())),
-            Arg::Tokens(tokens) => Ok(Evaluated::Value(tokens.to_string())),
-            Arg::Underscore => Ok(Evaluated::Value("_".to_string())),
+            ArgInner::LitStr(value) => Ok(Evaluated::Value(value.clone())),
+            ArgInner::LitInt(value) => Ok(Evaluated::Value(value.to_string())),
+            ArgInner::Tokens(tokens) => Ok(Evaluated::Value(tokens.to_string())),
+            ArgInner::Underscore => Ok(Evaluated::Value("_".to_string())),
         }
     }
 }
 
 impl Eval for Func {
     fn eval(&self, state: &State, context: &mut Context) -> Result<Evaluated, Error> {
-        match self {
-            Func::Upper(expr) => {
+        let Some(metadata) = context.metadata().borrow().get_func_metadata(self.id()) else {
+            return Err(internal_error!(
+                "Expected function metadata to be set at the eval phase for function: {}",
+                self.name()
+            ));
+        };
+        let inner = metadata.inner.clone();
+
+        match inner.deref() {
+            FuncInner::Upper(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
                 Ok(Evaluated::Value(upper(value.as_str())))
             }
-            Func::Lower(expr) => {
+            FuncInner::Lower(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
                 Ok(Evaluated::Value(lower(value.as_str())))
             }
-            Func::SnakeCase(expr) => {
+            FuncInner::SnakeCase(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
                 Ok(Evaluated::Value(to_snake_case(value.as_str())))
             }
-            Func::CamelCase(expr) => {
+            FuncInner::CamelCase(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
                 Ok(Evaluated::Value(to_camel_case(value.as_str())))
             }
-            Func::PascalCase(expr) => {
+            FuncInner::PascalCase(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
                 Ok(Evaluated::Value(to_pascal_case(value.as_str())))
             }
-            Func::Hash(expr) => {
+            FuncInner::Hash(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
                 Ok(Evaluated::Value(hash(value.as_str(), state)))
             }
-            Func::Normalize(expr) => {
+            FuncInner::Normalize(expr) => {
                 let Evaluated::Value(value) = expr.eval(state, context)?;
                 Ok(Evaluated::Value(normalize(value.as_str())))
             }
-            Func::Concat(exprs) => {
+            FuncInner::Concat(exprs) => {
                 let values: Result<Vec<String>, Error> = exprs
                     .iter()
                     .map(|expr| {
@@ -95,10 +120,6 @@ impl Eval for Func {
                 let values = values?;
                 let string_refs: Vec<&str> = values.iter().map(|s| s.as_str()).collect();
                 Ok(Evaluated::Value(concat(&string_refs)))
-            }
-            Func::Undefined => panic!("Attempt to evaluate an undefined function"),
-            Func::SignatureMismatch(_) => {
-                panic!("Attempt to evaluate a function with a mismatched signature")
             }
         }
     }

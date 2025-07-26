@@ -12,6 +12,12 @@ pub enum Error {
     EvalError(String, Span),
     #[error("RedefinedNameError: name {0} has already been defined")]
     RedefinedNameError(String, Span),
+    #[error("SignatureError: function {0} has been called with incompatible arguments: {1}")]
+    SignatureError(String, String, Span),
+    #[error(r#"UndefinedFunctionError: function "{0}(...)" is undefined"#)]
+    UndefinedFunctionError(String, Span),
+    #[error("InternalError: {0}")]
+    InternalError(String),
 }
 
 impl Error {
@@ -20,9 +26,22 @@ impl Error {
             Error::TypeError(_, span) => *span,
             Error::EvalError(_, span) => *span,
             Error::RedefinedNameError(_, span) => *span,
+            Error::SignatureError(_, _, span) => *span,
+            Error::UndefinedFunctionError(_, span) => *span,
+            Error::InternalError(_) => Span::call_site(),
         }
     }
+    pub fn make_internal_error(message: String) -> Error {
+        Error::InternalError(message)
+    }
 }
+
+macro_rules! internal_error {
+    ($($arg:tt)*) => {
+        $crate::error::Error::make_internal_error(format!($($arg)*))
+    };
+}
+pub(crate) use internal_error;
 
 impl TryFrom<Error> for SynError {
     type Error = SynError;

@@ -57,6 +57,9 @@ impl Interpreter {
         let mut scope = Scope::default();
         self.args.spec().resolve(&mut scope)?;
 
+        // Create context with metadata from scope
+        self.context = Context::new(scope.metadata().clone());
+
         for item in self.args.spec().items() {
             let Evaluated::Value(value_str) = item.value().eval(&self.state, &mut self.context)?;
 
