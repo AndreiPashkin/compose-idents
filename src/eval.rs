@@ -28,16 +28,22 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn context_mut(&mut self) -> &mut HashMap<String, Evaluated> {
-        &mut self.context
-    }
-
     /// Creates a new Context with the given metadata.
     pub fn new(metadata: Rc<RefCell<AstMetadata>>) -> Self {
         Self {
             context: HashMap::new(),
             metadata,
         }
+    }
+
+    /// Adds a variable to the evaluation context.
+    pub fn add_variable(&mut self, name: String, value: Evaluated) {
+        self.context.insert(name, value);
+    }
+
+    /// Gets a variable reference from the evaluation context.
+    pub fn get_variable(&mut self, name: &str) -> Option<&Evaluated> {
+        self.context.get(name)
     }
 
     /// Gets a reference to the AST metadata.
@@ -58,8 +64,7 @@ impl Eval for Arg {
         match self.inner() {
             ArgInner::Ident(ident) => {
                 let value = ident.to_string();
-                let context_ = context.context_mut();
-                let res = match context_.get(&value) {
+                let res = match context.get_variable(&value) {
                     Some(Evaluated::Value(v)) => Evaluated::Value(v.clone()),
                     None => Evaluated::Value(value),
                 };
