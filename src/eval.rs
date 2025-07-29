@@ -1,4 +1,7 @@
 //! Implementation of eval-phase logic.
+//!
+//! Eval-phase is the final phase of the interpreter's execution cycle. It is responsible for
+//! producing final values of expressions.
 
 use crate::ast::{AliasValue, Arg, ArgInner, Ast, AstMetadata, Expr, Func, FuncInner};
 use crate::core::State;

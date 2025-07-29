@@ -1,4 +1,6 @@
-//! Implements parsing logic for different internal components.
+//! Implements the parsing-phase logic
+//!
+//! It relies on [`syn::Parse`] and `syn` crate in general to do all the heavy-lifting.
 
 use crate::ast::{Alias, AliasSpec, AliasSpecItem, AliasValue, Arg, ComposeIdentsArgs, Expr, Func};
 use crate::error::combine_errors;
