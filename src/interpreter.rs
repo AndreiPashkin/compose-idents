@@ -63,7 +63,7 @@ impl Interpreter {
         for item in self.args.spec().items() {
             let Evaluated::Value(value_str) = item.value().eval(&self.state, &mut self.context)?;
 
-            self.context.context_mut().insert(
+            self.context.add_variable(
                 item.alias().ident().to_string(),
                 Evaluated::Value(value_str.clone()),
             );
