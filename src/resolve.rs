@@ -1,4 +1,8 @@
 //! Implementation of resolve-phase logic.
+//!
+//! Resolve-phase is supposed to be executed after the parse-phase and before the eval-phase. Its
+//! general responsibility is to perform static analysis (which is pretty minimal at this point) and
+//! binding function calls.
 
 use crate::ast::{AliasSpec, AliasSpecItem, Ast, Expr, Func, FuncInner, Scope};
 use crate::error::Error;
@@ -16,6 +20,8 @@ pub trait Resolve: Ast {
 }
 
 impl Resolve for AliasSpec {
+    /// Resolves [`AliasSpec`] by delegating resolution process further down to each of the
+    /// items it contains.
     fn resolve(&self, scope: &mut Scope) -> Result<(), Error> {
         for item in self.items() {
             item.resolve(scope)?;
@@ -25,6 +31,8 @@ impl Resolve for AliasSpec {
 }
 
 impl Resolve for AliasSpecItem {
+    /// Resolves an [`AliasSpecItem`] by adding its alias to the global scope and checking for
+    /// redefinition of aliases.
     fn resolve(&self, scope: &mut Scope) -> Result<(), Error> {
         let name = self.alias().ident().to_string();
         self.value().expr().resolve(scope)?;
@@ -34,6 +42,8 @@ impl Resolve for AliasSpecItem {
 }
 
 impl Resolve for Expr {
+    /// Resolves an expression by delegating the resolution further in cases if the expression
+    /// is a function.
     fn resolve(&self, scope: &mut Scope) -> Result<(), Error> {
         match self {
             Expr::FuncCallExpr(boxed_func) => boxed_func.resolve(scope),
@@ -43,6 +53,8 @@ impl Resolve for Expr {
 }
 
 impl Resolve for Func {
+    /// Resolves a function call by resolving its arguments and binding the call to a built-in
+    /// function.
     fn resolve(&self, scope: &mut Scope) -> Result<(), Error> {
         let name = self.name().to_string();
 
