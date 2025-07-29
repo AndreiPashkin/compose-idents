@@ -1,6 +1,7 @@
 #![allow(clippy::needless_doctest_main)]
 #![doc = include_str!("../snippets/docs.md")]
 
+mod alias_substitution_visitor;
 mod ast;
 mod core;
 mod error;

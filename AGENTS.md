@@ -20,9 +20,11 @@ It uses such tools as Task, Gomplate, Pre-commit, Clippy, Rustfmt besides Cargo.
     - `/interpreter.rs`: Implementation of the interpreter for the macro. It executes the code passed by the user to
                          the macro, and it loosely follows the tree-walk interpreter design as described in:
                          https://craftinginterpreters.com/a-tree-walk-interpreter.html
-    - `/ast`: Types that represent AST elements of the syntax accepted by the macro
-    - `/resolve.rs`: Implementation of the resolve-phase if the interpreter - it performs static-analysis.
-    - `/eval.rs`: Implementation of the eval-phase of the interpreter - it performs execution of the code.
+    - `/ast`: Types that represent AST elements of the syntax accepted by the macro.
+    - `/parse`: Implementation of the parsing phase of the interpreter. Contains implementations of `syn::Parse` trait
+                for different AST types.
+    - `/resolve`: Implementation of the resolve-phase if the interpreter - it performs static-analysis.
+    - `/eval`: Implementation of the eval-phase of the interpreter - it performs execution of the code.
     - `/util`: Contains various auxiliary utilities.
 - `/tests`: Tests of the project. Most tests rely on [`trybuild`][1] crate.
 

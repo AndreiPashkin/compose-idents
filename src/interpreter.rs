@@ -1,10 +1,11 @@
 //! Implements the [`Interpreter`] type and the core logic of the library.
 
-use crate::ast::{ComposeIdentsArgs, Scope};
-use crate::core::{ComposeIdentsVisitor, State};
+use crate::alias_substitution_visitor::AliasSubstitutionVisitor;
+use crate::ast::ComposeIdentsArgs;
+use crate::core::State;
 use crate::error::Error;
 use crate::eval::{Context, Eval, Evaluated};
-use crate::resolve::Resolve;
+use crate::resolve::{Resolve, Scope};
 use crate::util::deprecation::DeprecationServiceScope;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -75,7 +76,7 @@ impl Interpreter {
 
         let block = self.args.block_mut();
 
-        let mut visitor = ComposeIdentsVisitor::new(self.replacements);
+        let mut visitor = AliasSubstitutionVisitor::new(self.replacements);
         visitor.visit_block_mut(block);
 
         self.deprecation_service.emit("compose_idents!: ", block);

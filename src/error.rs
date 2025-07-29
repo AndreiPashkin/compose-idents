@@ -1,3 +1,4 @@
+use crate::ast::{Ast, Func};
 use proc_macro2::Span;
 use std::convert::TryFrom;
 use syn::Error as SynError;
@@ -31,6 +32,11 @@ impl Error {
             Error::InternalError(_) => Span::call_site(),
         }
     }
+
+    pub fn make_sig_error(func: &Func, sig: &str) -> Error {
+        Error::SignatureError(sig.to_string(), func.to_string(), func.span())
+    }
+
     pub fn make_internal_error(message: String) -> Error {
         Error::InternalError(message)
     }
