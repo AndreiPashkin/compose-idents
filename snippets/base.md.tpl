@@ -1,5 +1,7 @@
 {{- $h1 := tmpl.Exec "heading" (dict "headings_level" .headings_level "level" 0) -}}
 {{- $h2 := tmpl.Exec "heading" (dict "headings_level" .headings_level "level" 1) -}}
+{{- $h3 := tmpl.Exec "heading" (dict "headings_level" .headings_level "level" 2) -}}
+{{- $h4 := tmpl.Exec "heading" (dict "headings_level" .headings_level "level" 3) -}}
 
 A macro for generating new identifiers (names of variables, functions, traits, etc.) by concatenating one or more
 arbitrary parts and applying other manipulations.
@@ -136,17 +138,99 @@ test_frobnicate_static_str();
 {{ tpl (file.Read "snippets/reference.md.tpl") (dict "headings_level" 3) -}}
 {{- printf "\n" -}}
 
-{{ $h1 }} Deprecation policy
+
+{{ $h1 }} Backwards compatibility and deprecation
+
+{{ $h2 }} Deprecation policy
 
 - As a general rule old functionality is not removed abruptly, but rather deprecated first and removed after
   a few releases. This applies to pre-1.0.0 releases as well.
-- Deprecation works by injecting `#[deprecated]` attribute to existing syntactic elements of generated code
-  without adding new ones. It might not work in corner cases if there is no place where the attribute could be added.
-
-  Here is how a deprecation warning might look like:
+- Deprecation works through injection of `#[deprecated]` attributes to existing syntactic elements of generated code.
+  It triggers deprecation warnings at compile time with text like this:
   ```text,ignore
-  warning: use of deprecated function `my_function`: compose_idents!: Using semicolons as separators is deprecated, use commas instead
+  compose_idents!: Feature XXX is deprecated, syntax `compose_idents!(...)` is considered obsolete, please use...
   ```
+- Removal of a feature without a deprecation process is only possible in pre-1.0.0 releases and in such a case an
+  explicit warning is issued in the changelog and the release notes.
+- A deprecated feature is kept for a reasonably long time, or until backwards-compatibility can't be maintained anymore,
+  or it becomes too costly, then it is removed completely.
+
+{{ $h2 }} Migration guides
+
+This section describes what to do to migrate code that uses deprecated features to up-to-date state.
+
+{{ $h3 }} [≤ 0.0.4 → 0.0.5+]: Semicolon alias separator
+
+{{ $h4 }} What changed?
+
+Starting with `v0.0.5` commas were introduced as a separator of alias definitions. The old semicolon separator is
+deprecated.
+
+{{ $h4 }} How to migrate?
+
+Before (≤ 0.0.4):
+
+```rust,ignore
+compose_idents!(
+    my_fn  = concat(foo, bar);  // ← Notice usage of semicolons
+    MY_VAR = concat(FOO, BAZ);
+    {
+        /* … */
+    };
+);
+```
+
+After (0.0.5+):
+
+```rust,ignore
+compose_idents!(
+    my_fn  = concat(foo, bar),  // ← Notice usage of commas
+    MY_VAR = concat(FOO, BAZ),
+    {
+        /* … */
+    },
+);
+```
+
+User should simply replace every semicolon separator in the macro invocation with a comma.
+
+{{ $h3 }} [≤ 0.2.0 → 0.2.0+]: Bracket-based alias syntax
+
+{{ $h4 }} What changed?
+
+`v0.2.0` deprecated the square-bracket form: `alias = [arg1, func(arg2), …]`, of alias definitions in favour of bare
+expressions without any special block delimiters: `alias = concat(arg1, func(arg2), …)`, or `alias = func(arg1)`, or
+just `alias = arg`.
+
+{{ $h4 }} How to migrate?
+
+Before (≤ 0.2.0):
+
+```rust,ignore
+compose_idents!(
+    my_fn    = [foo, _, bar],  // Notice usage of brackets
+    MY_CONST = [upper(baz)],
+    {
+        /* … */
+    },
+);
+```
+
+After (0.2.0+):
+
+```rust,ignore
+compose_idents!(
+    my_fn    = concat(foo, _, bar),  // Notice - brackets are replaced with `concat()` call
+    MY_CONST = upper(baz),  // No need for `concat()` since only a single argument is present
+    {
+        /* … */
+    },
+);
+```
+
+1. Wrap comma-separated arguments in `concat( … )`.
+2. Or use the appropriate function (`upper()`, `lower()`, etc.) directly when only one argument is present.
+3. Or Use the argument itself if no transformation is needed.
 
 {{ $h1 }} Alternatives
 

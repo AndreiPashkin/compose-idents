@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+
+- Added migration guides for deprecated features.
+
 ### Changed
 
+- Clarified the deprecation policy.
 - Moved all the internal utilities to the `util` module.
 
 ## [v0.2.2] - 2025-06-16
