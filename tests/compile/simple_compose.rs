@@ -1,3 +1,4 @@
+//! Basic identifier composition cases.
 use compose_idents::compose_idents;
 
 compose_idents!(

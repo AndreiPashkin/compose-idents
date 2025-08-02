@@ -1,11 +1,11 @@
 error: SignatureError: function snake_case(arg) has been called with incompatible arguments: snake_case(fooBar, barBaz)
- --> tests/compile/func_wrong_arg_num.rs:3:25
+ --> tests/compile/funcs/func_wrong_arg_num.rs:4:25
   |
-3 | compose_idents!(my_fn = snake_case(fooBar, barBaz), {
+4 | compose_idents!(my_fn = snake_case(fooBar, barBaz), {
   |                         ^^^^^^^^^^
 
 error[E0425]: cannot find function `foo_baz` in this scope
-  --> tests/compile/func_wrong_arg_num.rs:10:16
+  --> tests/compile/funcs/func_wrong_arg_num.rs:11:16
    |
-10 |     assert_eq!(foo_baz(), 42);
+11 |     assert_eq!(foo_baz(), 42);
    |                ^^^^^^^ not found in this scope

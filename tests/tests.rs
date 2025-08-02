@@ -1,5 +1,6 @@
+/// Tests for general features of the project.
 #[test]
-fn compile_tests() {
+fn general_tests() {
     let t = trybuild::TestCases::new();
     t.pass("tests/compile/simple_compose.rs");
     t.pass("tests/compile/trailing_comma.rs");
@@ -9,6 +10,16 @@ fn compile_tests() {
     t.pass("tests/compile/const_var_compose.rs");
     t.pass("tests/compile/generic_param_compose.rs");
     t.pass("tests/compile/num_compose.rs");
+    t.pass("tests/compile/format_lit_str.rs");
+    t.pass("tests/compile/alias_reuse.rs");
+    t.pass("tests/compile/bare_arg.rs");
+    t.compile_fail("tests/compile/dup_alias.rs");
+}
+
+/// Tests calls to functions.
+#[test]
+fn func_tests() {
+    let t = trybuild::TestCases::new();
     t.pass("tests/compile/funcs/upper.rs");
     t.pass("tests/compile/funcs/lower.rs");
     t.pass("tests/compile/funcs/nested.rs");
@@ -17,15 +28,11 @@ fn compile_tests() {
     t.pass("tests/compile/funcs/camel_case.rs");
     t.pass("tests/compile/funcs/pascal_case.rs");
     t.pass("tests/compile/funcs/hash.rs");
-    t.pass("tests/compile/funcs/normalize.rs");
+    t.pass("tests/compile/funcs/normalize/general.rs");
+    t.pass("tests/compile/funcs/normalize/enum_variant.rs");
     t.pass("tests/compile/funcs/concat.rs");
-    t.pass("tests/compile/format_lit_str.rs");
-    t.pass("tests/compile/alias_reuse.rs");
-    t.pass("tests/compile/bare_arg.rs");
-    t.compile_fail("tests/compile/dup_alias.rs");
-    t.compile_fail("tests/compile/func_wrong_arg_num.rs");
-    t.pass("tests/compile/func_enum_variant.rs");
-    t.compile_fail("tests/compile/undefined_func.rs");
+    t.compile_fail("tests/compile/funcs/func_wrong_arg_num.rs");
+    t.compile_fail("tests/compile/funcs/undefined_func.rs");
 }
 
 /// Tests semicolon backwards-compatibility support.
@@ -65,6 +72,7 @@ fn test_format_doc_attr() {
 
     let expected = r#"
 #![feature(prelude_import)]
+//! It should be possible to use string-formatting to format doc-attributes.
 #[prelude_import]
 use std::prelude::rust_2018::*;
 #[macro_use]

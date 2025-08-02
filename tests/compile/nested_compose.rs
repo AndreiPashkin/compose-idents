@@ -1,3 +1,4 @@
+//! compose_idents! should work when invoked inside a macro_rules! macro.
 use compose_idents::compose_idents;
 
 macro_rules! outer_macro {

@@ -1,3 +1,4 @@
+//! snake_case() should convert input values to snake_case.
 use compose_idents::compose_idents;
 
 compose_idents!(my_var = snake_case(fooBar), {

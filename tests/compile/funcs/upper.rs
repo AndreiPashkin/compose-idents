@@ -1,3 +1,4 @@
+//! upper() should convert input value to UPPER_CASE.
 use compose_idents::compose_idents;
 
 compose_idents!(my_var = concat(upper(foo), _, upper(bar)), {

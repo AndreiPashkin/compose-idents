@@ -1,3 +1,4 @@
+//! Composed aliases should be usable as const generic parameters.
 use compose_idents::compose_idents;
 
 compose_idents!(DATA_LEN = concat(FOO, _, BAR), {

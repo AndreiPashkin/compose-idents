@@ -1,3 +1,4 @@
+//! camel_case() should convert input values to camelCase.
 use compose_idents::compose_idents;
 
 compose_idents!(my_var = camel_case(foo_bar), {

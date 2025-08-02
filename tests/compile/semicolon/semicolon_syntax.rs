@@ -1,3 +1,4 @@
+//! Using semicolons as alias definition separators should be supported.
 use compose_idents::compose_idents;
 
 compose_idents!(my_fn = concat(foo, _, "bar"); {

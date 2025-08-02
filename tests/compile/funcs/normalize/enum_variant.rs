@@ -1,3 +1,4 @@
+//! normalize() should accept enum variants as an input and parse them successfully.
 use compose_idents::compose_idents;
 
 enum Foo {

@@ -1,3 +1,4 @@
+//! Multiple alias definitions in a single compose_idents! invocation should be supported.
 use compose_idents::compose_idents;
 
 compose_idents!(

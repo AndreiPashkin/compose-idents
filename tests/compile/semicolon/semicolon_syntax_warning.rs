@@ -1,3 +1,5 @@
+//! Deprecated usage of semicolons as alias definition separators should result in a compile-time
+//! deprecation warning.
 #![deny(warnings)]
 use compose_idents::compose_idents;
 

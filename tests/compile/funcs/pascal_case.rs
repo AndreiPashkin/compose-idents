@@ -1,3 +1,4 @@
+//! pascal_case() should convert input values to PascalCase.
 use compose_idents::compose_idents;
 
 fn main() {
