@@ -1,3 +1,4 @@
+//! A trailing comma after the item block should be allowed.
 use compose_idents::compose_idents;
 
 compose_idents!(my_fn = concat(foo, _, "baz"), {

@@ -1,3 +1,4 @@
+//! concat() should concatenate one or more input values into a single value.
 use compose_idents::compose_idents;
 
 compose_idents!(

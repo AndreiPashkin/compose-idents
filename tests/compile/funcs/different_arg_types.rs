@@ -1,3 +1,5 @@
+//! compose_idents! should be agnostic to the input value types and coerce them to a singular
+//! uni-type.
 use compose_idents::compose_idents;
 
 compose_idents!(my_var = concat(upper("foo"), lower(_), upper(bar)), {

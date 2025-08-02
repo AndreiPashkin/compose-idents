@@ -1,4 +1,4 @@
-/// This should fail to compile because of mixed separators.
+//! Using mixed separator styles (semicolon and comma) should result in a compile-time error.
 use compose_idents::compose_idents;
 
 compose_idents!(

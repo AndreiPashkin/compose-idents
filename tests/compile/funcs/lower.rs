@@ -1,3 +1,4 @@
+//! lower() should convert input value to lower case.
 use compose_idents::compose_idents;
 
 compose_idents!(my_var = concat(lower(FOO), _, lower(BAR)), {

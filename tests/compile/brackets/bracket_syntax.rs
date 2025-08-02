@@ -1,3 +1,4 @@
+//! Bracket-based alias definition syntax should be supported.
 use compose_idents::compose_idents;
 
 compose_idents!(

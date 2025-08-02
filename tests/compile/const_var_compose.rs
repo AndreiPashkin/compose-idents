@@ -1,3 +1,4 @@
+//! Composing identifiers inside constant variable definitions should be supported.
 use compose_idents::compose_idents;
 
 compose_idents!(my_var = concat(foo, _, var), {

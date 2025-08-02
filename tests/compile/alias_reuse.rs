@@ -1,3 +1,4 @@
+//! Reusing previously defined aliases should be supported.
 use compose_idents::compose_idents;
 
 compose_idents!(

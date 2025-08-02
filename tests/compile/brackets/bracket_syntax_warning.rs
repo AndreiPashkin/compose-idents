@@ -1,3 +1,4 @@
+//! Using deprecated bracket-based syntax should trigger a deprecation warning.
 #![deny(warnings)]
 use compose_idents::compose_idents;
 

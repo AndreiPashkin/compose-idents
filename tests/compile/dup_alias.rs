@@ -1,3 +1,4 @@
+//! Defining duplicate aliases should result in a compile-time error.
 use compose_idents::compose_idents;
 
 compose_idents!(

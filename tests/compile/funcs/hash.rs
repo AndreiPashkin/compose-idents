@@ -1,3 +1,5 @@
+//! hash() should generate unique identifiers without collisions across scopes (and a scope is
+//! a single macro invocation).
 use compose_idents::compose_idents;
 
 compose_idents!(

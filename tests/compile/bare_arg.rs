@@ -1,4 +1,4 @@
-//! Tests assignment of a bare argument to an alias.
+//! Assigning of a bare argument to an alias should be supported.
 use compose_idents::compose_idents;
 
 compose_idents!(my_static = qux, {

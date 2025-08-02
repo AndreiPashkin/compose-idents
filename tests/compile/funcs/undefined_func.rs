@@ -1,6 +1,7 @@
+//! Using an undefined function should result in a compile-time error.
 use compose_idents::compose_idents;
 
-compose_idents!(my_fn = snake_case(fooBar, barBaz), {
+compose_idents!(my_fn = undefined(foo), {
     fn my_fn() -> u32 {
         42
     }

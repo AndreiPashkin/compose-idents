@@ -1,3 +1,4 @@
+//! Numeric literals should be usable as compose_idents! arguments.
 use compose_idents::compose_idents;
 
 compose_idents!(my_fn = concat(foo, _, 1, _, bar), {

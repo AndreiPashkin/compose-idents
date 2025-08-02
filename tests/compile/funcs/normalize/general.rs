@@ -1,3 +1,5 @@
+//! normalize() should be able to parse and sanitize complex syntactic constructs and turn them to
+//! valid idents.
 use compose_idents::compose_idents;
 
 compose_idents!(

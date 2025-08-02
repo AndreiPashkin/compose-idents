@@ -1,3 +1,4 @@
+//! Mixing bracket-based and expression-based syntax should be supported.
 use compose_idents::compose_idents;
 
 compose_idents!(
