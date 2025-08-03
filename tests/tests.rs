@@ -30,6 +30,7 @@ fn func_tests() {
     t.pass("tests/compile/funcs/hash.rs");
     t.pass("tests/compile/funcs/normalize/general.rs");
     t.pass("tests/compile/funcs/normalize/enum_variant.rs");
+    t.pass("tests/compile/funcs/normalize/nested_call.rs");
     t.pass("tests/compile/funcs/concat.rs");
     t.compile_fail("tests/compile/funcs/func_wrong_arg_num.rs");
     t.compile_fail("tests/compile/funcs/undefined_func.rs");
