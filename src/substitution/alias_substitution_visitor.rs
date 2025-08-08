@@ -1,3 +1,5 @@
+//! Visitor for substituting aliases in a code block.
+use super::format_string::format_string;
 use proc_macro2::Ident;
 use std::collections::HashMap;
 use syn::visit_mut::VisitMut;
@@ -23,11 +25,8 @@ impl VisitMut for AliasSubstitutionVisitor {
 
     fn visit_lit_str_mut(&mut self, i: &mut LitStr) {
         let value = i.value();
-        let mut formatted = i.value().clone();
 
-        for (alias, repl) in self.replacements.iter() {
-            formatted = formatted.replace(&format!("%{}%", alias), &repl.to_string());
-        }
+        let formatted = format_string(value.as_str(), &self.replacements);
 
         if formatted != value {
             *i = LitStr::new(&formatted, i.span());

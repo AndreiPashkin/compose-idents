@@ -45,7 +45,7 @@ _format-doc-attr-test = []
 
 [[test]]
 name = "format_doc_attr"
-path = "tests/compile/format_doc_attr.rs"
+path = "tests/compile/string_formatting/format_doc_attr.rs"
 harness = false
 required-features = ["_format-doc-attr-test"]
 
