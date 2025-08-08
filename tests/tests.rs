@@ -59,6 +59,7 @@ fn string_formatting_tests() {
     let t = trybuild::TestCases::new();
     t.pass("tests/compile/string_formatting/format_lit_str.rs");
     t.pass("tests/compile/string_formatting/format_lit_str_undefined.rs");
+    t.pass("tests/compile/string_formatting/format_escape_percent.rs");
 }
 
 #[test]

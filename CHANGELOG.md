@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added migration guides for deprecated features.
+- Made it possible to escape percent signs when formatting strings by using `%%` syntax.
 
 ### Changed
 
