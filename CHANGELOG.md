@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Made string formatting syntax more human-readable by enabling `% alias %`-style placeholders (with whitespace).
 - Clarified the deprecation policy.
 - Moved all the internal utilities to the `util` module.
 

@@ -43,7 +43,7 @@ There are multiple functions for altering the naming convention of identifiers:
 
 {{ $h1 }} String formatting
 
-Aliases could be used in string formatting with `%alias%` syntax. This is useful for generating doc-attributes:
+Aliases could be used in string formatting with `% alias %` syntax. This is useful for generating doc-attributes:
 ```rust
 {{ file.Read "snippets/string_formatting.rs" -}}
 ```

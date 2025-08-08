@@ -21,7 +21,7 @@ use util::deprecation::DeprecationService;
 
 /// Compose identifiers from the provided parts and replace their aliases in the code block.
 ///
-/// In addition to replacing identifier aliases it replaces tokens like `%alias%` in string
+/// In addition to replacing identifier aliases it replaces tokens like `% alias %` in string
 /// literals (including in doc-attributes).
 ///
 /// # Syntax
@@ -50,7 +50,7 @@ use util::deprecation::DeprecationService;
 ///
 ///         fn alias2() -> u32 { 42 }
 ///
-///         // Aliases could be also used for string-formatting using %alias% syntax
+///         // Aliases could be also used for string-formatting using % alias % syntax
 ///         #[doc = "Documentation for %alias3%"]
 ///         fn alias3() -> u32 { 42 }
 ///     },
