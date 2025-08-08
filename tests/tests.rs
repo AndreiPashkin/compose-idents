@@ -10,7 +10,6 @@ fn general_tests() {
     t.pass("tests/compile/const_var_compose.rs");
     t.pass("tests/compile/generic_param_compose.rs");
     t.pass("tests/compile/num_compose.rs");
-    t.pass("tests/compile/format_lit_str.rs");
     t.pass("tests/compile/alias_reuse.rs");
     t.pass("tests/compile/bare_arg.rs");
     t.compile_fail("tests/compile/dup_alias.rs");
@@ -52,6 +51,14 @@ fn bracket_tests() {
     t.pass("tests/compile/brackets/bracket_syntax.rs");
     t.pass("tests/compile/brackets/bracket_syntax_mixed.rs");
     t.compile_fail("tests/compile/brackets/bracket_syntax_warning.rs");
+}
+
+/// Tests string formatting feature.
+#[test]
+fn string_formatting_tests() {
+    let t = trybuild::TestCases::new();
+    t.pass("tests/compile/string_formatting/format_lit_str.rs");
+    t.pass("tests/compile/string_formatting/format_lit_str_undefined.rs");
 }
 
 #[test]

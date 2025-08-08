@@ -1,11 +1,11 @@
 //! Implements the [`Interpreter`] type and the core logic of the library.
 
-use crate::alias_substitution_visitor::AliasSubstitutionVisitor;
 use crate::ast::ComposeIdentsArgs;
 use crate::core::State;
 use crate::error::Error;
 use crate::eval::{Context, Eval, Evaluated};
 use crate::resolve::{Resolve, Scope};
+use crate::substitution::AliasSubstitutionVisitor;
 use crate::util::deprecation::DeprecationServiceScope;
 use proc_macro2::TokenStream;
 use quote::quote;

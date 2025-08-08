@@ -1,7 +1,6 @@
 #![allow(clippy::needless_doctest_main)]
 #![doc = include_str!("../snippets/docs.md")]
 
-mod alias_substitution_visitor;
 mod ast;
 mod core;
 mod error;
@@ -10,6 +9,7 @@ mod funcs;
 mod interpreter;
 mod parse;
 mod resolve;
+mod substitution;
 mod util;
 
 use crate::ast::ComposeIdentsArgs;
