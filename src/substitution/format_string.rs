@@ -9,12 +9,19 @@ pub fn format_string(value: &str, substitutions: &HashMap<Ident, Ident>) -> Stri
     let mut placeholder = String::new();
     let mut placeholder_text = String::new();
     let mut in_placeholder = false;
+    let mut prev_c = Option::<char>::None;
 
     let make_ident = |placeholder: &str| Ident::new(placeholder, Span::call_site());
 
     for c in value.chars() {
-        match (c, in_placeholder) {
-            ('%', true) => match substitutions.get(&make_ident(placeholder.as_str())) {
+        match (c, prev_c, in_placeholder) {
+            ('%', Some('%'), _) => {
+                formatted.push('%');
+                in_placeholder = false;
+                placeholder.clear();
+                placeholder_text.clear();
+            }
+            ('%', _, true) => match substitutions.get(&make_ident(placeholder.as_str())) {
                 Some(sub) => {
                     formatted.push_str(sub.to_string().as_str());
 
@@ -31,19 +38,20 @@ pub fn format_string(value: &str, substitutions: &HashMap<Ident, Ident>) -> Stri
                     placeholder_text.clear();
                 }
             },
-            ('%', false) => {
+            ('%', _, false) => {
                 in_placeholder = true;
                 placeholder_text.push(c);
-            },
-            (c, true) if c.is_whitespace() => {
+            }
+            (c, _, true) if c.is_whitespace() => {
                 placeholder_text.push(c);
-            },
-            (_, true) => {
+            }
+            (_, _, true) => {
                 placeholder.push(c);
                 placeholder_text.push(c);
             }
-            (_, false) => formatted.push(c),
+            (_, _, false) => formatted.push(c),
         };
+        prev_c = Some(c);
     }
 
     if in_placeholder {
