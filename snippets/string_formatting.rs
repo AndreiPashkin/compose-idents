@@ -4,11 +4,11 @@ compose_idents!(
     my_fn = concat(foo, _, "baz"),
     MY_FORMATTED_STR = concat(FOO, _, BAR),
     {
-        static MY_FORMATTED_STR: &str = "This is %MY_FORMATTED_STR%";
+        static MY_FORMATTED_STR: &str = "This is % MY_FORMATTED_STR %";
 
-        // You can use %alias% syntax to replace aliases with their definitions
+        // You can use % alias % syntax to replace aliases with their definitions
         // in string literals and doc-attributes.
-        #[doc = "This is a docstring for %my_fn%"]
+        #[doc = "This is a docstring for % my_fn %"]
         fn my_fn() -> u32 {
             321
         }

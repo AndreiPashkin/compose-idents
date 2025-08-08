@@ -1,8 +1,8 @@
-//! Provides [`format_string`] function that substitutes `%alias%`-style placeholders in strings.
+//! Provides [`format_string`] function that substitutes `% alias %`-style placeholders in strings.
 use proc_macro2::{Ident, Span};
 use std::collections::HashMap;
 
-/// Substitutes `%alias%`-style placeholders in a string.
+/// Substitutes `% alias %`-style placeholders in a string.
 pub fn format_string(value: &str, substitutions: &HashMap<Ident, Ident>) -> String {
     let mut formatted = String::new();
 
@@ -34,7 +34,10 @@ pub fn format_string(value: &str, substitutions: &HashMap<Ident, Ident>) -> Stri
             ('%', false) => {
                 in_placeholder = true;
                 placeholder_text.push(c);
-            }
+            },
+            (c, true) if c.is_whitespace() => {
+                placeholder_text.push(c);
+            },
             (_, true) => {
                 placeholder.push(c);
                 placeholder_text.push(c);
