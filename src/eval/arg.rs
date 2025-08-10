@@ -14,10 +14,10 @@ impl Eval for Arg {
                 };
                 Ok(res)
             }
-            ArgInner::LitStr(value) => Ok(Evaluated::Value(value.clone())),
+            ArgInner::LitStr(value) => Ok(Evaluated::Value(value.value())),
             ArgInner::LitInt(value) => Ok(Evaluated::Value(value.to_string())),
             ArgInner::Tokens(tokens) => Ok(Evaluated::Value(tokens.to_string())),
-            ArgInner::Underscore => Ok(Evaluated::Value("_".to_string())),
+            ArgInner::Underscore(_) => Ok(Evaluated::Value("_".to_string())),
         }
     }
 }
