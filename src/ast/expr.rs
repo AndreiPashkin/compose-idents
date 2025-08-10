@@ -14,10 +14,10 @@ impl Display for Expr {
         match self {
             Expr::ArgExpr(arg) => match arg.inner() {
                 ArgInner::Ident(ident) => write!(f, "{}", ident),
-                ArgInner::LitStr(value) => write!(f, "\"{}\"", value),
+                ArgInner::LitStr(value) => write!(f, "\"{}\"", value.value()),
                 ArgInner::LitInt(value) => write!(f, "{}", value),
                 ArgInner::Tokens(tokens) => write!(f, "{}", tokens),
-                ArgInner::Underscore => write!(f, "_"),
+                ArgInner::Underscore(_) => write!(f, "_"),
             },
             Expr::FuncCallExpr(func) => write!(f, "{}", func),
         }

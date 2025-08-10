@@ -1,6 +1,8 @@
 use crate::ast::{Ast, NodeId};
 use crate::util::unique_id::next_unique_id;
 use proc_macro2::{Ident, Span, TokenStream};
+use syn::spanned::Spanned;
+use syn::{LitInt, LitStr};
 
 /// Argument to the [`compose_idents`] macro.
 ///
@@ -17,10 +19,10 @@ pub struct Arg {
 #[derive(Debug, Clone)]
 pub enum ArgInner {
     Ident(Ident),
-    LitStr(String),
-    LitInt(u64),
+    LitStr(LitStr),
+    LitInt(LitInt),
     Tokens(TokenStream),
-    Underscore,
+    Underscore(Span),
 }
 
 impl Arg {
@@ -32,16 +34,16 @@ impl Arg {
         Self::new(next_unique_id(), ArgInner::Ident(ident))
     }
 
-    pub fn from_underscore() -> Self {
-        Self::new(next_unique_id(), ArgInner::Underscore)
+    pub fn from_underscore(span: Span) -> Self {
+        Self::new(next_unique_id(), ArgInner::Underscore(span))
     }
 
-    pub fn from_lit_str(value: String) -> Self {
-        Self::new(next_unique_id(), ArgInner::LitStr(value))
+    pub fn from_lit_str(lit_str: LitStr) -> Self {
+        Self::new(next_unique_id(), ArgInner::LitStr(lit_str))
     }
 
-    pub fn from_lit_int(value: u64) -> Self {
-        Self::new(next_unique_id(), ArgInner::LitInt(value))
+    pub fn from_lit_int(lit_int: LitInt) -> Self {
+        Self::new(next_unique_id(), ArgInner::LitInt(lit_int))
     }
 
     pub fn from_tokens(tokens: TokenStream) -> Self {
@@ -61,10 +63,10 @@ impl Ast for Arg {
     fn span(&self) -> Span {
         match &self.inner {
             ArgInner::Ident(ident) => ident.span(),
-            ArgInner::LitStr(_) => Span::call_site(),
-            ArgInner::LitInt(_) => Span::call_site(),
-            ArgInner::Tokens(_) => Span::call_site(),
-            ArgInner::Underscore => Span::call_site(),
+            ArgInner::LitStr(lit_str) => lit_str.span(),
+            ArgInner::LitInt(lit_int) => lit_int.span(),
+            ArgInner::Tokens(tokens) => tokens.span(),
+            ArgInner::Underscore(span) => *span,
         }
     }
 }
