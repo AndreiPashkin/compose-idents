@@ -11,22 +11,22 @@ It uses such tools as Task, Gomplate, Pre-commit, Clippy, Rustfmt besides Cargo.
 ## Project Structure
 
 - `README.md`: User-facing documentation of the project.
-- `/adr`: Contains Architecture Decision Records (ADRs) in MADR format that document significant architectural decisions
+- `adr/`: Contains Architecture Decision Records (ADRs) in MADR format that document significant architectural decisions
           made during the development of the project.
-    - `/kb`: Contains articles that capture knowledge important for the development of the project.
+    - `kb/`: Contains articles that capture knowledge important for the development of the project.
         - `template.md`: A template for new KB-files.
-    - `/template.md`: A template for new ADR-files.
-- `/src`: Source code that OpenAI Codex should analyze
-    - `/interpreter.rs`: Implementation of the interpreter for the macro. It executes the code passed by the user to
-                         the macro, and it loosely follows the tree-walk interpreter design as described in:
-                         https://craftinginterpreters.com/a-tree-walk-interpreter.html
-    - `/ast`: Types that represent AST elements of the syntax accepted by the macro.
-    - `/parse`: Implementation of the parsing phase of the interpreter. Contains implementations of `syn::Parse` trait
+    - `template.md`: A template for new ADR-files.
+- `src/`: Source code that OpenAI Codex should analyze
+    - `interpreter.rs`: Implementation of the interpreter for the macro. It executes the code passed by the user to
+                        the macro, and it loosely follows the tree-walk interpreter design as described in:
+                        https://craftinginterpreters.com/a-tree-walk-interpreter.html
+    - `ast/`: Types that represent AST elements of the syntax accepted by the macro.
+    - `parse/`: Implementation of the parsing phase of the interpreter. Contains implementations of `syn::Parse` trait
                 for different AST types.
-    - `/resolve`: Implementation of the resolve-phase if the interpreter - it performs static-analysis.
-    - `/eval`: Implementation of the eval-phase of the interpreter - it performs execution of the code.
-    - `/util`: Contains various auxiliary utilities.
-- `/tests`: Tests of the project. Most tests rely on [`trybuild`][1] crate.
+    - `resolve/`: Implementation of the resolve-phase if the interpreter - it performs static-analysis.
+    - `eval/`: Implementation of the eval-phase of the interpreter - it performs execution of the code.
+    - `util/`: Contains various auxiliary utilities.
+- `tests/`: Tests of the project. Most tests rely on [`trybuild`][1] crate.
 
 ## General Instructions
 
