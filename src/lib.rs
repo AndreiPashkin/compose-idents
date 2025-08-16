@@ -15,7 +15,6 @@ mod util;
 use crate::ast::ComposeIdentsArgs;
 use crate::interpreter::Interpreter;
 use proc_macro::TokenStream;
-use std::convert::TryInto;
 use syn::parse_macro_input;
 use util::deprecation::DeprecationService;
 
@@ -71,9 +70,7 @@ pub fn compose_idents(input: TokenStream) -> TokenStream {
     match interpreter.execute() {
         Ok(ts) => ts.into(),
         Err(err) => {
-            let syn_err: syn::Error = err.try_into().unwrap_or_else(|_| {
-                syn::Error::new(proc_macro2::Span::call_site(), "Unknown error")
-            });
+            let syn_err: syn::Error = err.into();
             TokenStream::from(syn_err.into_compile_error())
         }
     }

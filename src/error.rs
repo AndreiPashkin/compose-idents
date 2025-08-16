@@ -1,6 +1,5 @@
 use crate::ast::{Ast, Func};
 use proc_macro2::Span;
-use std::convert::TryFrom;
 use syn::Error as SynError;
 use thiserror::Error as ThisError;
 
@@ -49,12 +48,10 @@ macro_rules! internal_error {
 }
 pub(crate) use internal_error;
 
-impl TryFrom<Error> for SynError {
-    type Error = SynError;
-
-    fn try_from(value: Error) -> Result<Self, Self::Error> {
+impl From<Error> for SynError {
+    fn from(value: Error) -> Self {
         let message = value.to_string();
-        Ok(SynError::new(value.span(), message))
+        SynError::new(value.span(), message)
     }
 }
 
