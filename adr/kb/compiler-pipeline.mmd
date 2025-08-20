@@ -1,0 +1,60 @@
+flowchart LR
+  A["`Source files <br/>(text)`"]
+
+  %% ─────────────────────────── rustc lane ───────────────────────────
+  subgraph RUSTC["`rustc compiler (built-ins)`"]
+    direction LR
+
+    L["`lexing <br/>(rustc_lexer)`"]
+    P["`parsing <br/>(rustc_parse / rustc_ast)`"]
+    MX["`macro expansion / hygiene`"]
+    H["`HIR <br/>(rustc_hir)`"]
+    M["`MIR <br/>(rustc_middle)`"]
+
+    subgraph CODEGEN["`codegen`"]
+      direction LR
+
+      MOPT["`MIR (optimized)`"]
+      MONO["`monomorphization of generics`"]
+      LLVMI["`LLVM IR`"]
+      LLVMP["`LLVM optimization passes`"]
+      OBJ["`object files <br/>(.o/.obj)`"]
+      ASM["`assembly <br/>(.s)`"]
+      LLTX["`textual LLVM IR <br/>(.ll)`"]
+      LLB["`LLVM bitcode <br/>(.bc)`"]
+      LNK["`linker <br/>(LTO optional)`"]
+      FINAL["`final artifact: <br/>bin / rlib / staticlib / dylib / cdylib / proc-macro`"]
+    end
+  end
+
+  %% proc_macro boundary between lanes
+  B[["`proc_macro boundary: <br/>TokenStream (TTs)`"]]
+
+  %% main rustc flow
+  A --> L --> P --> MX --> H --> M --> MOPT --> MONO --> LLVMI --> LLVMP
+  LLVMI --> LLTX
+  LLVMI --> LLB
+  LLVMP --> OBJ --> LNK --> FINAL
+  LLVMP --> ASM
+
+  MX -.->|TokenStream in/out| B
+
+  %% alternative backends note
+  ALT[("`Alternative backends: <br/>Cranelift, GCC <br/><i>replace LLVM segment</i>`")]
+  ALT --- LLVMI
+
+  %% ───────────────────────── ecosystem lane ─────────────────────────
+  subgraph ECO["`third-party / ecosystem crates (optional for macro authors & tools)`"]
+    direction LR
+    PM2["`proc_macro / proc_macro2 <br/><i>operate on token trees</i><br/>(Ident | Punct | Literal | Group + Span)`"]
+    SYN["`syn <br/><i>parses tokens into its own AST types</i>`"]
+    QUO["`quote <br/><i>turns AST/tokens into tokens</i>`"]
+    TSR["`tree-sitter-rust <br/><i>incremental CST for editors;<br/>no macro expansion/typecheck</i>`"]
+  end
+
+  %% typical (optional) flow inside ecosystem
+  B -.-> PM2
+  PM2 -.->|parse| SYN
+  SYN  -.->|format| QUO
+  QUO  -.->|TokenStream| PM2
+  PM2 -.-> B
