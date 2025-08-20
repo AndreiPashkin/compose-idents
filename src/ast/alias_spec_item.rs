@@ -3,6 +3,7 @@ use proc_macro2::Span;
 use std::rc::Rc;
 
 /// A single alias specification.
+#[derive(Debug)]
 pub struct AliasSpecItem {
     id: NodeId,
     alias: Rc<Alias>,

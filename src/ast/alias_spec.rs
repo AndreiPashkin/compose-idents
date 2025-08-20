@@ -3,6 +3,7 @@ use proc_macro2::Span;
 use std::rc::Rc;
 
 /// Specification of aliases provided to the [`compose_idents`] macro.
+#[derive(Debug)]
 pub struct AliasSpec {
     id: NodeId,
     items: Vec<Rc<AliasSpecItem>>,

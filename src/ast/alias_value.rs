@@ -3,6 +3,7 @@ use proc_macro2::Span;
 use std::rc::Rc;
 
 /// Alias value, which is a sequence of expressions that form the value of the alias.
+#[derive(Debug)]
 pub struct AliasValue {
     id: NodeId,
     span: Span,
