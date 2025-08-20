@@ -40,6 +40,7 @@ tempfile = "3.19"
 # Features are disabled by default so that special tests are opt-in only.
 # Run them with `cargo test --features special-tests`.
 default = []
+_debug = []
 _build-test = []
 _format-doc-attr-test = []
 
