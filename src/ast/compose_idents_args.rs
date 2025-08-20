@@ -4,6 +4,7 @@ use std::rc::Rc;
 use syn::Block;
 
 /// Arguments to the [`compose_idents`] macro.
+#[derive(Debug)]
 pub struct ComposeIdentsArgs {
     id: NodeId,
     spec: Rc<AliasSpec>,
