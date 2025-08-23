@@ -45,12 +45,6 @@ _build-test = []
 _format-doc-attr-test = []
 
 [[test]]
-name = "format_doc_attr"
-path = "tests/compile/string_formatting/format_doc_attr.rs"
-harness = false
-required-features = ["_format-doc-attr-test"]
-
-[[test]]
 name = "build"
 path = "tests/build.rs"
 harness = false

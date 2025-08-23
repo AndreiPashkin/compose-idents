@@ -1,4 +1,6 @@
 //! Provides [`Terminated`] type for parsing tokens until a terminator.
+
+use crate::util::log::debug;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
 use std::marker::PhantomData;
@@ -33,6 +35,12 @@ where
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut tokens = TokenStream::new();
         while !input.is_empty() {
+            debug!(
+                "Parsing Terminated<{}, {}>: {:?}...",
+                std::any::type_name::<T>(),
+                std::any::type_name::<Term>(),
+                input
+            );
             let fork = input.fork();
             let is_terminator = fork.parse::<Term>().is_ok();
             if is_terminator {
@@ -41,8 +49,18 @@ where
             let tt = input.parse::<TokenTree>()?;
             tokens.extend(tt.into_token_stream());
         }
+        debug!(
+            "Collecting tokens for Terminated<{}, {}> is successful: {:?}",
+            std::any::type_name::<T>(),
+            std::any::type_name::<Term>(),
+            tokens
+        );
+
+        debug!("Parsing {}: {:?}...", std::any::type_name::<T>(), tokens);
 
         let value = syn::parse2::<T>(tokens)?;
+
+        debug!("Parsing {} is successful.", std::any::type_name::<T>());
 
         Ok(Terminated {
             value,

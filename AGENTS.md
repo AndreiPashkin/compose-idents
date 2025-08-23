@@ -30,8 +30,8 @@ It uses such tools as Task, Gomplate, Pre-commit, Clippy, Rustfmt besides Cargo.
 
 ## General Instructions
 
-- Read `README.md` to understand the project and its purpose.
-- Read `CHANGELOG.md` to see recent changes and updates.
+- You may read `README.md` to understand the project and its purpose.
+- You may read `CHANGELOG.md` to see recent changes and updates.
 
 ## Coding Conventions
 
@@ -39,11 +39,32 @@ It uses such tools as Task, Gomplate, Pre-commit, Clippy, Rustfmt besides Cargo.
 
 - Generally prefer to follow [Rust Style Guide](https://doc.rust-lang.org/stable/style-guide/).
 - Use [the Rust Book](https://doc.rust-lang.org/stable/book/index.html) for a reference on idiomatic Rust code.
-- In general - aim to write idiomatic Rust code and follow general OOP principles.
+- Aim to write idiomatic Rust code
+- Follow general principles of writing maintainable code:
+  - DRY (Don't Repeat Yourself).
+  - KISS (Keep It Simple, Stupid).
+  - SPR (Single Responsibility Principle).
+  - YAGNI (You Aren't Gonna Need It).
+  - Separation of Concerns.
+  - Write Self-Documenting Code.
+  - Prefer avoiding overly large functions and modules.
+  - Etc.
+- Follow general OOP principles.
 - Follow the existing code style in each existing file.
 - Add comments for complex code, sophisticated algorithms, etc.
 
 ## Testing
+
+The project's tests consist of unit tests and end-to-end tests.
+
+The unit-tests are either regular Rust's unit-tests, or unit-tests written using [`rstest`][2] crate. In particular -
+it's test parametrization capability is used frequently.
+
+The end-to-end tests are written using the [`trybuild`][1] crate, which allows to test the macro by compiling standalone
+modules with its invocations.
+
+In general unit-tests are preferred over end-to-end tests, as they are faster and easier to write and maintain. So the
+rule of thumb is to write unit-tests whenever possible, and use end-to-end tests only when necessary.
 
 Tests can be executed with the following commands:
 
@@ -94,3 +115,4 @@ cargo clippy
 Please make sure tests and lints are passing before submitting the changes.
 
 [1]: https://docs.rs/trybuild/
+[2]: https://docs.rs/rstest/

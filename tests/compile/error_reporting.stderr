@@ -1,0 +1,15 @@
+error: SubstitutionError: failed to substitute:
+
+         my_fn
+
+       with:
+
+         "foo bar"
+
+       Encountered an error:
+
+         expected identifier
+ --> tests/compile/error_reporting.rs:6:8
+  |
+6 |     fn my_fn() -> u32 {
+  |        ^^^^^

@@ -20,11 +20,6 @@ impl AliasValue {
     pub fn expr(&self) -> Rc<Expr> {
         self.expr.clone()
     }
-
-    /// Reads the span of the alias value.
-    pub fn span(&self) -> Span {
-        self.span
-    }
 }
 
 impl Ast for AliasValue {

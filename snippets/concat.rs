@@ -6,7 +6,7 @@ compose_idents!(
     // Mixed with other functions
     upper_fn = upper(concat(hello, _, world)),
     // Complex example
-    complex_fn = concat("prefix_", normalize(&'static str), "_", snake_case(CamelCase)),
+    complex_fn = concat(to_ident("prefix_"), normalize(&'static str), _, snake_case(CamelCase)),
     {
         fn basic_fn() -> u32 { 1 }
         fn upper_fn() -> u32 { 2 }

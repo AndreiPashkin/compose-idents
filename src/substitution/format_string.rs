@@ -1,9 +1,32 @@
-//! Provides [`format_string`] function that substitutes `% alias %`-style placeholders in strings.
+//! Provides [`format_string`] function that substitutes `%alias%`-style placeholders in strings.
+
+use crate::ast::{Value, ValueInner};
 use proc_macro2::{Ident, Span};
+use quote::ToTokens;
 use std::collections::HashMap;
+use std::rc::Rc;
+
+/// Formats a [`Value`] instance into a string representation.
+fn format_value(value: &Value) -> String {
+    match &value.inner() {
+        ValueInner::Ident(ident) => ident.to_string(),
+        ValueInner::Path(path) => path
+            .segments
+            .iter()
+            .map(|seg| seg.ident.to_string())
+            .collect::<Vec<_>>()
+            .join("::"),
+        ValueInner::Type(type_) => type_.to_token_stream().to_string(),
+        ValueInner::Expr(expr) => expr.to_token_stream().to_string(),
+        ValueInner::LitStr(lit_str) => lit_str.value(),
+        ValueInner::LitInt(lit_int) => lit_int.to_string(),
+        ValueInner::Tokens(tokens) => tokens.to_string(),
+        ValueInner::Raw(tokens) => tokens.to_string(),
+    }
+}
 
 /// Substitutes `% alias %`-style placeholders in a string.
-pub fn format_string(value: &str, substitutions: &HashMap<Ident, Ident>) -> String {
+pub fn format_string(value: &str, substitutions: &HashMap<Ident, Rc<Value>>) -> String {
     let mut formatted = String::new();
 
     let mut placeholder = String::new();
@@ -23,7 +46,7 @@ pub fn format_string(value: &str, substitutions: &HashMap<Ident, Ident>) -> Stri
             }
             ('%', _, true) => match substitutions.get(&make_ident(placeholder.as_str())) {
                 Some(sub) => {
-                    formatted.push_str(sub.to_string().as_str());
+                    formatted.push_str(format_value(sub.as_ref()).as_str());
 
                     in_placeholder = false;
                     placeholder.clear();
@@ -55,8 +78,7 @@ pub fn format_string(value: &str, substitutions: &HashMap<Ident, Ident>) -> Stri
     }
 
     if in_placeholder {
-        formatted.push('%');
-        formatted.push_str(&placeholder);
+        formatted.push_str(&placeholder_text);
     }
 
     formatted

@@ -11,7 +11,7 @@ macro_rules! outer_macro {
     };
 }
 
-outer_macro!("baz");
+outer_macro!(baz);
 outer_macro!(bar);
 
 fn main() {

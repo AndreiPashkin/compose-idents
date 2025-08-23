@@ -12,7 +12,7 @@ and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capab
 
 ```rust
 compose_idents::compose_idents!(
-    my_fn = concat(foo, _, "baz"),
+    my_fn = concat(foo, _, bar),
     {
         fn my_fn() -> u32 {
             42
@@ -20,7 +20,7 @@ compose_idents::compose_idents!(
     },
 );
 
-assert_eq!(foo_baz(), 42);
+assert_eq!(foo_bar(), 42);
 ```
 
 [1]: https://doc.rust-lang.org/std/macro.concat_idents.html
@@ -51,7 +51,7 @@ This section contains various usage examples. For additional examples, see the t
 
 `compose_idents!` works by accepting definitions of aliases and a code block where aliases
 could be used as normal identifiers. When the macro is expanded, the aliases are replaced with their
-definitions:
+definitions (which may expand into identifiers, paths, expressions, and arbitrary Rust code):
 ```rust
 use compose_idents::compose_idents;
 
@@ -194,13 +194,13 @@ compose_idents!(
 
 User should simply replace every semicolon separator in the macro invocation with a comma.
 
-{{ $h3 }} [≤ 0.2.0 → 0.2.0+]: Bracket-based alias syntax
+{{ $h3 }} [≤ 0.2.0 → 0.2.2]: Bracket-based alias syntax
 
 {{ $h4 }} What changed?
 
-`v0.2.0` deprecated the square-bracket form: `alias = [arg1, func(arg2), …]`, of alias definitions in favour of bare
-expressions without any special block delimiters: `alias = concat(arg1, func(arg2), …)`, or `alias = func(arg1)`, or
-just `alias = arg`.
+`v0.2.0` deprecated and `v0.2.2` removed support for the square-bracket form: `alias = [arg1, func(arg2), …]`, of alias
+definitions in favour of bare expressions without any special block delimiters: `alias = concat(arg1, func(arg2), …)`,
+or `alias = func(arg1)`, or `alias = func(arg1)`, or just `alias = arg`.
 
 {{ $h4 }} How to migrate?
 
@@ -216,7 +216,7 @@ compose_idents!(
 );
 ```
 
-After (0.2.0+):
+After (≥ 0.2.0, ≤ v0.2.2):
 
 ```rust,ignore
 compose_idents!(

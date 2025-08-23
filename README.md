@@ -14,7 +14,7 @@ and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capab
 
 ```rust
 compose_idents::compose_idents!(
-    my_fn = concat(foo, _, "baz"),
+    my_fn = concat(foo, _, bar),
     {
         fn my_fn() -> u32 {
             42
@@ -22,7 +22,7 @@ compose_idents::compose_idents!(
     },
 );
 
-assert_eq!(foo_baz(), 42);
+assert_eq!(foo_bar(), 42);
 ```
 
 [1]: https://doc.rust-lang.org/std/macro.concat_idents.html
@@ -53,7 +53,7 @@ This section contains various usage examples. For additional examples, see the t
 
 `compose_idents!` works by accepting definitions of aliases and a code block where aliases
 could be used as normal identifiers. When the macro is expanded, the aliases are replaced with their
-definitions:
+definitions (which may expand into identifiers, paths, expressions, and arbitrary Rust code):
 ```rust
 use compose_idents::compose_idents;
 
@@ -149,7 +149,7 @@ use compose_idents::compose_idents;
 
 compose_idents!(
     // Literal strings are accepted as arguments and their content is parsed.
-    my_fn_1 = concat(foo, _, "bar"),
+    my_fn_1 = concat(foo, _, bar),
     // The same applies to literal integers, underscores or free-form token sequences.
     my_fn_2 = concat(spam, _, 1, _, eggs),
     {
@@ -256,7 +256,7 @@ Aliases could be used in string formatting with `% alias %` syntax. This is usef
 use compose_idents::compose_idents;
 
 compose_idents!(
-    my_fn = concat(foo, _, "baz"),
+    my_fn = concat(foo, _, bar),
     MY_FORMATTED_STR = concat(FOO, _, BAR),
     {
         static MY_FORMATTED_STR: &str = "This is % MY_FORMATTED_STR %";
@@ -325,7 +325,7 @@ compose_idents!(
     // Mixed with other functions
     upper_fn = upper(concat(hello, _, world)),
     // Complex example
-    complex_fn = concat("prefix_", normalize(&'static str), "_", snake_case(CamelCase)),
+    complex_fn = concat(to_ident("prefix_"), normalize(&'static str), _, snake_case(CamelCase)),
     {
         fn basic_fn() -> u32 { 1 }
         fn upper_fn() -> u32 { 2 }
@@ -338,18 +338,154 @@ assert_eq!(HELLO_WORLD(), 2);
 assert_eq!(prefix_static_str_camel_case(), 3);
 ```
 
-### Functions
+### Syntax
 
-| Function                  | Description                                                          |
-|---------------------------|----------------------------------------------------------------------|
-| `upper(arg)`              | Converts the `arg` to upper case.                                    |
-| `lower(arg)`              | Converts the `arg` to lower case.                                    |
-| `snake_case(arg)`         | Converts the `arg` to snake_case.                                    |
-| `camel_case(arg)`         | Converts the `arg` to camelCase.                                     |
-| `pascal_case(arg)`        | Converts the `arg` to PascalCase.                                    |
-| `normalize(tokens)`       | Transforms a free-form sequence of `tokens` into a valid identifier. |
-| `hash(arg)`               | Hashes the `arg` deterministically within a single macro invocation. |
-| `concat(arg1, arg2, ...)` | Concatenates multiple arguments into a single identifier.            |
+#### Expressions
+
+Expressions consist of values (`foo`, `Foo::Bar`, `1 + 1`, `"bar"`, `123`, etc) and
+function calls (`concat(foo, _, bar)`, `camel_case(foo_bar)`, etc).
+
+##### Values
+
+A value can represent any sequence of tokens - it could be a simple identifier like `foo`, a path like `std::vec::Vec`,
+a literal like `"foo"` or `42`, or more complex constructs.
+
+Values are typed, types of values are detected automatically, values are silently coerced between _some_ of the types
+(see the "Types" section below). Most of the time a user doesn't need to care about types or explicitly casting between
+them. For explicit casting, see functions described in the "Functions" → "Type casting" section below.
+
+Examples of values of different types could be found in the "Types" section.
+
+###### String formatting
+
+String literals could be formatted using `% alias %` syntax. This is especially useful for generating doc-attributes.
+
+##### Function calls
+
+A function call consists of a function name and the argument-list enclosed in parentheses. Arguments are separated by
+commas. Arguments themselves are arbitrary expressions.
+
+A reference of the available functions could be found in the "Functions" section below.
+
+###### Comma-containing arguments
+
+If an argument contains commas - the system would try hard to parse it correctly and determine the argument boundaries,
+but if it's not possible - use `raw()` function to fence the complex argument.
+
+###### Function overloading
+
+Functions could be overloaded and have multiple signatures. For example `concat(...)` could work for strings, integers
+and for arbitrary tokens as well. All overloads are listed in the "Functions" section.
+
+#### Aliases
+
+An alias is an identifier assigned an arbitrary expression: `alias = <expr>`. Alias-definitions are separated by commas.
+
+```plain,ignore
+// Alias can be defined as any expression.
+
+// It could be just a simple value.
+alias1 = foo,
+// Or a function call.
+alias2 = concat(foo, _, bar),
+// Function calls could be nested.
+alias3 = upper(snake_case(fooBarBaz)),
+// Complex (often - comma containing) expressions could be fenced using `raw()`.
+alias4 = concat(Result<, raw(u32,), String>),
+// Any value could be converted to valid identifiers using `normalize()` function.
+alias5 = concat(my, _, fn, _, normalize(My::Enum)),
+```
+
+##### Alias re-use
+
+Aliases could be re-used in subsequent (but not preceding) definitions of other aliases:
+
+```plain,ignore
+alias1 = foo,
+alias2 = concat(alias1, _, bar), // alias1 is re-used here
+```
+
+#### Types
+
+| Type     | Example                              | Description                                                                                                                                                                                  |
+|----------|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ident`  | `foo`                                | Identifier type.                                                                                                                                                                             |
+| `type`   | `Result<u32, Error>`                 | Type type.                                                                                                                                                                                   |
+| `path`   | `foo::bar`                           | Path type.                                                                                                                                                                                   |
+| `expr`   | `2 + 2`, `if c { 1 } else { 0 }`     | Expression type.                                                                                                                                                                             |
+| `str`    | `"foo"`                              | Literal string type.                                                                                                                                                                         |
+| `int`    | `123`                                | Literal integer type.                                                                                                                                                                        |
+| `tokens` | `mod foo { fn bar() -> u32 { 0 } }`  | Arbitrary evaluated token-sequence. If used as a function argument - terminated by a comma, and if it contains expressions - they are evaluated.                                             |
+| `raw`    | `mod foo { fn bar() -> u32 { 0 } }`  | Raw unevaluated token-sequence. Only used as a type of a single input argument - doesn't respect any delimiters, if contains expressions - they are treated as raw tokens and not evaluated. |
+
+##### Coercion rules
+
+Values are automatically coerced between compatible types when needed. Coercion is limited very limited by design, it doesn't encompass
+all possible type conversion directions, only the most useful ones and the ones that are infallible.
+
+| From    | To       | Description                                    |
+|---------|----------|------------------------------------------------|
+| `ident` | `path`   | Identifier to path (e.g., `foo` → `foo`)       |
+| `ident` | `type`   | Identifier to type (e.g., `u32` → `u32`)       |
+| `ident` | `expr`   | Identifier to expression (e.g., `foo` → `foo`) |
+| any     | `tokens` | Any value to tokens                            |
+
+#### Functions
+
+##### Case manipulation
+
+Functions that change the case or style.
+
+| Function                      | Description                                 | Example                  | Example Result |
+|-------------------------------|---------------------------------------------|--------------------------|----------------|
+| `upper(str) -> str`           | Converts the string argument to UPPER case. | `upper("foo")`           | `"FOO"`        |
+| `upper(ident) -> ident`       | Converts the ident argument to UPPER case.  | `upper(foo)`             | `FOO`          |
+| `lower(str) -> str`           | Converts the string argument to lower case. | `lower("FOO")`           | `"foo"`        |
+| `lower(ident) -> ident`       | Converts the ident argument to lower case.  | `lower(FOO)`             | `foo`          |
+| `snake_case(str) -> str`      | Converts the string argument to snake_case. | `snake_case("FooBar")`   | `"foo_bar"`    |
+| `snake_case(ident) -> ident`  | Converts the ident argument to snake_case.  | `snake_case(FooBar)`     | `foo_bar`      |
+| `camel_case(str) -> str`      | Converts the string argument to camelCase.  | `camel_case("foo_bar")`  | `"fooBar"`     |
+| `camel_case(ident) -> ident`  | Converts the ident argument to camelCase.   | `camel_case(foo_bar)`    | `fooBar`       |
+| `pascal_case(str) -> str`     | Converts the string argument to PascalCase. | `pascal_case("foo_bar")` | `"FooBar"`     |
+| `pascal_case(ident) -> ident` | Converts the ident argument to PascalCase.  | `pascal_case(foo_bar)`   | `FooBar`       |
+
+##### Token manipulation
+
+General purpose functions that perform useful operations on tokens.
+
+| Function                            | Description                                                                    | Example                                 | Example Result        |
+|-------------------------------------|--------------------------------------------------------------------------------|-----------------------------------------|-----------------------|
+| `normalize(raw) -> ident`           | Transforms raw input into a valid Rust identifier.                             | `normalize(&'static str)`               | `static_str`          |
+| `concat(ident...) -> ident`         | Concatenates multiple idents into a single identifier.                         | `concat(foo, _, bar)`                   | `foo_bar`             |
+| `concat(ident, tokens...) -> ident` | Concatenates an ident and follow-up tokens arguments into a single identifier. | `concat(prefix, _, 123)`                | `prefix_123`          |
+| `concat(str...) -> str`             | Concatenates multiple strings into a single string.                            | `concat("foo", "_", "bar")`             | `"foo_bar"`           |
+| `concat(int...) -> int`             | Concatenates multiple integers into a single integer.                          | `concat(1, 2, 3)`                       | `123`                 |
+| `concat(tokens...) -> tokens`       | Concatenates multiple tokens arguments into a single tokens value.             | `concat(Result<, raw(u32,), String, >)` | `Result<u32, String>` |
+
+##### Special purpose
+
+Functions for special use cases.
+
+| Function                | Description                                                                    | Example           | Example Result |
+|-------------------------|--------------------------------------------------------------------------------|-------------------|----------------|
+| `hash(str) -> str`      | Hashes the string deterministically within a single macro invocation.          | `hash("input")`   | `"12345678"`   |
+| `hash(ident) -> ident`  | Hashes the ident deterministically within a single macro invocation.           | `hash(input)`     | `__12345678`   |
+| `hash(tokens) -> ident` | Hashes the tokens argument deterministically within a single macro invocation. | `hash(foo + bar)` | `__87654321`   |
+
+##### Type casting
+
+These functions are useful whenever you need to explicitly cast an arbitrary value to a particular type.
+
+| Function                      | Description                                                                                             | Example                           | Example Result       |
+|-------------------------------|---------------------------------------------------------------------------------------------------------|-----------------------------------|----------------------|
+| `raw(raw) -> tokens`          | Converts raw unevaluated input to a tokens value. Useful for noisy inputs that contain separators, etc. | `raw(Result<u32, Error>)`         | `Result<u32, Error>` |
+| `to_ident(tokens) -> ident`   | Converts the tokens argument to an identifier.                                                          | `to_ident(lower("FOO"))`          | `foo`                |
+| `to_path(tokens) -> path`     | Converts the tokens argument to a path.                                                                 | `to_path(concat(std, ::, vec))`   | `std::vec`           |
+| `to_type(tokens) -> type`     | Converts the tokens argument to a type.                                                                 | `to_type(concat(Vec, <, u32, >))` | `Vec<u32>`           |
+| `to_expr(tokens) -> expr`     | Converts the tokens argument to an expression.                                                          | `to_expr(concat(1, +, 2))`        | `1 + 2`              |
+| `to_str(tokens) -> str`       | Converts the tokens argument to a string.                                                               | `to_str(foo)`                     | `"foo"`              |
+| `to_int(tokens) -> int`       | Converts the tokens argument to an integer.                                                             | `to_int(concat(4, 2))`            | `42`                 |
+| `to_tokens(tokens) -> tokens` | Identity function for tokens - useful for converting any value to tokens.                               | `to_tokens(foo)`                  | `foo`                |
 
 ## Backwards compatibility and deprecation
 
@@ -406,13 +542,13 @@ compose_idents!(
 
 User should simply replace every semicolon separator in the macro invocation with a comma.
 
-#### [≤ 0.2.0 → 0.2.0+]: Bracket-based alias syntax
+#### [≤ 0.2.0 → 0.2.2]: Bracket-based alias syntax
 
 ##### What changed?
 
-`v0.2.0` deprecated the square-bracket form: `alias = [arg1, func(arg2), …]`, of alias definitions in favour of bare
-expressions without any special block delimiters: `alias = concat(arg1, func(arg2), …)`, or `alias = func(arg1)`, or
-just `alias = arg`.
+`v0.2.0` deprecated and `v0.2.2` removed support for the square-bracket form: `alias = [arg1, func(arg2), …]`, of alias
+definitions in favour of bare expressions without any special block delimiters: `alias = concat(arg1, func(arg2), …)`,
+or `alias = func(arg1)`, or `alias = func(arg1)`, or just `alias = arg`.
 
 ##### How to migrate?
 
@@ -428,7 +564,7 @@ compose_idents!(
 );
 ```
 
-After (0.2.0+):
+After (≥ 0.2.0, ≤ v0.2.2):
 
 ```rust,ignore
 compose_idents!(
