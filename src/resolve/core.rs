@@ -1,6 +1,7 @@
 use crate::ast::{Ast, AstMetadata};
+use crate::core::{Environment, Type};
 use crate::error::Error;
-use std::cell::RefCell;
+use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -20,10 +21,23 @@ impl Scope {
         self.aliases.insert(name, item);
         Ok(())
     }
+    pub fn get_name(&self, name: &str) -> Option<Rc<dyn Ast>> {
+        self.aliases.get(name).cloned()
+    }
 
     /// Returns a reference to the metadata associated with the current scope.
-    pub fn metadata(&self) -> Rc<RefCell<AstMetadata>> {
+    pub fn metadata_rc(&self) -> Rc<RefCell<AstMetadata>> {
         self.metadata.clone()
+    }
+
+    /// Returns a mutable reference to the metadata associated with the current scope.
+    pub fn metadata_mut(&self) -> RefMut<'_, AstMetadata> {
+        self.metadata.borrow_mut()
+    }
+    pub fn deep_clone(&self) -> Self {
+        let aliases = self.aliases.clone();
+        let metadata = Rc::new(RefCell::new(self.metadata.borrow().clone()));
+        Scope { aliases, metadata }
     }
 }
 
@@ -31,5 +45,10 @@ impl Scope {
 ///
 /// Right now the only job of the implementation is to publish the aliases defined by the AST node.
 pub trait Resolve: Ast {
-    fn resolve(&self, scope: &mut Scope) -> Result<(), Error>;
+    fn resolve(
+        &self,
+        environment: &Environment,
+        scope: &mut Scope,
+        expected_type: Option<&Type>,
+    ) -> Result<(), Error>;
 }

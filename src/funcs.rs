@@ -1,5 +1,7 @@
 //! Provides implementations of the functions that can be used by the user in alias specifications.
-use crate::core::State;
+use crate::ast::Value;
+use crate::core::{Environment, Type};
+use crate::error::Error;
 use heck::{ToLowerCamelCase, ToPascalCase, ToSnakeCase};
 use std::hash::{DefaultHasher, Hash, Hasher};
 
@@ -32,13 +34,11 @@ pub fn to_pascal_case(input: &str) -> String {
 ///
 /// `hash(1)` called within a single macro invocation will always return the same
 /// value but different in another macro invocation.
-pub fn hash(input: &str, state: &State) -> String {
+pub fn hash(input: &str, environment: &Environment) -> String {
     let mut hasher = DefaultHasher::new();
-    state.seed().hash(&mut hasher);
+    environment.seed().hash(&mut hasher);
     input.hash(&mut hasher);
-    let hash = hasher.finish().to_string();
-    let result = format!("__{}", hash);
-    result
+    hasher.finish().to_string()
 }
 
 /// Normalizes a string to be a valid Rust identifier.
@@ -86,34 +86,50 @@ pub fn concat(inputs: &[&str]) -> String {
     inputs.join("")
 }
 
+/// Converts a `Value` to an identifier.
+pub fn to_ident(value: &Value) -> Result<Value, Error> {
+    value.try_cast(&Type::Ident)
+}
+
+/// Converts a `Value` to a path.
+pub fn to_path(value: &Value) -> Result<Value, Error> {
+    value.try_cast(&Type::Path)
+}
+
+/// Converts a `Value` to a type.
+pub fn to_type(value: &Value) -> Result<Value, Error> {
+    value.try_cast(&Type::Type)
+}
+
+/// Converts a `Value` to an expr.
+pub fn to_expr(value: &Value) -> Result<Value, Error> {
+    value.try_cast(&Type::Expr)
+}
+
+/// Converts a `Value` to a string literal.
+pub fn to_str(value: &Value) -> Result<Value, Error> {
+    value.try_cast(&Type::LitStr)
+}
+
+/// Converts a `Value` to an integer literal.
+pub fn to_int(value: &Value) -> Result<Value, Error> {
+    value.try_cast(&Type::LitInt)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::util::unique_id::next_unique_id;
     use rstest::rstest;
-    use syn::Ident;
-
-    #[rstest]
-    fn test_random_valid_ident() {
-        let state = State::new();
-        let actual = hash("1", &state);
-        let ident_result = syn::parse_str::<Ident>(actual.as_str());
-
-        assert!(
-            ident_result.is_ok(),
-            "Result: {},\nError: {}",
-            actual,
-            ident_result.unwrap_err(),
-        );
-    }
 
     #[rstest]
     fn test_random_determinism() {
-        let state = State::new();
-        let expected = hash("1", &state);
-        let actual = hash("1", &state);
+        let environment = Environment::new(Default::default(), next_unique_id());
+        let expected = hash("1", &environment);
+        let actual = hash("1", &environment);
 
         assert_eq!(actual, expected);
-        assert_ne!(hash("2", &state), expected);
+        assert_ne!(hash("2", &environment), expected);
     }
 
     #[rstest]

@@ -1,4 +1,6 @@
-use crate::ast::{FuncInner, FuncMetadata};
+use crate::ast::{CallMetadata, Expr, ValueMetadata};
+use crate::core::{Func, Type};
+use crate::util::log::debug;
 use proc_macro2::Span;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -15,22 +17,55 @@ pub trait Ast {
 
 #[derive(Debug, Clone, Default)]
 pub struct AstMetadata {
-    func_metadata: HashMap<NodeId, Rc<FuncMetadata>>,
+    value_metadata: HashMap<NodeId, ValueMetadata>,
+    call_metadata: HashMap<NodeId, CallMetadata>,
 }
 
 impl AstMetadata {
-    pub fn new() -> Self {
-        Self {
-            func_metadata: HashMap::new(),
-        }
+    pub fn set_value_metadata(&mut self, id: NodeId, target_type: Type, coercion_cost: u32) {
+        debug!(
+            "Setting value metadata for id: {}, type: {:?}, cost: {}",
+            id, target_type, coercion_cost
+        );
+        self.value_metadata.insert(
+            id,
+            ValueMetadata {
+                target_type,
+                coercion_cost,
+            },
+        );
     }
 
-    pub fn set_func_metadata(&mut self, id: NodeId, inner: Rc<FuncInner>) {
-        self.func_metadata
-            .insert(id, Rc::new(FuncMetadata { inner }));
+    pub fn get_value_metadata(&self, id: NodeId) -> Option<&ValueMetadata> {
+        debug!("Getting value metadata for id: {}", id);
+        self.value_metadata.get(&id)
     }
 
-    pub fn get_func_metadata(&self, id: NodeId) -> Option<Rc<FuncMetadata>> {
-        self.func_metadata.get(&id).cloned()
+    pub fn set_call_metadata(
+        &mut self,
+        id: NodeId,
+        args: Vec<Rc<Expr>>,
+        func: Rc<Func>,
+        target_type: Type,
+        coercion_cost: u32,
+    ) {
+        debug!(
+            "Setting call metadata for id: {}, func: {:?}, args: {:?}, type: {:?}, cost: {}",
+            id, func, args, target_type, coercion_cost
+        );
+        self.call_metadata.insert(
+            id,
+            CallMetadata {
+                args,
+                func,
+                target_type,
+                coercion_cost,
+            },
+        );
+    }
+
+    pub fn get_call_metadata(&self, id: NodeId) -> Option<&CallMetadata> {
+        debug!("Getting call metadata for id: {}", id);
+        self.call_metadata.get(&id)
     }
 }

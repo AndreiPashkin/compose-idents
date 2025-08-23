@@ -6,11 +6,11 @@
 mod core;
 pub use core::*;
 
-mod arg;
-pub use arg::*;
+mod value;
+pub use value::*;
 
-mod func;
-pub use func::*;
+mod call;
+pub use call::*;
 
 mod expr;
 pub use expr::*;
@@ -28,4 +28,8 @@ mod alias_spec_item;
 pub use alias_spec_item::*;
 
 mod alias_spec;
+
 pub use alias_spec::*;
+
+mod type_;
+pub use type_::*;

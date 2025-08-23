@@ -9,14 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added syntax reference to the documentation.
 - Added migration guides for deprecated features.
 - Made it possible to escape percent signs when formatting strings by using `%%` syntax.
 
 ### Changed
 
+- Introduced type system, overloaded functions, new type casting functions.
+- Error messages made to be more precise and informative.
 - Made string formatting syntax more human-readable by enabling `% alias %`-style placeholders (with whitespace).
 - Clarified the deprecation policy.
-- Moved all the internal utilities to the `util` module.
+- Significantly refactored the project to improve modularity.
+- Significantly expanded test coverage and reworked the test suite.
+
+### Removed
+
+- **⚠️ BREAKING**: Dropped the deprecated bracket-based alias-definition syntax support.
+- **⚠️ BREAKING**: Removed interchangeable use of literal strings and ident arguments in functions that accept both.
+
+  Type system and overloaded functions should take care of most use-cases and if necessary - use casting functions:
+  `to_ident()`, `to_str()`, etc.
 
 ## [v0.2.2] - 2025-06-16
 

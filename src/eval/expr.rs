@@ -1,13 +1,14 @@
-use crate::ast::Expr;
-use crate::core::State;
+use crate::ast::{Expr, ExprInner};
+use crate::core::Environment;
 use crate::error::Error;
 use crate::eval::{Context, Eval, Evaluated};
+use std::ops::Deref;
 
 impl Eval for Expr {
-    fn eval(&self, state: &State, context: &mut Context) -> Result<Evaluated, Error> {
-        match self {
-            Expr::ArgExpr(value) => value.eval(state, context),
-            Expr::FuncCallExpr(value) => value.eval(state, context),
+    fn eval(&self, environment: &Environment, context: &mut Context) -> Result<Evaluated, Error> {
+        match self.inner() {
+            ExprInner::ValueExpr(value) => value.deref().eval(environment, context),
+            ExprInner::FuncCallExpr(value) => value.eval(environment, context),
         }
     }
 }

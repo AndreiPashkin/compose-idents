@@ -1,7 +1,7 @@
 use compose_idents::compose_idents;
 
 compose_idents!(
-    my_fn = concat(foo, _, "baz"),
+    my_fn = concat(foo, _, bar),
     MY_FORMATTED_STR = concat(FOO, _, BAR),
     {
         static MY_FORMATTED_STR: &str = "This is % MY_FORMATTED_STR %";

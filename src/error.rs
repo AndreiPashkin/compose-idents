@@ -1,4 +1,5 @@
-use crate::ast::{Ast, Func};
+use crate::ast::{Ast, Call};
+use crate::core::{Func, Type};
 use proc_macro2::Span;
 use syn::Error as SynError;
 use thiserror::Error as ThisError;
@@ -16,6 +17,8 @@ pub enum Error {
     SignatureError(String, String, Span),
     #[error(r#"UndefinedFunctionError: function "{0}(...)" is undefined"#)]
     UndefinedFunctionError(String, Span),
+    #[error("SubstitutionError: failed to substitute:\n\n  {0}\n\nwith:\n\n  {1}\n\nEncountered an error:\n\n  {2}")]
+    SubstitutionError(String, String, #[source] syn::Error, Span),
     #[error("InternalError: {0}")]
     InternalError(String),
 }
@@ -28,16 +31,36 @@ impl Error {
             Error::RedefinedNameError(_, span) => *span,
             Error::SignatureError(_, _, span) => *span,
             Error::UndefinedFunctionError(_, span) => *span,
+            Error::SubstitutionError(_, _, _, span) => *span,
             Error::InternalError(_) => Span::call_site(),
         }
     }
 
-    pub fn make_sig_error(func: &Func, sig: &str) -> Error {
-        Error::SignatureError(sig.to_string(), func.to_string(), func.span())
+    pub fn make_sig_error(func: &Func, call: &Call) -> Error {
+        Error::SignatureError(func.signature(), call.to_string(), call.span())
+    }
+
+    pub fn make_coercion_error(from: &Type, to: &Type) -> Error {
+        Error::TypeError(
+            format!("impossible to coerce from {} to {}", from, to),
+            Span::call_site(),
+        )
     }
 
     pub fn make_internal_error(message: String) -> Error {
         Error::InternalError(message)
+    }
+
+    pub fn type_(&self) -> ErrorType {
+        match self {
+            Error::TypeError(_, _) => ErrorType::TypeError,
+            Error::EvalError(_, _) => ErrorType::EvalError,
+            Error::RedefinedNameError(_, _) => ErrorType::RedefinedNameError,
+            Error::SignatureError(_, _, _) => ErrorType::SignatureError,
+            Error::UndefinedFunctionError(_, _) => ErrorType::UndefinedFunctionError,
+            Error::SubstitutionError(_, _, _, _) => ErrorType::SubstitutionError,
+            Error::InternalError(_) => ErrorType::InternalError,
+        }
     }
 }
 
@@ -53,6 +76,17 @@ impl From<Error> for SynError {
         let message = value.to_string();
         SynError::new(value.span(), message)
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ErrorType {
+    TypeError,
+    EvalError,
+    RedefinedNameError,
+    SignatureError,
+    UndefinedFunctionError,
+    SubstitutionError,
+    InternalError,
 }
 
 /// Combine multiple errors into a single syn::Error.
