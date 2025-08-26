@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarified the deprecation policy.
 - Significantly refactored the project to improve modularity.
 - Significantly expanded test coverage and reworked the test suite.
+- Removed the mini-example at the beginning of the documentation.
 
 ### Removed
 
