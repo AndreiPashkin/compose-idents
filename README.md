@@ -44,30 +44,51 @@ definitions (which may expand into identifiers, paths, expressions, and arbitrar
 ```rust
 use compose_idents::compose_idents;
 
-// We generate separate const-functions for each type as a workaround
-// since Rust doesn't allow us to use `core::ops::Add` in `const fn`.
+/// Generate getters, setters with docstrings for given struct
+macro_rules! generate_accessors {
+    (struct $name:ident { $($field:ident: $ty:ty),* }) => {
+        impl $name {
+            $(
+                compose_idents!(
+                    getter = $field,
+                    setter = concat(set_, $field),
+                    getter_mut = concat($field, _mut),
+                    field = $field,
+                    type_ = $ty,
+                    {
+                        #[doc = "Get the % field % field"]
+                        pub fn getter(&self) -> &type_ {
+                            &self.field
+                        }
 
-macro_rules! gen_const_add {
-    ($T:ty) => {
-        compose_idents!(
-            Type = upper($T),           // Alias for the type - make it uppercase in addition
-            add_fn = concat(add_, $T),  // Alias for the function name
-            {
-                // Strings (including in doc-attributes) can be formatted with % alias % syntax.
-                #[doc = "Adds two arguments of type `% Type %` at compile time."]
-                pub const fn add_fn(a: $T, b: $T) -> $T {  // Aliases are used as normal identifiers
-                    a + b
-                }
-            }
-        );
+                        #[doc = "Get mutable reference to % field % field"]
+                        pub fn getter_mut(&mut self) -> &mut type_ {
+                            &mut self.field
+                        }
+
+                        #[doc = "Set the % field % field"]
+                        pub fn setter(&mut self, value: type_) {
+                            self.field = value;
+                        }
+                    }
+                );
+            )*
+        }
     };
 }
 
-gen_const_add!(u32);  // Expands into `add_u32()` function.
-gen_const_add!(u64);  // Expands into `add_u64()` function.
+struct User {
+    name: String,
+    age: u32,
+    email: Option<String>,
+}
 
-assert_eq!(add_u32(2_u32, 2_u32), 4_u32);
-assert_eq!(add_u64(2_u64, 2_u64), 4_u64);
+generate_accessors!(struct User { name: String, age: u32, email: Option<String> });
+
+let mut user = User { name: "Alice".into(), age: 30, email: None };
+user.set_name("Bob".into());
+user.set_email(Some("bob@example.com".into()));
+assert_eq!(user.name(), "Bob");
 ```
 
 ### Generating tests for different types
