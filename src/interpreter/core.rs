@@ -58,13 +58,15 @@ impl Interpreter {
 
         let mut context = Context::new(scope.metadata_rc());
 
-        for item in args.spec().items() {
-            let Evaluated::Value(value) = item.value().eval(&self.environment, &mut context)?;
-
-            context.add_variable(item.alias().ident(), Evaluated::Value(value.clone()));
-
+        let Evaluated::Bindings(bindings) = args.eval(&self.environment, &mut context)? else {
+            unreachable!();
+        };
+        for (alias, value) in bindings.iter() {
+            let Evaluated::Value(value) = value else {
+                unreachable!();
+            };
             self.substitutions
-                .insert(item.alias().ident().to_string(), value);
+                .insert(alias.ident().to_string(), value.clone());
         }
 
         let block = args.block_mut();

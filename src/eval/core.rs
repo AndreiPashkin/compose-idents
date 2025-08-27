@@ -1,4 +1,4 @@
-use crate::ast::{Ast, AstMetadata, Value};
+use crate::ast::{Alias, Ast, AstMetadata, Value};
 use crate::core::Environment;
 use crate::error::Error;
 use proc_macro2::Ident;
@@ -11,6 +11,7 @@ use std::rc::Rc;
 pub enum Evaluated {
     /// A singular value
     Value(Rc<Value>),
+    Bindings(HashMap<Rc<Alias>, Evaluated>),
 }
 
 /// Runtime context of evaluation.
@@ -31,6 +32,9 @@ impl Context {
 
     /// Adds a variable to the evaluation context.
     pub fn add_variable(&mut self, name: &Ident, value: Evaluated) {
+        if !matches!(&value, Evaluated::Value(_)) {
+            panic!("Only Value can be added to the context");
+        }
         self.context.insert(name.clone(), value);
     }
 
