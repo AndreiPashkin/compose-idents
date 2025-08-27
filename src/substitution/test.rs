@@ -5,7 +5,7 @@ macro_rules! make_substitutions {
     ($($key:expr => $value:expr),* $(,)*) => {
         {
             HashMap::from([
-                $((Ident::new($key, Span::call_site()), Rc::new($value)))*
+                $(($key.to_string(), Rc::new($value)))*
             ])
         }
     }

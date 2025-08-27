@@ -19,13 +19,13 @@ use syn::LitStr;
 /// A visitor compatible with [`StreamWalker`] that substitutes identifiers and formats
 /// string literals.
 struct SubstituteIdentsVisitor<N: Parse> {
-    substitutions: HashMap<Ident, Rc<Value>>,
+    substitutions: HashMap<String, Rc<Value>>,
     error_data: Option<(String, String, Span)>,
     node_type: PhantomData<N>,
 }
 
 impl<N: Parse> SubstituteIdentsVisitor<N> {
-    pub fn new(substitutions: HashMap<Ident, Rc<Value>>) -> Self {
+    pub fn new(substitutions: HashMap<String, Rc<Value>>) -> Self {
         Self {
             substitutions,
             error_data: None,
@@ -40,7 +40,7 @@ impl<N: Parse> StreamVisitor for SubstituteIdentsVisitor<N> {
         _: &VisitorCtx,
         ident: &Ident,
     ) -> Result<StreamVisitorAction, Error> {
-        if let Some(value) = self.substitutions.get(ident) {
+        if let Some(value) = self.substitutions.get(&ident.to_string()) {
             let substitution = value.to_token_stream();
             self.error_data = Some((
                 ident.to_string(),
@@ -93,7 +93,7 @@ impl<N: Parse> StreamVisitor for SubstituteIdentsVisitor<N> {
 /// new node based on the resulting token-stream.
 pub fn substitute_idents<N: ToTokens + Parse>(
     node: &N,
-    substitutions: &HashMap<Ident, Rc<Value>>,
+    substitutions: &HashMap<String, Rc<Value>>,
 ) -> Result<N, Error> {
     let mut visitor = SubstituteIdentsVisitor::<N>::new(substitutions.clone());
     let mut walker = StreamWalker::new(&mut visitor);
@@ -178,7 +178,7 @@ mod tests {
     fn substitution(
         #[case] input: syn::Block,
         #[case] expected: syn::Block,
-        #[case] substitutions: HashMap<Ident, Rc<Value>>,
+        #[case] substitutions: HashMap<String, Rc<Value>>,
     ) {
         let result = substitute_idents(&input, &substitutions);
         assert!(result.is_ok());
