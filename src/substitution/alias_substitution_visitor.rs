@@ -5,7 +5,7 @@ use crate::ast::Value;
 use crate::error::Error;
 use crate::substitution::substitute_idents;
 use crate::util::log::debug;
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::TokenStream;
 use quote::ToTokens;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -52,12 +52,12 @@ macro_rules! check_error {
 ///
 /// Recursively and incrementally operates on AST-level.
 pub struct AliasSubstitutionVisitor {
-    substitutions: HashMap<Ident, Rc<Value>>,
+    substitutions: HashMap<String, Rc<Value>>,
     error: Option<Error>,
 }
 
 impl AliasSubstitutionVisitor {
-    pub fn new(substitutions: HashMap<Ident, Rc<Value>>) -> Self {
+    pub fn new(substitutions: HashMap<String, Rc<Value>>) -> Self {
         Self {
             substitutions,
             error: None,
@@ -520,7 +520,7 @@ mod tests {
     fn basic_substitution(
         #[case] mut input: Block,
         #[case] expected: Block,
-        #[case] substitutions: HashMap<Ident, Rc<Value>>,
+        #[case] substitutions: HashMap<String, Rc<Value>>,
     ) {
         let mut visitor = AliasSubstitutionVisitor::new(substitutions);
         visitor.visit_block_mut(&mut input);
@@ -807,7 +807,7 @@ mod tests {
     fn ast_recursive_substitution(
         #[case] mut input: Block,
         #[case] expected: Block,
-        #[case] substitutions: HashMap<Ident, Rc<Value>>,
+        #[case] substitutions: HashMap<String, Rc<Value>>,
     ) {
         let mut visitor = AliasSubstitutionVisitor::new(substitutions);
         visitor.visit_block_mut(&mut input);

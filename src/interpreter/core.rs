@@ -12,7 +12,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use std::collections::HashMap;
 use std::rc::Rc;
-use syn::{visit_mut::VisitMut, Ident};
+use syn::visit_mut::VisitMut;
 
 /// Executes the lifecycle of the macro starting from analyzing the AST down to generating the
 /// final output.
@@ -33,7 +33,7 @@ use syn::{visit_mut::VisitMut, Ident};
 /// 3. Code-gen – rewrites the user block with `ComposeIdentsVisitor` and returns a TokenStream.
 pub struct Interpreter {
     /// Generated identifier substitutions
-    substitutions: HashMap<Ident, Rc<Value>>,
+    substitutions: HashMap<String, Rc<Value>>,
     environment: Rc<Environment>,
     deprecation_service: DeprecationServiceScope,
 }
@@ -64,7 +64,7 @@ impl Interpreter {
             context.add_variable(item.alias().ident(), Evaluated::Value(value.clone()));
 
             self.substitutions
-                .insert(item.alias().ident().clone(), value);
+                .insert(item.alias().ident().to_string(), value);
         }
 
         let block = args.block_mut();
