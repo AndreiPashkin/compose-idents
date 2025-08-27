@@ -1,8 +1,7 @@
-use crate::ast::{Ast, Value, ValueInner};
+use crate::ast::{Ast, Value, ValueKind};
 use crate::core::{Environment, Type};
 use crate::error::Error;
 use crate::resolve::{Resolve, Scope};
-use crate::util::log::debug;
 
 impl Resolve for Value {
     /// Resolves a function call by resolving its arguments and binding the call to a built-in
@@ -14,8 +13,8 @@ impl Resolve for Value {
         expected_type: Option<&Type>,
     ) -> Result<(), Error> {
         let mut metadata = scope.metadata_mut();
-        let from_type = match self.inner() {
-            ValueInner::Ident(ident) => match scope.get_name(ident.to_string().as_str()) {
+        let from_type = match self.kind() {
+            ValueKind::Ident(ident) => match scope.get_name(ident.to_string().as_str()) {
                 Some(value) => {
                     let id = value.id();
                     if let Some(metadata) = metadata.get_value_metadata(id) {

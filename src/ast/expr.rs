@@ -7,53 +7,53 @@ use syn::parse::Parse;
 /// Expression in form of an argument or a function call.
 #[derive(Debug, Clone)]
 pub struct Expr {
-    inner: ExprInner,
+    kind: ExprKind,
 }
 
 #[derive(Debug, Clone)]
-pub enum ExprInner {
+pub enum ExprKind {
     ValueExpr(Box<Value>),
     FuncCallExpr(Box<Call>),
 }
 
 impl Expr {
-    pub fn new(inner: ExprInner) -> Self {
-        Self { inner }
+    pub fn new(kind: ExprKind) -> Self {
+        Self { kind }
     }
 
     pub fn from_value(arg: Value) -> Self {
-        Self::new(ExprInner::ValueExpr(Box::new(arg)))
+        Self::new(ExprKind::ValueExpr(Box::new(arg)))
     }
 
     pub fn from_call(func: Call) -> Self {
-        Self::new(ExprInner::FuncCallExpr(Box::new(func)))
+        Self::new(ExprKind::FuncCallExpr(Box::new(func)))
     }
 
-    pub fn inner(&self) -> &ExprInner {
-        &self.inner
+    pub fn kind(&self) -> &ExprKind {
+        &self.kind
     }
 }
 
 impl Display for Expr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.inner() {
-            ExprInner::ValueExpr(value) => write!(f, "{}", value),
-            ExprInner::FuncCallExpr(call) => write!(f, "{}", call),
+        match self.kind() {
+            ExprKind::ValueExpr(value) => write!(f, "{}", value),
+            ExprKind::FuncCallExpr(call) => write!(f, "{}", call),
         }
     }
 }
 
 impl Ast for Expr {
     fn id(&self) -> NodeId {
-        match self.inner() {
-            ExprInner::ValueExpr(value) => value.id(),
-            ExprInner::FuncCallExpr(func) => func.id(),
+        match self.kind() {
+            ExprKind::ValueExpr(value) => value.id(),
+            ExprKind::FuncCallExpr(func) => func.id(),
         }
     }
     fn span(&self) -> Span {
-        match self.inner() {
-            ExprInner::ValueExpr(arg) => arg.span(),
-            ExprInner::FuncCallExpr(func) => func.span(),
+        match self.kind() {
+            ExprKind::ValueExpr(arg) => arg.span(),
+            ExprKind::FuncCallExpr(func) => func.span(),
         }
     }
 }

@@ -1,6 +1,6 @@
 //! Provides [`Environment::init_funcs`] method that initializes all the func-types.
 
-use crate::ast::{Value, ValueInner};
+use crate::ast::{Value, ValueKind};
 use crate::core::{Environment, Func, Type};
 use crate::error::Error;
 use crate::funcs::{
@@ -33,8 +33,8 @@ macro_rules! make_str_funcs {
                 vec![Type::LitStr],
                 Type::LitStr,
                 move |func, _, _, values| {
-                    let inner = values.iter().map(|item| item.inner()).collect::<Vec<_>>();
-                    let [ValueInner::LitStr(lit_str)] = inner.as_slice() else {
+                    let kind = values.iter().map(|item| item.kind()).collect::<Vec<_>>();
+                    let [ValueKind::LitStr(lit_str)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     let string = $func(lit_str.value().as_str());
@@ -47,8 +47,8 @@ macro_rules! make_str_funcs {
                 vec![Type::Ident],
                 Type::Ident,
                 move |func, _, _, values| {
-                    let inner = values.iter().map(|item| item.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Ident(ident)] = inner.as_slice() else {
+                    let kind = values.iter().map(|item| item.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Ident(ident)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     let ident =
@@ -91,8 +91,8 @@ impl Environment {
                 vec![Type::Raw],
                 Type::Ident,
                 |func, _, span, values| {
-                    let inner = values.iter().map(|item| item.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Raw(tokens)] = inner.as_slice() else {
+                    let kind = values.iter().map(|item| item.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Raw(tokens)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     let ident = Ident::new(normalize(tokens.to_string().as_str()).as_str(), *span);
@@ -109,8 +109,8 @@ impl Environment {
                     vec![Type::LitStr],
                     Type::LitStr,
                     |func, state, span, values| {
-                        let inner = values.iter().map(|item| item.inner()).collect::<Vec<_>>();
-                        let [ValueInner::LitStr(lit_str)] = inner.as_slice() else {
+                        let kind = values.iter().map(|item| item.kind()).collect::<Vec<_>>();
+                        let [ValueKind::LitStr(lit_str)] = kind.as_slice() else {
                             arg_type_err!(func, values);
                         };
                         let result = hash(lit_str.value().as_str(), state);
@@ -125,8 +125,8 @@ impl Environment {
                     vec![Type::Ident],
                     Type::Ident,
                     |func, state, span, values| {
-                        let inner = values.iter().map(|item| item.inner()).collect::<Vec<_>>();
-                        let [ValueInner::Ident(ident)] = inner.as_slice() else {
+                        let kind = values.iter().map(|item| item.kind()).collect::<Vec<_>>();
+                        let [ValueKind::Ident(ident)] = kind.as_slice() else {
                             arg_type_err!(func, values);
                         };
                         let string = ident.to_string();
@@ -142,8 +142,8 @@ impl Environment {
                     vec![Type::Tokens],
                     Type::Ident,
                     |func, state, span, values| {
-                        let inner = values.iter().map(|item| item.inner()).collect::<Vec<_>>();
-                        let [ValueInner::Tokens(stream)] = inner.as_slice() else {
+                        let kind = values.iter().map(|item| item.kind()).collect::<Vec<_>>();
+                        let [ValueKind::Tokens(stream)] = kind.as_slice() else {
                             arg_type_err!(func, values);
                         };
                         let string = stream.to_string();
@@ -166,7 +166,7 @@ impl Environment {
                     |func, _, span, values| {
                         let mut strings = Vec::new();
                         for value in values {
-                            let ValueInner::Ident(ident) = value.inner() else {
+                            let ValueKind::Ident(ident) = value.kind() else {
                                 arg_type_err!(func, values);
                             };
                             strings.push(ident.to_string());
@@ -190,7 +190,7 @@ impl Environment {
                         };
                         strings.push(first.to_token_stream().to_string());
                         for value in values.iter().skip(1) {
-                            let ValueInner::Tokens(tokens) = value.inner() else {
+                            let ValueKind::Tokens(tokens) = value.kind() else {
                                 arg_type_err!(func, values);
                             };
                             strings.push(tokens.to_string());
@@ -224,7 +224,7 @@ impl Environment {
                     |func, _, span, values| {
                         let mut strings = Vec::new();
                         for value in values {
-                            let ValueInner::LitStr(lit_str) = value.inner() else {
+                            let ValueKind::LitStr(lit_str) = value.kind() else {
                                 arg_type_err!(func, values);
                             };
                             strings.push(lit_str.value());
@@ -244,7 +244,7 @@ impl Environment {
                     |func, _, span, values| {
                         let mut digits = Vec::new();
                         for value in values {
-                            let ValueInner::LitInt(lit_int) = value.inner() else {
+                            let ValueKind::LitInt(lit_int) = value.kind() else {
                                 arg_type_err!(func, values);
                             };
                             digits.push(lit_int.base10_digits());
@@ -263,7 +263,7 @@ impl Environment {
                     |func, _, _, values| {
                         let mut tokens = TokenStream::new();
                         for value in values {
-                            let ValueInner::Tokens(stream) = value.inner() else {
+                            let ValueKind::Tokens(stream) = value.kind() else {
                                 arg_type_err!(func, values);
                             };
                             tokens.extend(stream.clone().into_iter());
@@ -282,8 +282,8 @@ impl Environment {
                 vec![Type::Tokens],
                 Type::Ident,
                 |func, _, _, values| {
-                    let inner = values.iter().map(|v| v.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Tokens(_tokens)] = inner.as_slice() else {
+                    let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Tokens(_tokens)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     to_ident(values[0].as_ref())
@@ -297,8 +297,8 @@ impl Environment {
                 vec![Type::Tokens],
                 Type::Path,
                 |func, _, _, values| {
-                    let inner = values.iter().map(|v| v.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Tokens(_tokens)] = inner.as_slice() else {
+                    let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Tokens(_tokens)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     to_path(values[0].as_ref())
@@ -312,8 +312,8 @@ impl Environment {
                 vec![Type::Tokens],
                 Type::Type,
                 |func, _, _, values| {
-                    let inner = values.iter().map(|v| v.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Tokens(_tokens)] = inner.as_slice() else {
+                    let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Tokens(_tokens)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     to_type(values[0].as_ref())
@@ -327,8 +327,8 @@ impl Environment {
                 vec![Type::Tokens],
                 Type::Expr,
                 |func, _, _, values| {
-                    let inner = values.iter().map(|v| v.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Tokens(_tokens)] = inner.as_slice() else {
+                    let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Tokens(_tokens)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     to_expr(values[0].as_ref())
@@ -342,8 +342,8 @@ impl Environment {
                 vec![Type::Tokens],
                 Type::LitStr,
                 |func, _, _, values| {
-                    let inner = values.iter().map(|v| v.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Tokens(_tokens)] = inner.as_slice() else {
+                    let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Tokens(_tokens)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     to_str(values[0].as_ref())
@@ -357,8 +357,8 @@ impl Environment {
                 vec![Type::Tokens],
                 Type::LitInt,
                 |func, _, _, values| {
-                    let inner = values.iter().map(|v| v.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Tokens(_tokens)] = inner.as_slice() else {
+                    let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Tokens(_tokens)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     to_int(values[0].as_ref())
@@ -372,8 +372,8 @@ impl Environment {
                 vec![Type::Tokens],
                 Type::Tokens,
                 |func, _, _, values| {
-                    let inner = values.iter().map(|v| v.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Tokens(_tokens)] = inner.as_slice() else {
+                    let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Tokens(_tokens)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     Ok(values[0].deref().clone())
@@ -387,8 +387,8 @@ impl Environment {
                 vec![Type::Raw],
                 Type::Tokens,
                 |func, _, _, values| {
-                    let inner = values.iter().map(|v| v.inner()).collect::<Vec<_>>();
-                    let [ValueInner::Raw(tokens)] = inner.as_slice() else {
+                    let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                    let [ValueKind::Raw(tokens)] = kind.as_slice() else {
                         arg_type_err!(func, values);
                     };
                     Ok(Value::from_tokens(tokens.clone()))
