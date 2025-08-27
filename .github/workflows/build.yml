@@ -16,12 +16,15 @@ jobs:
       with:
         version: 3.x
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - uses: pre-commit/action@v3.0.1
     - uses: pkgxdev/setup@v3
       with:
         +: gomplate.ca
     - name: Set up Rust toolchain
-      run: rustup update stable && rustup default stable
+      run: |
+        rustup update 1.80.0 stable && rustup default stable
+        rustup component add --toolchain 1.80.0 clippy rustfmt
+        rustup component add --toolchain stable clippy rustfmt
+    - uses: pre-commit/action@v3.0.1
     - name: Lint
       run: task lint
     - name: Build
