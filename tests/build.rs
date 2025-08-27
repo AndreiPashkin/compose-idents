@@ -46,14 +46,17 @@ fn main() {
 
     fs::write(temp_path.join("src/main.rs"), test_code).unwrap();
 
-    // Now try to build the test crate
-    let output = Command::new("cargo")
-        .current_dir(temp_path)
-        .args(["build", "--verbose"])
-        .output()
-        .expect("Failed to execute cargo build");
+    for toolchain in ["stable", "1.80.0"] {
+        let output = Command::new("cargo")
+            .current_dir(temp_path)
+            .env("RUSTFLAGS", "-D warnings")
+            .arg(format!("+{}", toolchain))
+            .args(["build", "--verbose"])
+            .output()
+            .expect("Failed to execute cargo build");
 
-    let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = String::from_utf8_lossy(&output.stderr);
 
-    assert!(output.status.success(), "{}", stderr);
+        assert!(output.status.success(), "{}", stderr);
+    }
 }
