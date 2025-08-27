@@ -11,6 +11,7 @@ impl Eval for Value {
             ValueKind::Ident(ident) => match context.get_variable(ident) {
                 Some(Evaluated::Value(value)) => value.clone(),
                 None => Rc::new(self.clone()),
+                _ => unreachable!(),
             },
             _ => Rc::new(self.clone()),
         };

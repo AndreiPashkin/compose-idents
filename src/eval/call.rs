@@ -20,7 +20,9 @@ impl Eval for Call {
             .args
             .iter()
             .map(|expr| {
-                let Evaluated::Value(arg) = expr.eval(environment, context)?;
+                let Evaluated::Value(arg) = expr.eval(environment, context)? else {
+                    panic!("Function arguments should always be singular values")
+                };
                 Ok(arg)
             })
             .collect::<Result<Vec<_>, Error>>()?;
