@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Significantly refactored the project to improve modularity.
 - Significantly expanded test coverage and reworked the test suite.
 - Removed the mini-example at the beginning of the documentation.
-- Made the build-test that verifies usage of the library as a dependency stricter.
+- Harden the testing of support for both MSRV and stable Rust versions and of usage of the library as a dependency.
 
 ### Removed
 
