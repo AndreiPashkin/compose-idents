@@ -1,4 +1,4 @@
-use crate::ast::{Ast, Value, ValueInner};
+use crate::ast::{Ast, Value, ValueKind};
 use crate::core::Environment;
 use crate::error::{internal_error, Error};
 use crate::eval::{Context, Eval, Evaluated};
@@ -7,8 +7,8 @@ use std::rc::Rc;
 impl Eval for Value {
     fn eval(&self, _: &Environment, context: &mut Context) -> Result<Evaluated, Error> {
         let metadata = context.metadata();
-        let value = match self.inner() {
-            ValueInner::Ident(ident) => match context.get_variable(ident) {
+        let value = match self.kind() {
+            ValueKind::Ident(ident) => match context.get_variable(ident) {
                 Some(Evaluated::Value(value)) => value.clone(),
                 None => Rc::new(self.clone()),
             },

@@ -1,4 +1,4 @@
-use crate::ast::{Ast, Call, Expr, ExprInner, ValueInner};
+use crate::ast::{Ast, Call, Expr, ExprKind, ValueKind};
 use crate::core::{Environment, Func, Type};
 use crate::error::{internal_error, Error};
 use crate::resolve::{Resolve, Scope};
@@ -22,8 +22,8 @@ fn resolve_arg(
     arg.resolve(environment, scope, expected_type)?;
     let metadata = scope.metadata_mut();
 
-    let arg_coercion_cost = match arg.inner() {
-        ExprInner::ValueExpr(value) => {
+    let arg_coercion_cost = match arg.kind() {
+        ExprKind::ValueExpr(value) => {
             let Some(value_metadata) = metadata.get_value_metadata(value.id()) else {
                 return Err(internal_error!(
                     "Value metadata is expected be set after resolve call"
@@ -31,7 +31,7 @@ fn resolve_arg(
             };
             value_metadata.coercion_cost
         }
-        ExprInner::FuncCallExpr(call) => {
+        ExprKind::FuncCallExpr(call) => {
             let Some(call_metadata) = metadata.get_call_metadata(call.id()) else {
                 return Err(internal_error!(
                     "Call metadata is expected be set after resolve call"
@@ -89,8 +89,8 @@ fn resolve_call_for_func(
         // expected.
         ([arg_type], _, _, Some(raw_arg)) if *arg_type == Type::Raw => {
             debug_assert!(matches!(
-                raw_arg.inner(),
-                ExprInner::ValueExpr(value) if matches!(value.inner(), ValueInner::Raw(_)),
+                raw_arg.kind(),
+                ExprKind::ValueExpr(value) if matches!(value.kind(), ValueKind::Raw(_)),
             ));
 
             raw_arg.resolve(environment, scope, Some(&Type::Raw))?;

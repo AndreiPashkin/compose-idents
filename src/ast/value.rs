@@ -19,11 +19,11 @@ use syn::LitStr;
 #[derive(Debug, Clone)]
 pub struct Value {
     id: NodeId,
-    inner: ValueInner,
+    kind: ValueKind,
 }
 
 #[derive(Debug, Clone)]
-pub enum ValueInner {
+pub enum ValueKind {
     Ident(Ident),
     Path(syn::Path),
     Type(syn::Type),
@@ -35,46 +35,46 @@ pub enum ValueInner {
 }
 
 impl Value {
-    pub fn new(id: NodeId, inner: ValueInner) -> Self {
-        Self { id, inner }
+    pub fn new(id: NodeId, kind: ValueKind) -> Self {
+        Self { id, kind }
     }
     pub fn from_ident(ident: Ident) -> Self {
-        Self::new(next_unique_id() as NodeId, ValueInner::Ident(ident))
+        Self::new(next_unique_id() as NodeId, ValueKind::Ident(ident))
     }
     pub fn from_path(path: syn::Path) -> Self {
-        Self::new(next_unique_id() as NodeId, ValueInner::Path(path))
+        Self::new(next_unique_id() as NodeId, ValueKind::Path(path))
     }
     pub fn from_type(type_: syn::Type) -> Self {
-        Self::new(next_unique_id() as NodeId, ValueInner::Type(type_))
+        Self::new(next_unique_id() as NodeId, ValueKind::Type(type_))
     }
     pub fn from_expr(expr: syn::Expr) -> Self {
-        Self::new(next_unique_id() as NodeId, ValueInner::Expr(expr))
+        Self::new(next_unique_id() as NodeId, ValueKind::Expr(expr))
     }
     pub fn from_lit_str(lit_str: syn::LitStr) -> Self {
-        Self::new(next_unique_id() as NodeId, ValueInner::LitStr(lit_str))
+        Self::new(next_unique_id() as NodeId, ValueKind::LitStr(lit_str))
     }
     pub fn from_lit_int(lit_int: syn::LitInt) -> Self {
-        Self::new(next_unique_id() as NodeId, ValueInner::LitInt(lit_int))
+        Self::new(next_unique_id() as NodeId, ValueKind::LitInt(lit_int))
     }
     pub fn from_tokens(tokens: TokenStream) -> Self {
-        Self::new(next_unique_id() as NodeId, ValueInner::Tokens(tokens))
+        Self::new(next_unique_id() as NodeId, ValueKind::Tokens(tokens))
     }
     pub fn from_raw(tokens: TokenStream) -> Self {
-        Self::new(next_unique_id() as NodeId, ValueInner::Raw(tokens))
+        Self::new(next_unique_id() as NodeId, ValueKind::Raw(tokens))
     }
-    pub fn inner(&self) -> &ValueInner {
-        &self.inner
+    pub fn kind(&self) -> &ValueKind {
+        &self.kind
     }
     pub fn type_(&self) -> Type {
-        match self.inner() {
-            ValueInner::Ident(_) => Type::Ident,
-            ValueInner::Path(_) => Type::Path,
-            ValueInner::Type(_) => Type::Type,
-            ValueInner::Expr(_) => Type::Expr,
-            ValueInner::LitStr(_) => Type::LitStr,
-            ValueInner::LitInt(_) => Type::LitInt,
-            ValueInner::Tokens(_) => Type::Tokens,
-            ValueInner::Raw(_) => Type::Raw,
+        match self.kind() {
+            ValueKind::Ident(_) => Type::Ident,
+            ValueKind::Path(_) => Type::Path,
+            ValueKind::Type(_) => Type::Type,
+            ValueKind::Expr(_) => Type::Expr,
+            ValueKind::LitStr(_) => Type::LitStr,
+            ValueKind::LitInt(_) => Type::LitInt,
+            ValueKind::Tokens(_) => Type::Tokens,
+            ValueKind::Raw(_) => Type::Raw,
         }
     }
     fn make_cast_error(
@@ -118,14 +118,14 @@ impl Value {
         match (&self.type_(), type_) {
             (from_type, to_type) if from_type == to_type => Ok(self.clone()),
             (Type::Ident, Type::Path) => {
-                let ValueInner::Ident(ident) = self.inner.clone() else {
+                let ValueKind::Ident(ident) = self.kind.clone() else {
                     unreachable!()
                 };
                 let path = syn::Path::from(ident.clone());
                 Ok(Value::from_path(path))
             }
             (Type::Ident, Type::Type) => {
-                let ValueInner::Ident(ident) = self.inner.clone() else {
+                let ValueKind::Ident(ident) = self.kind.clone() else {
                     unreachable!()
                 };
                 match syn::parse2::<syn::Type>(ident.clone().to_token_stream()) {
@@ -139,7 +139,7 @@ impl Value {
                 }
             }
             (Type::Ident, Type::Expr) => {
-                let ValueInner::Ident(ref ident) = self.inner else {
+                let ValueKind::Ident(ref ident) = self.kind else {
                     unreachable!()
                 };
                 match syn::parse2::<syn::Expr>(ident.clone().to_token_stream()) {
@@ -153,7 +153,7 @@ impl Value {
                 }
             }
             (Type::Ident, Type::LitStr) => {
-                let ValueInner::Ident(ref ident) = self.inner else {
+                let ValueKind::Ident(ref ident) = self.kind else {
                     unreachable!()
                 };
                 match syn::parse_str::<syn::LitStr>(format!("\"{}\"", ident).as_str()) {
@@ -170,7 +170,7 @@ impl Value {
                 }
             }
             (Type::LitStr, Type::Ident) => {
-                let ValueInner::LitStr(lit_str) = self.inner.clone() else {
+                let ValueKind::LitStr(lit_str) = self.kind.clone() else {
                     unreachable!()
                 };
 
@@ -261,45 +261,45 @@ impl Ast for Value {
     }
 
     fn span(&self) -> Span {
-        match &self.inner() {
-            ValueInner::Ident(ident) => ident.span(),
-            ValueInner::Path(path) => path.span(),
-            ValueInner::Type(type_) => type_.span(),
-            ValueInner::Expr(expr) => expr.span(),
-            ValueInner::LitStr(lit_str) => lit_str.span(),
-            ValueInner::LitInt(lit_int) => lit_int.span(),
-            ValueInner::Tokens(tokens) => tokens.span(),
-            ValueInner::Raw(tokens) => tokens.span(),
+        match &self.kind() {
+            ValueKind::Ident(ident) => ident.span(),
+            ValueKind::Path(path) => path.span(),
+            ValueKind::Type(type_) => type_.span(),
+            ValueKind::Expr(expr) => expr.span(),
+            ValueKind::LitStr(lit_str) => lit_str.span(),
+            ValueKind::LitInt(lit_int) => lit_int.span(),
+            ValueKind::Tokens(tokens) => tokens.span(),
+            ValueKind::Raw(tokens) => tokens.span(),
         }
     }
 }
 
 impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.inner() {
-            ValueInner::Ident(ident) => write!(f, "{}", ident),
-            ValueInner::Path(path) => write!(f, "{}", path.to_token_stream()),
-            ValueInner::Type(type_) => write!(f, "{}", type_.to_token_stream()),
-            ValueInner::Expr(expr) => write!(f, "{}", expr.to_token_stream()),
-            ValueInner::LitStr(value) => write!(f, "\"{}\"", value.value()),
-            ValueInner::LitInt(value) => write!(f, "{}", value.base10_digits()),
-            ValueInner::Tokens(tokens) => write!(f, "{}", tokens),
-            ValueInner::Raw(tokens) => write!(f, "{}", tokens),
+        match self.kind() {
+            ValueKind::Ident(ident) => write!(f, "{}", ident),
+            ValueKind::Path(path) => write!(f, "{}", path.to_token_stream()),
+            ValueKind::Type(type_) => write!(f, "{}", type_.to_token_stream()),
+            ValueKind::Expr(expr) => write!(f, "{}", expr.to_token_stream()),
+            ValueKind::LitStr(value) => write!(f, "\"{}\"", value.value()),
+            ValueKind::LitInt(value) => write!(f, "{}", value.base10_digits()),
+            ValueKind::Tokens(tokens) => write!(f, "{}", tokens),
+            ValueKind::Raw(tokens) => write!(f, "{}", tokens),
         }
     }
 }
 
 impl ToTokens for Value {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        match &self.inner {
-            ValueInner::Ident(ident) => tokens.extend(ident.to_token_stream()),
-            ValueInner::Path(path) => tokens.extend(path.to_token_stream()),
-            ValueInner::Type(type_) => tokens.extend(type_.to_token_stream()),
-            ValueInner::Expr(expr) => tokens.extend(expr.to_token_stream()),
-            ValueInner::LitStr(lit_str) => tokens.extend(lit_str.to_token_stream()),
-            ValueInner::LitInt(lit_int) => tokens.extend(lit_int.to_token_stream()),
-            ValueInner::Tokens(tokens_) => tokens.extend(tokens_.clone()),
-            ValueInner::Raw(tokens_) => tokens.extend(tokens_.clone()),
+        match &self.kind {
+            ValueKind::Ident(ident) => tokens.extend(ident.to_token_stream()),
+            ValueKind::Path(path) => tokens.extend(path.to_token_stream()),
+            ValueKind::Type(type_) => tokens.extend(type_.to_token_stream()),
+            ValueKind::Expr(expr) => tokens.extend(expr.to_token_stream()),
+            ValueKind::LitStr(lit_str) => tokens.extend(lit_str.to_token_stream()),
+            ValueKind::LitInt(lit_int) => tokens.extend(lit_int.to_token_stream()),
+            ValueKind::Tokens(tokens_) => tokens.extend(tokens_.clone()),
+            ValueKind::Raw(tokens_) => tokens.extend(tokens_.clone()),
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::ast::{Expr, ExprInner};
+use crate::ast::{Expr, ExprKind};
 use crate::core::{Environment, Type};
 use crate::error::Error;
 use crate::resolve::{Resolve, Scope};
@@ -12,9 +12,9 @@ impl Resolve for Expr {
         scope: &mut Scope,
         expected_type: Option<&Type>,
     ) -> Result<(), Error> {
-        match self.inner() {
-            ExprInner::ValueExpr(value) => value.resolve(environment, scope, expected_type),
-            ExprInner::FuncCallExpr(call) => call.resolve(environment, scope, expected_type),
+        match self.kind() {
+            ExprKind::ValueExpr(value) => value.resolve(environment, scope, expected_type),
+            ExprKind::FuncCallExpr(call) => call.resolve(environment, scope, expected_type),
         }
     }
 }

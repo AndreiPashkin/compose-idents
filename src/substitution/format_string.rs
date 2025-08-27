@@ -1,26 +1,26 @@
 //! Provides [`format_string`] function that substitutes `%alias%`-style placeholders in strings.
 
-use crate::ast::{Value, ValueInner};
+use crate::ast::{Value, ValueKind};
 use quote::ToTokens;
 use std::collections::HashMap;
 use std::rc::Rc;
 
 /// Formats a [`Value`] instance into a string representation.
 fn format_value(value: &Value) -> String {
-    match &value.inner() {
-        ValueInner::Ident(ident) => ident.to_string(),
-        ValueInner::Path(path) => path
+    match &value.kind() {
+        ValueKind::Ident(ident) => ident.to_string(),
+        ValueKind::Path(path) => path
             .segments
             .iter()
             .map(|seg| seg.ident.to_string())
             .collect::<Vec<_>>()
             .join("::"),
-        ValueInner::Type(type_) => type_.to_token_stream().to_string(),
-        ValueInner::Expr(expr) => expr.to_token_stream().to_string(),
-        ValueInner::LitStr(lit_str) => lit_str.value(),
-        ValueInner::LitInt(lit_int) => lit_int.to_string(),
-        ValueInner::Tokens(tokens) => tokens.to_string(),
-        ValueInner::Raw(tokens) => tokens.to_string(),
+        ValueKind::Type(type_) => type_.to_token_stream().to_string(),
+        ValueKind::Expr(expr) => expr.to_token_stream().to_string(),
+        ValueKind::LitStr(lit_str) => lit_str.value(),
+        ValueKind::LitInt(lit_int) => lit_int.to_string(),
+        ValueKind::Tokens(tokens) => tokens.to_string(),
+        ValueKind::Raw(tokens) => tokens.to_string(),
     }
 }
 
