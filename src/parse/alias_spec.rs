@@ -1,22 +1,18 @@
 use crate::ast::{AliasSpec, AliasSpecItem};
 use crate::parse::MIXING_SEP_ERROR;
-use crate::util::log::debug;
 use crate::util::unique_id::next_unique_id;
-use std::collections::HashSet;
 use std::rc::Rc;
 use syn::parse::{Parse, ParseStream};
 use syn::{Ident, Token};
 
 impl Parse for AliasSpec {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        debug!("Parsing AliasSpec...");
         // TODO: backport removing alias dup check
         let mut items = Vec::new();
         let mut is_comma_used = None;
 
         loop {
             let spec_item: AliasSpecItem = input.parse()?;
-            debug!("Parsed AliasSpecItem successfully.");
             items.push(spec_item);
 
             if input.is_empty() {
