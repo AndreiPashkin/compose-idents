@@ -7,7 +7,6 @@ use syn::{Ident, Token};
 
 impl Parse for AliasSpec {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        // TODO: backport removing alias dup check
         let mut items = Vec::new();
         let mut is_comma_used = None;
 
