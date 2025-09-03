@@ -11,11 +11,12 @@ use std::rc::Rc;
 pub enum Evaluated {
     /// A singular value
     Value(Rc<Value>),
+    /// A set of variable bindings
     Bindings(HashMap<Rc<Alias>, Evaluated>),
 }
 
 /// Runtime context of evaluation.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Context {
     context: HashMap<Ident, Evaluated>,
     metadata: Rc<RefCell<AstMetadata>>,

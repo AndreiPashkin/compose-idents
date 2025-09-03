@@ -5,6 +5,7 @@ mod ast;
 mod core;
 mod error;
 mod eval;
+mod expand;
 mod funcs;
 mod interpreter;
 mod parse;
@@ -12,7 +13,7 @@ mod resolve;
 mod substitution;
 mod util;
 
-use crate::ast::ComposeIdentsArgs;
+use crate::ast::RawAST;
 use crate::core::Environment;
 use crate::interpreter::Interpreter;
 use crate::util::unique_id::next_unique_id;
@@ -32,10 +33,16 @@ use util::deprecation::DeprecationService;
 /// use compose_idents::compose_idents;
 ///
 /// compose_idents!(
+///     // For-in loops could be used to generate multiple variations of the code.
+///     for (suffix, (interjection, noun)) in [
+///         (BAR, (Hello, "world")),
+///         (baz, ("Hallo", "welt")),
+///     ]
+///
 ///     // A simple alias definition.
-///     my_fn = concat(foo, _, 1, _, lower(BAR)),
+///     my_fn = concat(foo, _, 1, _, lower(suffix)),
 ///     // Many functions are overloaded support different input argument types.
-///     greeting = concat(to_str(Hello), ", ", "world!"),
+///     greeting = concat(to_str(interjection), ", ", noun, "!"),
 ///     {
 ///         // String placeholders `% my_alias %` are expanded inside literals and doc attributes.
 ///         #[doc = "Greets: % greeting %"]
@@ -44,6 +51,7 @@ use util::deprecation::DeprecationService;
 /// );
 ///
 /// assert_eq!(foo_1_bar(), "Hello, world!");
+/// assert_eq!(foo_1_baz(), "Hallo, welt!");
 /// ```
 ///
 /// # Reference
@@ -58,7 +66,7 @@ pub fn compose_idents(input: TokenStream) -> TokenStream {
 
     let interpreter = Interpreter::new(environment, deprecation_service);
 
-    let args = parse_macro_input!(input as ComposeIdentsArgs);
+    let args = parse_macro_input!(input as RawAST);
     match interpreter.execute(args) {
         Ok(ts) => ts.into(),
         Err(err) => {

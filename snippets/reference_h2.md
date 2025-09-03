@@ -47,6 +47,23 @@ assert_eq!(FOO, 1);
 assert_eq!(BAR_FOO, 1);
 ```
 
+## Code repetition
+
+Multiple code variants could be generated with `for ... in [...]` syntax. The loop variable can be used directly inside
+the block:
+```rust
+use compose_idents::compose_idents;
+
+compose_idents!(for name in [foo, bar] {
+    fn name() -> u32 {
+        1
+    }
+});
+
+assert_eq!(foo(), 1);
+assert_eq!(bar(), 1);
+```
+
 ## Functions
 
 Functions can be applied to the arguments used for the alias definitions:

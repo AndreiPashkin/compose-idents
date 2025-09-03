@@ -20,16 +20,18 @@ macro_rules! make_interpreter_test {
             $expected_err_type,
         )])*
         fn $name(
-            #[case] alias_spec_tokens: proc_macro2::TokenStream,
+            #[case] spec_tokens: proc_macro2::TokenStream,
             #[case] block_tokens: proc_macro2::TokenStream,
             #[case] expected_tokens: proc_macro2::TokenStream,
             #[case] expected_err_type: Option<$crate::error::ErrorType>,
         ) -> syn::Result<()> {
             use std::rc::Rc;
+            use syn::parse::Parser;
             use $crate::interpreter::Interpreter;
             use $crate::util::deprecation::DeprecationService;
-            use $crate::ast::ComposeIdentsArgs;
+            use $crate::ast::RawAST;
             use $crate::ast::AliasSpec;
+            use $crate::ast::LoopSpec;
             use $crate::core::Environment;
 
             let environment = Rc::new(Environment::new_initialized(1));
@@ -38,13 +40,21 @@ macro_rules! make_interpreter_test {
             let deprecation_service = DeprecationService::scoped();
             let interpreter = Interpreter::new(environment.clone(), deprecation_service);
 
-            let alias_spec = syn::parse2::<AliasSpec>(alias_spec_tokens)?;
+            let parser = |input: syn::parse::ParseStream| {
+                let loops = input.parse::<LoopSpec>().ok();
+                let spec = input.parse::<AliasSpec>().ok();
+
+                Ok((loops, spec))
+            };
+
+            let (loops_spec, alias_spec) = parser.parse2(spec_tokens)?;
             let block = syn::parse2::<syn::Block>(block_tokens)?;
             let expected = syn::parse2::<syn::Block>(expected_tokens)?;
 
-            let args = ComposeIdentsArgs::new(
+            let args = RawAST::new(
                 $crate::util::unique_id::next_unique_id(),
-                std::rc::Rc::new(alias_spec),
+                loops_spec.map(Rc::new),
+                alias_spec.map(Rc::new),
                 block,
             );
 

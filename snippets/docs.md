@@ -1,5 +1,5 @@
 A macro for generating new identifiers (names of variables, functions, traits, etc.) by concatenating one or more
-arbitrary parts and applying other manipulations.
+arbitrary parts, applying other manipulations, and iteratively generating multiple variations of the supplied Rust code.
 
 It was created as an alternative to `macro_rules!` that doesn't allow creating new identifiers from the macro arguments
 and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capabilities and has not been stabilized
@@ -14,6 +14,9 @@ and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capab
 
   Identifiers can be generated via concatenation of multiple parts. Arguments of the outer macro
   definitions and literals are supported for identifier definitions.
+- **Code repetition**
+
+  Generation of multiple variations of the user-provided code is natively supported via `for ... in ...` loop syntax.
 - **Functions**
 
   Functions can be applied when defining new identifiers for changing case and style.
@@ -38,45 +41,39 @@ definitions (which may expand into identifiers, paths, expressions, and arbitrar
 use compose_idents::compose_idents;
 
 /// Generate getters, setters with docstrings for given struct
-macro_rules! generate_accessors {
-    (struct $name:ident { $($field:ident: $ty:ty),* }) => {
-        impl $name {
-            $(
-                compose_idents!(
-                    getter = $field,
-                    setter = concat(set_, $field),
-                    getter_mut = concat($field, _mut),
-                    field = $field,
-                    type_ = $ty,
-                    {
-                        #[doc = "Get the % field % field"]
-                        pub fn getter(&self) -> &type_ {
-                            &self.field
-                        }
-
-                        #[doc = "Get mutable reference to % field % field"]
-                        pub fn getter_mut(&mut self) -> &mut type_ {
-                            &mut self.field
-                        }
-
-                        #[doc = "Set the % field % field"]
-                        pub fn setter(&mut self, value: type_) {
-                            self.field = value;
-                        }
-                    }
-                );
-            )*
-        }
-    };
-}
-
 struct User {
     name: String,
     age: u32,
     email: Option<String>,
 }
 
-generate_accessors!(struct User { name: String, age: u32, email: Option<String> });
+impl User {
+    compose_idents!(
+        // Iterating over fields and their types, generating a new variation of the code per iteration
+        for (field, type_) in [(name, String), (age, u32), (email, Option<String>)]
+
+        // Definitions of additional aliases
+        getter = field,
+        setter = concat(set_, field),
+        getter_mut = concat(field, _mut),
+        {
+            #[doc = "Get the % field % field"]
+            pub fn getter(&self) -> &type_ {
+                &self.field
+            }
+
+            #[doc = "Get mutable reference to % field % field"]
+            pub fn getter_mut(&mut self) -> &mut type_ {
+                &mut self.field
+            }
+
+            #[doc = "Set the % field % field"]
+            pub fn setter(&mut self, value: type_) {
+                self.field = value;
+            }
+        }
+    );
+}
 
 let mut user = User { name: "Alice".into(), age: 30, email: None };
 user.set_name("Bob".into());
@@ -112,24 +109,25 @@ impl Frobnicate for &'static str {
   }
 }
 
-macro_rules! generate_frobnicate_test {
-    ($type:ty, $initial:expr, $input:expr, $expected:expr) => {
-        // Notice - we are using normalize() to make `&'static str` fit for
-        // being part of the test function's identifier.
-        compose_idents!(test_fn = concat(test_frobnicate_, normalize($type)), {
-          fn test_fn() {
-            let actual = ($initial as $type).frobnicate($input);
-            let expected = $expected;
-
-            assert_eq!(actual, expected);
-          }
-        });
-    };
-}
-
 // Generates tests for u32 and &'static str types
-generate_frobnicate_test!(u32, 0, 42_u32, 42_u32);
-generate_frobnicate_test!(&'static str, "foo", "bar", "foo_bar".to_string());
+compose_idents!(
+  for (type_, initial, input, expected_value) in [
+    (u32, 0, 42_u32, 42_u32),
+    (&'static str, "foo", "bar", "foo_bar".to_string()),
+  ]
+
+  // Notice - we are using normalize2() to make `&'static str` fit for
+  // being part of the test function's identifier.
+  test_fn = concat(test_frobnicate_, normalize2(type_)),
+  {
+    fn test_fn() {
+      let actual = (initial as type_).frobnicate(input);
+      let expected = expected_value;
+
+      assert_eq!(actual, expected);
+    }
+  }
+);
 
 test_frobnicate_u32();
 // Notice - "&'static str" has been turned into just "static_str"
@@ -185,6 +183,23 @@ compose_idents!(
 
 assert_eq!(FOO, 1);
 assert_eq!(BAR_FOO, 1);
+```
+
+### Code repetition
+
+Multiple code variants could be generated with `for ... in [...]` syntax. The loop variable can be used directly inside
+the block:
+```rust
+use compose_idents::compose_idents;
+
+compose_idents!(for name in [foo, bar] {
+    fn name() -> u32 {
+        1
+    }
+});
+
+assert_eq!(foo(), 1);
+assert_eq!(bar(), 1);
 ```
 
 ### Functions
