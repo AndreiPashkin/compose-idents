@@ -23,6 +23,8 @@ It uses such tools as Task, Gomplate, Pre-commit, Clippy, Rustfmt besides Cargo.
     - `ast/`: Types that represent AST elements of the syntax accepted by the macro.
     - `parse/`: Implementation of the parsing phase of the interpreter. Contains implementations of `syn::Parse` trait
                 for different AST types.
+    - `expand/`: Implementation of the expand-phase if the interpreter - it performs simplification of high-level
+                 syntactic constructs.
     - `resolve/`: Implementation of the resolve-phase if the interpreter - it performs static-analysis.
     - `eval/`: Implementation of the eval-phase of the interpreter - it performs execution of the code.
     - `util/`: Contains various auxiliary utilities.

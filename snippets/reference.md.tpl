@@ -21,6 +21,14 @@ Aliases could also be reused in definitions of other aliases:
 {{ file.Read "snippets/alias_reuse.rs" -}}
 ```
 
+{{ $h1 }} Code repetition
+
+Multiple code variants could be generated with `for ... in [...]` syntax. The loop variable can be used directly inside
+the block:
+```rust
+{{ file.Read "snippets/code_repetition.rs" -}}
+```
+
 {{ $h1 }} Functions
 
 Functions can be applied to the arguments used for the alias definitions:

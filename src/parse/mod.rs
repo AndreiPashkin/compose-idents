@@ -15,8 +15,8 @@ pub use call::*;
 mod expr;
 pub use expr::*;
 
-mod compose_idents_args;
-pub use compose_idents_args::*;
+mod raw_ast;
+pub use raw_ast::*;
 
 mod alias;
 pub use alias::*;
@@ -33,3 +33,19 @@ pub use alias_spec::*;
 
 mod type_;
 pub use type_::*;
+
+mod tuple;
+pub use tuple::*;
+
+mod loop_alias;
+pub use loop_alias::*;
+
+mod loop_source_value_list;
+pub use loop_source_value_list::*;
+
+mod loop_spec_item;
+pub use loop_spec_item::*;
+
+mod loop_spec;
+
+pub use loop_spec::*;

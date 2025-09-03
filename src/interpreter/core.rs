@@ -1,9 +1,10 @@
 //! Implements the [`Interpreter`] type and the core logic of the library.
 
-use crate::ast::{ComposeIdentsArgs, Value};
+use crate::ast::RawAST;
 use crate::core::Environment;
 use crate::error::Error;
 use crate::eval::{Context, Eval, Evaluated};
+use crate::expand::Expand;
 use crate::resolve::{Resolve, Scope};
 use crate::substitution::AliasSubstitutionVisitor;
 use crate::util::deprecation::DeprecationServiceScope;
@@ -33,7 +34,6 @@ use syn::visit_mut::VisitMut;
 /// 3. Code-gen – rewrites the user block with `ComposeIdentsVisitor` and returns a TokenStream.
 pub struct Interpreter {
     /// Generated identifier substitutions
-    substitutions: HashMap<String, Rc<Value>>,
     environment: Rc<Environment>,
     deprecation_service: DeprecationServiceScope,
 }
@@ -43,45 +43,51 @@ impl Interpreter {
     pub fn new(environment: Rc<Environment>, deprecation_service: DeprecationServiceScope) -> Self {
         Interpreter {
             environment,
-            substitutions: HashMap::new(),
             deprecation_service,
         }
     }
     /// Executes the interpreter - main entry-point of the library.
-    pub fn execute(mut self, mut args: ComposeIdentsArgs) -> Result<TokenStream, Error> {
+    pub fn execute(self, args: RawAST) -> Result<TokenStream, Error> {
         debug!("Executing interpreter with arguments: {:?}", args);
 
-        let mut scope = Scope::default();
+        // Expand loops into multiple invocations
+        let expanded = args.expand()?;
 
-        args.spec()
-            .resolve(self.environment.as_ref(), &mut scope, None)?;
+        let mut out = vec![];
+        for inv in expanded.invocations {
+            // Resolve per-invocation alias spec
+            let mut scope = Scope::default();
+            inv.spec()
+                .resolve(self.environment.as_ref(), &mut scope, None)?;
 
-        let mut context = Context::new(scope.metadata_rc());
-
-        let Evaluated::Bindings(bindings) = args.eval(&self.environment, &mut context)? else {
-            unreachable!();
-        };
-        for (alias, value) in bindings.iter() {
-            let Evaluated::Value(value) = value else {
-                unreachable!();
+            // Evaluate per-invocation alias spec to get bindings
+            let mut context = Context::new(scope.metadata_rc());
+            let evaluated = inv.spec().eval(&self.environment, &mut context)?;
+            let Evaluated::Bindings(bindings_map) = evaluated else {
+                unreachable!()
             };
-            self.substitutions
-                .insert(alias.ident().to_string(), value.clone());
+
+            let mut substitutions = HashMap::new();
+            for (alias, value) in bindings_map.iter() {
+                let Evaluated::Value(value) = value else {
+                    unreachable!()
+                };
+                substitutions.insert(alias.ident().to_string(), value.clone());
+            }
+
+            let mut block = inv.block().clone();
+            let mut visitor = AliasSubstitutionVisitor::new(substitutions);
+            visitor.visit_block_mut(&mut block);
+            if let Some(err) = visitor.error() {
+                return Err(err.clone());
+            }
+
+            self.deprecation_service
+                .emit("compose_idents!: ", &mut block);
+            let content = &block.stmts;
+            out.push(quote! { #(#content)* });
         }
 
-        let block = args.block_mut();
-
-        let mut visitor = AliasSubstitutionVisitor::new(self.substitutions);
-        visitor.visit_block_mut(block);
-
-        if let Some(err) = visitor.error() {
-            return Err(err.clone());
-        }
-
-        self.deprecation_service.emit("compose_idents!: ", block);
-        let block_content = &block.stmts;
-        let expanded = quote! { #(#block_content)* };
-
-        Ok(expanded)
+        Ok(quote! { #(#out)* })
     }
 }

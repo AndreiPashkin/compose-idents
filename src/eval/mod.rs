@@ -24,6 +24,3 @@ pub use alias_spec::*;
 
 mod alias_spec_item;
 pub use alias_spec_item::*;
-
-mod compose_idents_args;
-pub use compose_idents_args::*;
