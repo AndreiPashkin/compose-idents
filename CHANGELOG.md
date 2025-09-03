@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Introduced new code-repetition capability, that allows to produce multiple variations of user-supplied Rust code
   using `for ... in ...` syntax.
+- Introduced a type system, overloaded functions, new type casting functions - this would allow users to use much wider
+  range of values, up to entirely arbitrary sequences of tokens. Previously values were limited only to idents.
 - Added syntax reference to the documentation.
 - Added migration guides for deprecated features.
 - Made it possible to escape percent signs when formatting strings by using `%%` syntax.
@@ -19,7 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Introduced type system, overloaded functions, new type casting functions.
 - Error messages made to be more precise and informative.
 - Made string formatting syntax more human-readable by enabling `% alias %`-style placeholders (with whitespace).
 - Clarified the deprecation policy.
