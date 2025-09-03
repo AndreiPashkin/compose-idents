@@ -1,4 +1,6 @@
 pub mod combined;
+#[allow(unused_imports)]
+pub mod cross_product;
 pub mod deprecation;
 #[allow(unused_imports, unused_macros)]
 pub mod log;
