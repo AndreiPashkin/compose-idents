@@ -101,6 +101,109 @@ impl Environment {
             ))],
         );
         funcs.insert(
+            "normalize2".to_string(),
+            vec![
+                // normalize2(ident)
+                Rc::new(Func::new(
+                    "normalize2".to_string(),
+                    vec![Type::Ident],
+                    Type::Ident,
+                    |func, _, span, values| {
+                        let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                        let [ValueKind::Ident(ident)] = kind.as_slice() else {
+                            arg_type_err!(func, values);
+                        };
+                        let out = normalize(ident.to_string().as_str());
+                        Ok(Value::from_ident(Ident::new(out.as_str(), *span)))
+                    },
+                )),
+                // normalize2(str)
+                Rc::new(Func::new(
+                    "normalize2".to_string(),
+                    vec![Type::LitStr],
+                    Type::Ident,
+                    |func, _, span, values| {
+                        let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                        let [ValueKind::LitStr(s)] = kind.as_slice() else {
+                            arg_type_err!(func, values);
+                        };
+                        let out = normalize(s.value().as_str());
+                        Ok(Value::from_ident(Ident::new(out.as_str(), *span)))
+                    },
+                )),
+                // normalize2(int)
+                Rc::new(Func::new(
+                    "normalize2".to_string(),
+                    vec![Type::LitInt],
+                    Type::Ident,
+                    |func, _, span, values| {
+                        let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                        let [ValueKind::LitInt(i)] = kind.as_slice() else {
+                            arg_type_err!(func, values);
+                        };
+                        let out = normalize(i.base10_digits());
+                        Ok(Value::from_ident(Ident::new(out.as_str(), *span)))
+                    },
+                )),
+                // normalize2(path)
+                Rc::new(Func::new(
+                    "normalize2".to_string(),
+                    vec![Type::Path],
+                    Type::Ident,
+                    |func, _, span, values| {
+                        let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                        let [ValueKind::Path(path)] = kind.as_slice() else {
+                            arg_type_err!(func, values);
+                        };
+                        let out = normalize(path.to_token_stream().to_string().as_str());
+                        Ok(Value::from_ident(Ident::new(out.as_str(), *span)))
+                    },
+                )),
+                // normalize2(type)
+                Rc::new(Func::new(
+                    "normalize2".to_string(),
+                    vec![Type::Type],
+                    Type::Ident,
+                    |func, _, span, values| {
+                        let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                        let [ValueKind::Type(ty)] = kind.as_slice() else {
+                            arg_type_err!(func, values);
+                        };
+                        let out = normalize(ty.to_token_stream().to_string().as_str());
+                        Ok(Value::from_ident(Ident::new(out.as_str(), *span)))
+                    },
+                )),
+                // normalize2(expr)
+                Rc::new(Func::new(
+                    "normalize2".to_string(),
+                    vec![Type::Expr],
+                    Type::Ident,
+                    |func, _, span, values| {
+                        let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                        let [ValueKind::Expr(expr)] = kind.as_slice() else {
+                            arg_type_err!(func, values);
+                        };
+                        let out = normalize(expr.to_token_stream().to_string().as_str());
+                        Ok(Value::from_ident(Ident::new(out.as_str(), *span)))
+                    },
+                )),
+                // normalize2(tokens)
+                Rc::new(Func::new(
+                    "normalize2".to_string(),
+                    vec![Type::Tokens],
+                    Type::Ident,
+                    |func, _, span, values| {
+                        let kind = values.iter().map(|v| v.kind()).collect::<Vec<_>>();
+                        let [ValueKind::Tokens(tokens)] = kind.as_slice() else {
+                            arg_type_err!(func, values);
+                        };
+                        let out = normalize(tokens.to_string().as_str());
+                        Ok(Value::from_ident(Ident::new(out.as_str(), *span)))
+                    },
+                )),
+            ],
+        );
+        funcs.insert(
             "hash".to_string(),
             vec![
                 // hash(str)
