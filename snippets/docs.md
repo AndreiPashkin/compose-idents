@@ -250,6 +250,32 @@ assert_eq!(
 );
 ```
 
+`normalize2()` is similar to `normalize()`, but it evaluates its single input value first and then
+normalizes the result into a valid identifier. Unlike `normalize()`, which operates on raw tokens,
+`normalize2()` accepts values of different types — `ident`, `str`, `int`, `path`, `type`, `expr`, and
+`tokens` — and always produces an `ident`:
+```rust
+use compose_idents::compose_idents;
+
+compose_idents!(
+    // Path -> ident
+    A = normalize2(Foo::Bar),
+    // Type with lifetime -> ident
+    B = normalize2(&'static str),
+    // Tokens (via raw fencing) -> ident
+    C = normalize2(raw(Result<u32, String>)),
+    {
+        fn A() -> u32 { 1 }
+        fn B() -> u32 { 2 }
+        fn C() -> u32 { 3 }
+    }
+);
+
+assert_eq!(Foo_Bar(), 1);
+assert_eq!(static_str(), 2);
+assert_eq!(Result_u32_String(), 3);
+```
+
 ### String formatting
 
 Aliases could be used in string formatting with `% alias %` syntax. This is useful for generating doc-attributes:
@@ -457,6 +483,13 @@ General purpose functions that perform useful operations on tokens.
 | Function                            | Description                                                                    | Example                                 | Example Result        |
 |-------------------------------------|--------------------------------------------------------------------------------|-----------------------------------------|-----------------------|
 | `normalize(raw) -> ident`           | Transforms raw input into a valid Rust identifier.                             | `normalize(&'static str)`               | `static_str`          |
+| `normalize2(ident) -> ident`        | Evaluates the ident and transforms it to a valid identifier.                   | `normalize2(FooBar)`                    | `FooBar`              |
+| `normalize2(str) -> ident`          | Evaluates the string literal and transforms it to a valid identifier.          | `normalize2("&'static str")`            | `static_str`          |
+| `normalize2(int) -> ident`          | Evaluates the integer literal and transforms it to a valid identifier.         | `normalize2(123)`                       | `_123`                |
+| `normalize2(path) -> ident`         | Evaluates the path and transforms it to a valid identifier.                    | `normalize2(Foo::Bar)`                  | `Foo_Bar`             |
+| `normalize2(type) -> ident`         | Evaluates the type and transforms it to a valid identifier.                    | `normalize2(&'static str)`              | `static_str`          |
+| `normalize2(expr) -> ident`         | Evaluates the expression and transforms it to a valid identifier.              | `normalize2(1 + 2)`                     | `_1_2`                |
+| `normalize2(tokens) -> ident`       | Evaluates tokens and transforms them to a valid identifier.                    | `normalize2(raw(Result<u32, String>))`  | `Result_u32_String`   |
 | `concat(ident...) -> ident`         | Concatenates multiple idents into a single identifier.                         | `concat(foo, _, bar)`                   | `foo_bar`             |
 | `concat(ident, tokens...) -> ident` | Concatenates an ident and follow-up tokens arguments into a single identifier. | `concat(prefix, _, 123)`                | `prefix_123`          |
 | `concat(str...) -> str`             | Concatenates multiple strings into a single string.                            | `concat("foo", "_", "bar")`             | `"foo_bar"`           |

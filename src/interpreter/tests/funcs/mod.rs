@@ -4,6 +4,7 @@ mod concat;
 mod hash;
 mod lower;
 mod normalize;
+mod normalize2;
 mod pascal_case;
 mod raw;
 mod snake_case;

@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added syntax reference to the documentation.
 - Added migration guides for deprecated features.
 - Made it possible to escape percent signs when formatting strings by using `%%` syntax.
+- Added `normalize2(...)`, an evaluated variant of `normalize(...)` that accepts `ident`, `str`, `int`, `path`, `type`,
+  `expr`, or `tokens` and returns a normalized `ident` (unlike `normalize(...)`, which consumes raw tokens).
 
 ### Changed
 
