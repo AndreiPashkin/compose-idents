@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   range of values, up to entirely arbitrary sequences of tokens. Previously values were limited only to idents.
 - Introduced new `compose!` macro as the preferred entry point (functionally identical to the previous
   `compose_idents!`).
+- MSRV has been set to `1.80.0`.
 - Added syntax reference to the documentation.
 - Added migration guides for deprecated features.
 - Made it possible to escape percent signs when formatting strings by using `%%` syntax.
