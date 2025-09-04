@@ -1,9 +1,9 @@
 //! Using macro-arguments of "type" type should be compatible with compose_idents!.
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
 macro_rules! outer_macro {
     ($t:ty) => {
-        compose_idents!(my_fn = concat(foo, _, $t), {
+        compose!(my_fn = concat(foo, _, $t), {
             fn my_fn() -> $t {
                 42 as $t
             }

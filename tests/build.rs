@@ -31,9 +31,9 @@ compose-idents = {{ path = "{}" }}
     fs::create_dir_all(temp_path.join("src")).unwrap();
 
     let test_code = r#"
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(test_fn = test, {
+compose!(test_fn = test, {
     fn test_fn() -> &'static str {
         "success"
     }

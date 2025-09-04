@@ -155,7 +155,7 @@ impl VisitMut for DeprecationWarningVisitor {
 /// initialized with a prefix at the macro entrypoint before use by setting the global:
 ///
 /// ```rust,ignore
-/// let service = DeprecationService::new_rc("compose_idents!: ");
+/// let service = DeprecationService::new_rc("compose!: ");
 /// DeprecationService::maybe_set_global(service);
 /// let scope = DeprecationService::scoped();
 /// scope.add_semicolon_separator_warning();

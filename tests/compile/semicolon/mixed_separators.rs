@@ -1,7 +1,7 @@
 //! Using mixed separator styles (semicolon and comma) should result in a compile-time error.
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     my_fn_1 = concat(foo, _, bar),
     my_fn_2 = concat(spam, _, eggs); {
     fn my_fn_1() -> u32 {

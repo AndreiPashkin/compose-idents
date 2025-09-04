@@ -39,11 +39,11 @@ This section contains various usage examples. For additional examples, see the t
 
 {{ $h2 }} Quick start
 
-`compose_idents!` works by accepting definitions of aliases and a code block where aliases
+`compose!` works by accepting definitions of aliases and a code block where aliases
 could be used as normal identifiers. When the macro is expanded, the aliases are replaced with their
 definitions (which may expand into identifiers, paths, expressions, and arbitrary Rust code):
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
 /// Generate getters, setters with docstrings for given struct
 struct User {
@@ -53,7 +53,7 @@ struct User {
 }
 
 impl User {
-    compose_idents!(
+    compose!(
         // Iterating over fields and their types, generating a new variation of the code per iteration
         for (field, type_) in [(name, String), (age, u32), (email, Option<String>)]
 
@@ -90,7 +90,7 @@ assert_eq!(user.name(), "Bob");
 
 A practical example for how to auto-generate names for macro-generated tests for different data types:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
 pub trait Frobnicate {
   type Output;
@@ -115,7 +115,7 @@ impl Frobnicate for &'static str {
 }
 
 // Generates tests for u32 and &'static str types
-compose_idents!(
+compose!(
   for (type_, initial, input, expected_value) in [
     (u32, 0, 42_u32, 42_u32),
     (&'static str, "foo", "bar", "foo_bar".to_string()),
@@ -154,7 +154,7 @@ test_frobnicate_static_str();
 - Deprecation works through injection of `#[deprecated]` attributes to existing syntactic elements of generated code.
   It triggers deprecation warnings at compile time with text like this:
   ```text,ignore
-  compose_idents!: Feature XXX is deprecated, syntax `compose_idents!(...)` is considered obsolete, please use...
+  compose!: Feature XXX is deprecated, syntax `compose!(...)` is considered obsolete, please use...
   ```
 - Removal of a feature without a deprecation process is only possible in pre-1.0.0 releases and in such a case an
   explicit warning is issued in the changelog and the release notes.
@@ -237,6 +237,43 @@ compose_idents!(
 1. Wrap comma-separated arguments in `concat( … )`.
 2. Or use the appropriate function (`upper()`, `lower()`, etc.) directly when only one argument is present.
 3. Or Use the argument itself if no transformation is needed.
+
+{{ $h3 }} [≤ 0.2.2 → 0.3.0]: Macro rename compose_idents! → compose!
+
+{{ $h4 }} What changed?
+
+Starting with `v0.3.0` `compose_idents!` was renamed from to `compose!`.
+
+{{ $h4 }} How to migrate?
+
+Before (≤ 0.2.2):
+
+```rust,ignore
+use compose_idents::compose_idents;
+
+compose_idents!(
+    my_fn = concat(foo, _, bar),
+    {
+        fn my_fn() {}
+    },
+);
+```
+
+After (≥ 0.3.0):
+
+```rust,ignore
+use compose_idents::compose;
+
+compose!(
+    my_fn = concat(foo, _, bar),
+    {
+        fn my_fn() {}
+    },
+);
+```
+
+Simply replace `use compose_idents::compose_idents;` with `use compose_idents::compose;` and rename macro invocations
+from `compose_idents!(...)` to `compose!(...)`.
 
 {{ $h1 }} Alternatives
 

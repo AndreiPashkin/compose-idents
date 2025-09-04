@@ -1,6 +1,6 @@
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     MY_SNAKE_CASE_STATIC = snake_case(snakeCase),
     MY_CAMEL_CASE_STATIC = camel_case(camel_case),
     MY_PASCAL_CASE_STATIC = pascal_case(concat(pascal, _, case)),

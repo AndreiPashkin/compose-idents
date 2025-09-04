@@ -22,3 +22,18 @@ fn error_reporting() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/compile/error_reporting.rs");
 }
+
+/// Tests for [`compose_idents::compose!`] macro.
+#[test]
+fn compose() {
+    let t = trybuild::TestCases::new();
+    t.pass("tests/compile/compose.rs");
+}
+
+/// Tests for [`compose_idents::compose_idents!`] macro.
+#[test]
+fn compose_idents() {
+    let t = trybuild::TestCases::new();
+    t.pass("tests/compile/concat_idents/basic.rs");
+    t.compile_fail("tests/compile/concat_idents/warning.rs");
+}

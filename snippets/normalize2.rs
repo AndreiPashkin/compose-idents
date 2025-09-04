@@ -1,6 +1,6 @@
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     // Path -> ident
     A = normalize2(Foo::Bar),
     // Type with lifetime -> ident

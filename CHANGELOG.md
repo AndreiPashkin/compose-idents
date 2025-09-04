@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   using `for ... in ...` syntax.
 - Introduced a type system, overloaded functions, new type casting functions - this would allow users to use much wider
   range of values, up to entirely arbitrary sequences of tokens. Previously values were limited only to idents.
+- Introduced new `compose!` macro as the preferred entry point (functionally identical to the previous
+  `compose_idents!`).
 - Added syntax reference to the documentation.
 - Added migration guides for deprecated features.
 - Made it possible to escape percent signs when formatting strings by using `%%` syntax.
@@ -28,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Significantly expanded test coverage and reworked the test suite.
 - Reworked introductory examples in the documentation.
 - Harden the testing of support for both MSRV and stable Rust versions and of usage of the library as a dependency.
+
+### Deprecated
+
+- `compose_idents!` macro has been deprecated in favor of functionally identical `compose!`.
 
 ### Removed
 

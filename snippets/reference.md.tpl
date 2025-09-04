@@ -70,7 +70,7 @@ Aliases could be used in string formatting with `% alias %` syntax. This is usef
 {{ $h1 }} Generating unique identifiers
 
 `hash()` function deterministically hashes the input _within a single macro invocation_. It means that within the same
-`compose_idents!` call `hash(foobar)` will always produce the same output. But in another call - the output would be
+`compose!` call `hash(foobar)` will always produce the same output. But in another call - the output would be
 different (but also the same for the same input).
 
 It could be used to avoid conflicts between identifiers of global variables, or any other items that are defined in

@@ -1,7 +1,7 @@
 //! A trailing comma after the item block should be allowed.
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(my_fn = concat(foo, _, bar), {
+compose!(my_fn = concat(foo, _, bar), {
     fn my_fn() -> u32 {
         42
     }

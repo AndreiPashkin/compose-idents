@@ -1,6 +1,6 @@
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     my_const = concat(upper(foo), _, lower(BAR)),
     // Function calls can be arbitrarily nested and combined.
     my_static = upper(lower(BAZ)),

@@ -1,4 +1,4 @@
-use compose_idents::compose_idents;
+use compose_idents::compose;
 static __5360156246018494022: u32 = 42;
 static __1421539829453635175: u32 = 42;
 static __17818851730065003648: u32 = 42;

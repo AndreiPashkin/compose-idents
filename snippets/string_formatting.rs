@@ -1,6 +1,6 @@
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     my_fn = concat(foo, _, bar),
     MY_FORMATTED_STR = concat(FOO, _, BAR),
     {

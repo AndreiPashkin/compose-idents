@@ -1,6 +1,6 @@
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     base_alias = FOO,
     derived_alias = concat(BAR, _, base_alias),
     {

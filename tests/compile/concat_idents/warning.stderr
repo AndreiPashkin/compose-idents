@@ -1,0 +1,12 @@
+error: use of deprecated macro `compose_idents`: Renamed to compose!. Use compose!(...) instead.
+ --> tests/compile/concat_idents/warning.rs:5:1
+  |
+5 | compose_idents!(name = foo, {
+  | ^^^^^^^^^^^^^^
+  |
+note: the lint level is defined here
+ --> tests/compile/concat_idents/warning.rs:2:9
+  |
+2 | #![deny(warnings)]
+  |         ^^^^^^^^
+  = note: `#[deny(deprecated)]` implied by `#[deny(warnings)]`
