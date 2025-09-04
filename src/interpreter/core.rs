@@ -82,8 +82,7 @@ impl Interpreter {
                 return Err(err.clone());
             }
 
-            self.deprecation_service
-                .emit("compose_idents!: ", &mut block);
+            self.deprecation_service.emit(&mut block);
             let content = &block.stmts;
             out.push(quote! { #(#content)* });
         }

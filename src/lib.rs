@@ -59,6 +59,8 @@ use util::deprecation::DeprecationService;
 #[doc = include_str!("../snippets/reference_h2.md")]
 #[proc_macro]
 pub fn compose_idents(input: TokenStream) -> TokenStream {
+    let deprecation_service = DeprecationService::new_rc("compose_idents!: ");
+    DeprecationService::maybe_set_global(deprecation_service);
     let deprecation_service = DeprecationService::scoped();
 
     let environment = Rc::new(Environment::new_initialized(next_unique_id()));

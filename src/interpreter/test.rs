@@ -37,6 +37,8 @@ macro_rules! make_interpreter_test {
             let environment = Rc::new(Environment::new_initialized(1));
             Environment::maybe_set_global(environment.clone());
 
+            let service = DeprecationService::new_rc("compose_idents!: ");
+            DeprecationService::maybe_set_global(service);
             let deprecation_service = DeprecationService::scoped();
             let interpreter = Interpreter::new(environment.clone(), deprecation_service);
 
