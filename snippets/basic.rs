@@ -1,6 +1,6 @@
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     // Literal strings are accepted as arguments and their content is parsed.
     my_fn_1 = concat(foo, _, bar),
     // The same applies to literal integers, underscores or free-form token sequences.

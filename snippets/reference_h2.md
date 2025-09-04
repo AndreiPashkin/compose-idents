@@ -6,9 +6,9 @@ You can define aliases with the syntax `alias = concat(arg1, normalize(arg2), ..
 `alias = arg`, etc., where args may be identifiers, string literals, integers, underscores, or any arbitrary sequences
 of tokens (like `&'static str`, `My::Enum` and so on - such values would be recognized as just tokens):
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     // Literal strings are accepted as arguments and their content is parsed.
     my_fn_1 = concat(foo, _, bar),
     // The same applies to literal integers, underscores or free-form token sequences.
@@ -32,9 +32,9 @@ assert_eq!(spam_1_eggs(), 42);
 
 Aliases could also be reused in definitions of other aliases:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     base_alias = FOO,
     derived_alias = concat(BAR, _, base_alias),
     {
@@ -68,9 +68,9 @@ assert_eq!(bar(), 1);
 
 Functions can be applied to the arguments used for the alias definitions:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     my_const = concat(upper(foo), _, lower(BAR)),
     // Function calls can be arbitrarily nested and combined.
     my_static = upper(lower(BAZ)),
@@ -90,9 +90,9 @@ You can find a complete description of all functions below under "Functions" hea
 
 There are multiple functions for altering the naming convention of identifiers:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     MY_SNAKE_CASE_STATIC = snake_case(snakeCase),
     MY_CAMEL_CASE_STATIC = camel_case(camel_case),
     MY_PASCAL_CASE_STATIC = pascal_case(concat(pascal, _, case)),
@@ -112,9 +112,9 @@ assert_eq!(PascalCase, 3);
 
 `normalize()` function is useful for making valid identifiers out of arbitrary tokens:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     MY_NORMALIZED_ALIAS = concat(my, _, normalize(&'static str)),
     {
         static MY_NORMALIZED_ALIAS: &str = "This alias is made from a normalized argument";
@@ -132,9 +132,9 @@ normalizes the result into a valid identifier. Unlike `normalize()`, which opera
 `normalize2()` accepts values of different types — `ident`, `str`, `int`, `path`, `type`, `expr`, and
 `tokens` — and always produces an `ident`:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     // Path -> ident
     A = normalize2(Foo::Bar),
     // Type with lifetime -> ident
@@ -157,9 +157,9 @@ assert_eq!(Result_u32_String(), 3);
 
 Aliases could be used in string formatting with `% alias %` syntax. This is useful for generating doc-attributes:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     my_fn = concat(foo, _, bar),
     MY_FORMATTED_STR = concat(FOO, _, BAR),
     {
@@ -180,18 +180,18 @@ assert_eq!(FOO_BAR, "This is FOO_BAR");
 ## Generating unique identifiers
 
 `hash()` function deterministically hashes the input _within a single macro invocation_. It means that within the same
-`compose_idents!` call `hash(foobar)` will always produce the same output. But in another call - the output would be
+`compose!` call `hash(foobar)` will always produce the same output. But in another call - the output would be
 different (but also the same for the same input).
 
 It could be used to avoid conflicts between identifiers of global variables, or any other items that are defined in
 global scope.
 
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
 macro_rules! create_static {
     () => {
-        compose_idents!(
+        compose!(
             MY_UNIQUE_STATIC = hash(1),
             MY_OTHER_UNIQUE_STATIC = hash(2),
             {
@@ -208,7 +208,7 @@ create_static!();
 
 This example roughly expands to this:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 static __5360156246018494022: u32 = 42;
 static __1421539829453635175: u32 = 42;
 static __17818851730065003648: u32 = 42;
@@ -221,9 +221,9 @@ The `concat()` function takes multiple arguments and concatenates them together.
 that can be either nested within other function calls or to aggregate results of other function calls:
 
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     // Basic example
     basic_fn = concat(foo, _, bar, _, baz),
     // Mixed with other functions

@@ -1,8 +1,8 @@
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
 macro_rules! create_static {
     () => {
-        compose_idents!(
+        compose!(
             MY_UNIQUE_STATIC = hash(1),
             MY_OTHER_UNIQUE_STATIC = hash(2),
             {

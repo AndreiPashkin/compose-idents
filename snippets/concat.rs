@@ -1,6 +1,6 @@
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     // Basic example
     basic_fn = concat(foo, _, bar, _, baz),
     // Mixed with other functions

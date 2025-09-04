@@ -1,15 +1,15 @@
 //! Deprecated usage of semicolons as alias definition separators should result in a compile-time
 //! deprecation warning.
 #![deny(warnings)]
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(my_fn = concat(foo, _, bar); {
+compose!(my_fn = concat(foo, _, bar); {
     fn my_fn() -> u32 {
         1
     }
 });
 
-compose_idents!(
+compose!(
     my_fn_1 = concat(foo, _, baz);
     my_fn_2 = concat(spam, _, eggs); {
     fn my_fn_1() -> u32 {

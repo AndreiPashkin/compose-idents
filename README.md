@@ -41,11 +41,11 @@ This section contains various usage examples. For additional examples, see the t
 
 ### Quick start
 
-`compose_idents!` works by accepting definitions of aliases and a code block where aliases
+`compose!` works by accepting definitions of aliases and a code block where aliases
 could be used as normal identifiers. When the macro is expanded, the aliases are replaced with their
 definitions (which may expand into identifiers, paths, expressions, and arbitrary Rust code):
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
 /// Generate getters, setters with docstrings for given struct
 struct User {
@@ -55,7 +55,7 @@ struct User {
 }
 
 impl User {
-    compose_idents!(
+    compose!(
         // Iterating over fields and their types, generating a new variation of the code per iteration
         for (field, type_) in [(name, String), (age, u32), (email, Option<String>)]
 
@@ -92,7 +92,7 @@ assert_eq!(user.name(), "Bob");
 
 A practical example for how to auto-generate names for macro-generated tests for different data types:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
 pub trait Frobnicate {
   type Output;
@@ -117,7 +117,7 @@ impl Frobnicate for &'static str {
 }
 
 // Generates tests for u32 and &'static str types
-compose_idents!(
+compose!(
   for (type_, initial, input, expected_value) in [
     (u32, 0, 42_u32, 42_u32),
     (&'static str, "foo", "bar", "foo_bar".to_string()),
@@ -151,9 +151,9 @@ You can define aliases with the syntax `alias = concat(arg1, normalize(arg2), ..
 `alias = arg`, etc., where args may be identifiers, string literals, integers, underscores, or any arbitrary sequences
 of tokens (like `&'static str`, `My::Enum` and so on - such values would be recognized as just tokens):
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     // Literal strings are accepted as arguments and their content is parsed.
     my_fn_1 = concat(foo, _, bar),
     // The same applies to literal integers, underscores or free-form token sequences.
@@ -177,9 +177,9 @@ assert_eq!(spam_1_eggs(), 42);
 
 Aliases could also be reused in definitions of other aliases:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     base_alias = FOO,
     derived_alias = concat(BAR, _, base_alias),
     {
@@ -213,9 +213,9 @@ assert_eq!(bar(), 1);
 
 Functions can be applied to the arguments used for the alias definitions:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     my_const = concat(upper(foo), _, lower(BAR)),
     // Function calls can be arbitrarily nested and combined.
     my_static = upper(lower(BAZ)),
@@ -235,9 +235,9 @@ You can find a complete description of all functions below under "Functions" hea
 
 There are multiple functions for altering the naming convention of identifiers:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     MY_SNAKE_CASE_STATIC = snake_case(snakeCase),
     MY_CAMEL_CASE_STATIC = camel_case(camel_case),
     MY_PASCAL_CASE_STATIC = pascal_case(concat(pascal, _, case)),
@@ -257,9 +257,9 @@ assert_eq!(PascalCase, 3);
 
 `normalize()` function is useful for making valid identifiers out of arbitrary tokens:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     MY_NORMALIZED_ALIAS = concat(my, _, normalize(&'static str)),
     {
         static MY_NORMALIZED_ALIAS: &str = "This alias is made from a normalized argument";
@@ -277,9 +277,9 @@ normalizes the result into a valid identifier. Unlike `normalize()`, which opera
 `normalize2()` accepts values of different types — `ident`, `str`, `int`, `path`, `type`, `expr`, and
 `tokens` — and always produces an `ident`:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     // Path -> ident
     A = normalize2(Foo::Bar),
     // Type with lifetime -> ident
@@ -302,9 +302,9 @@ assert_eq!(Result_u32_String(), 3);
 
 Aliases could be used in string formatting with `% alias %` syntax. This is useful for generating doc-attributes:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     my_fn = concat(foo, _, bar),
     MY_FORMATTED_STR = concat(FOO, _, BAR),
     {
@@ -325,18 +325,18 @@ assert_eq!(FOO_BAR, "This is FOO_BAR");
 ### Generating unique identifiers
 
 `hash()` function deterministically hashes the input _within a single macro invocation_. It means that within the same
-`compose_idents!` call `hash(foobar)` will always produce the same output. But in another call - the output would be
+`compose!` call `hash(foobar)` will always produce the same output. But in another call - the output would be
 different (but also the same for the same input).
 
 It could be used to avoid conflicts between identifiers of global variables, or any other items that are defined in
 global scope.
 
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
 macro_rules! create_static {
     () => {
-        compose_idents!(
+        compose!(
             MY_UNIQUE_STATIC = hash(1),
             MY_OTHER_UNIQUE_STATIC = hash(2),
             {
@@ -353,7 +353,7 @@ create_static!();
 
 This example roughly expands to this:
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 static __5360156246018494022: u32 = 42;
 static __1421539829453635175: u32 = 42;
 static __17818851730065003648: u32 = 42;
@@ -366,9 +366,9 @@ The `concat()` function takes multiple arguments and concatenates them together.
 that can be either nested within other function calls or to aggregate results of other function calls:
 
 ```rust
-use compose_idents::compose_idents;
+use compose_idents::compose;
 
-compose_idents!(
+compose!(
     // Basic example
     basic_fn = concat(foo, _, bar, _, baz),
     // Mixed with other functions
@@ -552,7 +552,7 @@ These functions are useful whenever you need to explicitly cast an arbitrary val
 - Deprecation works through injection of `#[deprecated]` attributes to existing syntactic elements of generated code.
   It triggers deprecation warnings at compile time with text like this:
   ```text,ignore
-  compose_idents!: Feature XXX is deprecated, syntax `compose_idents!(...)` is considered obsolete, please use...
+  compose!: Feature XXX is deprecated, syntax `compose!(...)` is considered obsolete, please use...
   ```
 - Removal of a feature without a deprecation process is only possible in pre-1.0.0 releases and in such a case an
   explicit warning is issued in the changelog and the release notes.
@@ -635,6 +635,43 @@ compose_idents!(
 1. Wrap comma-separated arguments in `concat( … )`.
 2. Or use the appropriate function (`upper()`, `lower()`, etc.) directly when only one argument is present.
 3. Or Use the argument itself if no transformation is needed.
+
+#### [≤ 0.2.2 → 0.3.0]: Macro rename compose_idents! → compose!
+
+##### What changed?
+
+Starting with `v0.3.0` `compose_idents!` was renamed from to `compose!`.
+
+##### How to migrate?
+
+Before (≤ 0.2.2):
+
+```rust,ignore
+use compose_idents::compose_idents;
+
+compose_idents!(
+    my_fn = concat(foo, _, bar),
+    {
+        fn my_fn() {}
+    },
+);
+```
+
+After (≥ 0.3.0):
+
+```rust,ignore
+use compose_idents::compose;
+
+compose!(
+    my_fn = concat(foo, _, bar),
+    {
+        fn my_fn() {}
+    },
+);
+```
+
+Simply replace `use compose_idents::compose_idents;` with `use compose_idents::compose;` and rename macro invocations
+from `compose_idents!(...)` to `compose!(...)`.
 
 ## Alternatives
 
