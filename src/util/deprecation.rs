@@ -1,16 +1,16 @@
 //! Implements the deprecation mechanism.
 
+use std::cell::OnceCell;
 use std::cell::RefCell;
 use std::collections::BTreeSet;
+use std::rc::Rc;
 use syn::visit_mut::VisitMut;
 use syn::{
     parse_quote, visit_mut, Attribute, Block, Field, File, ForeignItem, Item, TraitItem, Variant,
 };
 
 thread_local! {
-    static DEPRECATION_SERVICE: RefCell<DeprecationService> = RefCell::new(
-        DeprecationService::new()
-    );
+    static GLOBAL_DEPRECATION_SERVICE: OnceCell<Rc<RefCell<DeprecationService>>> = const { OnceCell::new() };
 }
 
 /// Deprecation warning - could be used to warn user about usage of deprecated functionality while
@@ -151,24 +151,33 @@ impl VisitMut for DeprecationWarningVisitor {
 ///
 /// The main usage pattern is through a thread-local singleton accessed via scoped handles
 /// [`DeprecationServiceScope`], which serves as a facade for places in the code where the
-/// service instance can't be passed normally through arguments:
+/// service instance can't be passed normally through arguments. The service must be
+/// initialized with a prefix at the macro entrypoint before use by setting the global:
 ///
 /// ```rust,ignore
+/// let service = DeprecationService::new_rc("compose_idents!: ");
+/// DeprecationService::maybe_set_global(service);
 /// let scope = DeprecationService::scoped();
 /// scope.add_semicolon_separator_warning();
-/// scope.emit("my_macro: ", &mut generated_block);
+/// scope.emit(&mut generated_block);
 /// ```
 pub struct DeprecationService {
     warnings: BTreeSet<DeprecationWarning>,
     borrowed: usize,
+    prefix: String,
 }
 
 impl DeprecationService {
-    pub fn new() -> Self {
+    pub fn new(prefix: impl Into<String>) -> Self {
         Self {
             warnings: BTreeSet::new(),
             borrowed: 0,
+            prefix: prefix.into(),
         }
+    }
+
+    pub fn new_rc(prefix: impl Into<String>) -> Rc<RefCell<Self>> {
+        Rc::new(RefCell::new(Self::new(prefix)))
     }
 
     pub fn add_warning(&mut self, warning: DeprecationWarning) {
@@ -190,21 +199,31 @@ impl DeprecationService {
         self.warnings.clear();
     }
 
-    pub fn emit(&self, prefix: &str, block: &mut Block) {
+    pub fn emit(&self, block: &mut Block) {
         if self.warnings.is_empty() {
             return;
         }
         let mut deprecation_visitor = DeprecationWarningVisitor::new(
             self.warnings.iter().cloned().collect(),
-            prefix.to_string(),
+            self.prefix.clone(),
         );
         deprecation_visitor.visit_block_mut(block);
     }
 
-    pub fn scoped() -> DeprecationServiceScope {
-        DEPRECATION_SERVICE.with_borrow_mut(|service| {
-            service.borrowed += 1;
+    pub fn maybe_set_global(service: Rc<RefCell<DeprecationService>>) {
+        GLOBAL_DEPRECATION_SERVICE.with(|cell| {
+            let _ = cell.set(service);
         });
+    }
+
+    pub fn get_global() -> Option<Rc<RefCell<DeprecationService>>> {
+        GLOBAL_DEPRECATION_SERVICE.with(|cell| cell.get().cloned())
+    }
+
+    pub fn scoped() -> DeprecationServiceScope {
+        let service = Self::get_global()
+            .expect("DeprecationService is not initialized. Call maybe_set_global() first");
+        service.borrow_mut().borrowed += 1;
         DeprecationServiceScope {}
     }
 }
@@ -213,23 +232,26 @@ pub struct DeprecationServiceScope;
 
 impl DeprecationServiceScope {
     pub fn add_semicolon_separator_warning(&self) {
-        DEPRECATION_SERVICE.with_borrow_mut(|service| service.add_semicolon_separator_warning());
+        if let Some(service) = DeprecationService::get_global() {
+            service.borrow_mut().add_semicolon_separator_warning();
+        }
     }
 
-    pub fn emit(&self, prefix: &str, block: &mut Block) {
-        DEPRECATION_SERVICE.with_borrow_mut(|service| {
-            service.emit(prefix, block);
-        });
+    pub fn emit(&self, block: &mut Block) {
+        if let Some(service) = DeprecationService::get_global() {
+            service.borrow().emit(block);
+        }
     }
 }
 
 impl Drop for DeprecationServiceScope {
     fn drop(&mut self) {
-        DEPRECATION_SERVICE.with_borrow_mut(|service| {
-            service.borrowed -= 1;
-            if service.borrowed == 0 {
-                service.clear();
+        if let Some(service) = DeprecationService::get_global() {
+            let mut service_ = service.borrow_mut();
+            service_.borrowed -= 1;
+            if service_.borrowed == 0 {
+                service_.clear();
             }
-        });
+        }
     }
 }
