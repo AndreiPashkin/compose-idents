@@ -1,4 +1,4 @@
-use crate::ast::{AliasSpec, Ast, LoopSpec, NodeId};
+use crate::ast::{AliasSpec, Ast, ComposeItemSpec, LoopSpec, NodeId};
 use proc_macro2::Span;
 use std::rc::Rc;
 use syn::spanned::Spanned;
@@ -40,6 +40,16 @@ impl RawAST {
             id,
             loops,
             spec,
+            block,
+        }
+    }
+
+    /// Created new RawAST from a [`ComposeItemSpec`] and a code block.
+    pub fn from_compose_item_spec(spec: &ComposeItemSpec, block: Block) -> Self {
+        Self {
+            id: spec.id(),
+            loops: spec.loops(),
+            spec: spec.spec(),
             block,
         }
     }

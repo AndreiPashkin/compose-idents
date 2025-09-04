@@ -29,6 +29,14 @@ the block:
 {{ file.Read "snippets/code_repetition.rs" -}}
 ```
 
+{{ $h1 }} Attribute macro form
+
+`#[compose_item(...)]` is an attribute macro equivalent to `compose! { ... }`, except it treats the annotated item as
+the code block. Otherwise, it works the same way:
+```rust
+{{ file.Read "snippets/compose_item.rs" -}}
+```
+
 {{ $h1 }} Functions
 
 Functions can be applied to the arguments used for the alias definitions:

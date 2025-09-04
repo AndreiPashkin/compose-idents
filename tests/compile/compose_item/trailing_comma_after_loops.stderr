@@ -1,0 +1,5 @@
+error: Trailing separator after loops is not allowed in #[compose_item].
+ --> tests/compile/compose_item/trailing_comma_after_loops.rs:5:27
+  |
+5 |     for name in [foo, bar],
+  |                           ^

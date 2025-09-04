@@ -22,6 +22,9 @@ and [`concat_idents!`][1] macro from the nightly Rust, which is limited in capab
 - **Code repetition**
 
   Generation of multiple variations of the user-provided code is natively supported via `for ... in ...` loop syntax.
+- **Alternative invocation forms**
+
+  Both function-style macro and attribute-style macro are available for different use-cases.
 - **Functions**
 
   Functions can be applied when defining new identifiers for changing case and style.
@@ -90,7 +93,7 @@ assert_eq!(user.name(), "Bob");
 
 A practical example for how to auto-generate names for macro-generated tests for different data types:
 ```rust
-use compose_idents::compose;
+use compose_idents::compose_item;
 
 pub trait Frobnicate {
   type Output;
@@ -114,8 +117,8 @@ impl Frobnicate for &'static str {
   }
 }
 
-// Generates tests for u32 and &'static str types
-compose!(
+// Generating tests for u32 and &'static str types
+#[compose_item(
   for (type_, initial, input, expected_value) in [
     (u32, 0, 42_u32, 42_u32),
     (&'static str, "foo", "bar", "foo_bar".to_string()),
@@ -124,15 +127,13 @@ compose!(
   // Notice - we are using normalize2() to make `&'static str` fit for
   // being part of the test function's identifier.
   test_fn = concat(test_frobnicate_, normalize2(type_)),
-  {
-    fn test_fn() {
-      let actual = (initial as type_).frobnicate(input);
-      let expected = expected_value;
+)]
+fn test_fn() {
+  let actual = (initial as type_).frobnicate(input);
+  let expected = expected_value;
 
-      assert_eq!(actual, expected);
-    }
-  }
-);
+  assert_eq!(actual, expected);
+}
 
 test_frobnicate_u32();
 // Notice - "&'static str" has been turned into just "static_str"

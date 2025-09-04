@@ -64,6 +64,25 @@ assert_eq!(foo(), 1);
 assert_eq!(bar(), 1);
 ```
 
+## Attribute macro form
+
+`#[compose_item(...)]` is an attribute macro equivalent to `compose_idents! { ... }`, except it treats the annotated item as
+the code block. Otherwise, it works the same way:
+```rust
+use compose_idents::compose_item;
+
+#[compose_item(
+    my_fn = concat(foo, _, bar),
+)]
+pub fn my_fn() -> u32 {
+    42
+}
+
+fn main() {
+    assert_eq!(foo_bar(), 42);
+}
+```
+
 ## Functions
 
 Functions can be applied to the arguments used for the alias definitions:

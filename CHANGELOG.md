@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   using `for ... in ...` syntax.
 - Introduced a type system, overloaded functions, new type casting functions - this would allow users to use much wider
   range of values, up to entirely arbitrary sequences of tokens. Previously values were limited only to idents.
+- Introduced an alternative attribute-style invocation form `#[compose_items(...)]`.
 - Introduced new `compose!` macro as the preferred entry point (functionally identical to the previous
   `compose_idents!`).
 - MSRV has been set to `1.80.0`.

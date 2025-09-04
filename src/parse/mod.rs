@@ -49,3 +49,6 @@ pub use loop_spec_item::*;
 mod loop_spec;
 
 pub use loop_spec::*;
+
+mod compose_item_spec;
+pub use compose_item_spec::*;

@@ -30,6 +30,15 @@ fn compose() {
     t.pass("tests/compile/compose.rs");
 }
 
+/// Tests for [`compose_idents::compose_item!`] macro.
+#[test]
+fn compose_item() {
+    let t = trybuild::TestCases::new();
+    t.pass("tests/compile/compose_item/basic.rs");
+    t.compile_fail("tests/compile/compose_item/trailing_comma_after_loops.rs");
+    t.pass("tests/compile/compose_item/trailing_comma_after_aliases.rs");
+}
+
 /// Tests for [`compose_idents::compose_idents!`] macro.
 #[test]
 fn compose_idents() {
