@@ -32,23 +32,18 @@ use util::deprecation::DeprecationService;
 /// use compose_idents::compose_idents;
 ///
 /// compose_idents!(
-///     // Literal strings are accepted as arguments and their content is parsed.
-///     my_fn_1 = concat(foo, _, bar),
-///     // The same applies to literal integers, underscores or free-form token sequences.
-///     my_fn_2 = concat(spam, _, 1, _, eggs),
+///     // A simple alias definition.
+///     my_fn = concat(foo, _, 1, _, lower(BAR)),
+///     // Many functions are overloaded support different input argument types.
+///     greeting = concat(to_str(Hello), ", ", "world!"),
 ///     {
-///         fn my_fn_1() -> u32 {
-///             42
-///         }
-///
-///         fn my_fn_2() -> u32 {
-///             42
-///         }
+///         // String placeholders `% my_alias %` are expanded inside literals and doc attributes.
+///         #[doc = "Greets: % greeting %"]
+///         fn my_fn() -> &'static str { greeting }
 ///     },
 /// );
 ///
-/// assert_eq!(foo_bar(), 42);
-/// assert_eq!(spam_1_eggs(), 42);
+/// assert_eq!(foo_1_bar(), "Hello, world!");
 /// ```
 ///
 /// # Reference
