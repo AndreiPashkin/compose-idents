@@ -1,6 +1,6 @@
 //! Implements the [`Interpreter`] type and the core logic of the library.
 
-use crate::ast::RawAST;
+use crate::ast::{BlockRewrite, RawAST, Value};
 use crate::core::Environment;
 use crate::error::Error;
 use crate::eval::{Context, Eval, Evaluated};
@@ -50,48 +50,73 @@ impl Interpreter {
             deprecation_service,
         }
     }
+    /// Takes a [`BlockRewrite`] and turns it into a substitutions-map after fully evaluating the
+    /// block-rewrite AST node.
+    pub fn make_substitutions(
+        &self,
+        block_rewrite: &BlockRewrite,
+    ) -> Result<HashMap<String, Rc<Value>>, Error> {
+        let mut scope = Scope::default();
+        block_rewrite
+            .spec()
+            .resolve(self.environment.as_ref(), &mut scope, None)?;
+
+        let mut context = Context::new(scope.metadata_rc());
+        let evaluated = block_rewrite.spec().eval(&self.environment, &mut context)?;
+        let Evaluated::Bindings(bindings_map) = evaluated else {
+            unreachable!()
+        };
+
+        let mut substitutions = HashMap::new();
+        for (alias, value) in bindings_map.iter() {
+            let Evaluated::Value(value) = value else {
+                unreachable!()
+            };
+            substitutions.insert(alias.ident().to_string(), value.clone());
+        }
+        Ok(substitutions)
+    }
+    /// Performs alias substitutions in the given block.
+    pub fn substitute(
+        &self,
+        block: &mut syn::Block,
+        substitutions: HashMap<String, Rc<Value>>,
+    ) -> Result<(), Error> {
+        let mut visitor = AliasSubstitutionVisitor::new(substitutions);
+        visitor.visit_block_mut(block);
+        if let Some(err) = visitor.error() {
+            return Err(err.clone());
+        }
+
+        self.deprecation_service.emit(block);
+        Ok(())
+    }
+    /// Executes the interpreter within the context of a single block-rewrite AST node.
+    pub fn execute_block_rewrite(
+        &self,
+        block_rewrite: &BlockRewrite,
+    ) -> Result<TokenStream, Error> {
+        let substitutions = self.make_substitutions(block_rewrite)?;
+
+        let mut block = block_rewrite.block().clone();
+        self.substitute(&mut block, substitutions)?;
+
+        let content = &block.stmts;
+        Ok(quote! { #(#content)* })
+    }
     /// Executes the interpreter - main entry-point of the library.
     pub fn execute(self, args: RawAST) -> Result<TokenStream, Error> {
         debug!("Executing interpreter with arguments: {:?}", args);
 
-        // Expand loops into multiple invocations
         let expanded = args.expand()?;
 
-        let mut out = vec![];
+        let mut result = vec![];
+
         for block_rewrite in expanded.block_rewrite_items() {
-            // Resolve per-invocation alias spec
-            let mut scope = Scope::default();
-            block_rewrite
-                .spec()
-                .resolve(self.environment.as_ref(), &mut scope, None)?;
-
-            // Evaluate per-invocation alias spec to get bindings
-            let mut context = Context::new(scope.metadata_rc());
-            let evaluated = block_rewrite.spec().eval(&self.environment, &mut context)?;
-            let Evaluated::Bindings(bindings_map) = evaluated else {
-                unreachable!()
-            };
-
-            let mut substitutions = HashMap::new();
-            for (alias, value) in bindings_map.iter() {
-                let Evaluated::Value(value) = value else {
-                    unreachable!()
-                };
-                substitutions.insert(alias.ident().to_string(), value.clone());
-            }
-
-            let mut block = block_rewrite.block().clone();
-            let mut visitor = AliasSubstitutionVisitor::new(substitutions);
-            visitor.visit_block_mut(&mut block);
-            if let Some(err) = visitor.error() {
-                return Err(err.clone());
-            }
-
-            self.deprecation_service.emit(&mut block);
-            let content = &block.stmts;
-            out.push(quote! { #(#content)* });
+            let stream = self.execute_block_rewrite(block_rewrite)?;
+            result.push(stream);
         }
 
-        Ok(quote! { #(#out)* })
+        Ok(quote! { #(#result)* })
     }
 }
