@@ -22,18 +22,22 @@ use syn::visit_mut::VisitMut;
 ///
 /// Workflow of the interpreter consists of three main phases:
 ///
-/// 1. Resolve – static analysis, fills the scope and catches duplicate aliases.
+/// 1. Expand – desugaring, conversion of higher-level AST elements to more primitive ones.
+///     - [`Expand::expand`] is called on relevant AST nodes to obtain the new expanded form,
+///       represented as new AST elements, chosen by the implementation.
+/// 2. Resolve – static analysis, fills the scope and catches duplicate aliases.
 ///     - [`Resolve::resolve`] is called on relevant AST nodes.
 ///     - Since the syntax is simple - there is no need for full AST traversal - instead
 ///       ad-hoc traversal of relevant nodes is enough.
+///     - Simplified bidirectional typing is used at this phase.
 ///     - The scope is currently single and global due to the simplicity of requirements.
-/// 2. Evaluate – runs functions and concatenations to obtain final identifier strings.
+/// 3. Evaluate – runs functions and concatenations to obtain final identifier strings.
 ///    - [`Eval::eval`] is called on relevant AST nodes to retrieve execution results.
 ///    - Global execution context is maintained. It is singular and global due to simplicity of
 ///      requirements at this point.
-/// 3. Code-gen – rewrites the user block with `ComposeIdentsVisitor` and returns a TokenStream.
+/// 4. Code-gen – rewrites the user block with `ComposeIdentsVisitor` and returns a TokenStream.
 pub struct Interpreter {
-    /// Generated identifier substitutions
+    /// Global execution environment.
     environment: Rc<Environment>,
     deprecation_service: DeprecationServiceScope,
 }
