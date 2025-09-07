@@ -26,12 +26,18 @@ impl BlockRewrite {
 #[derive(Debug, Clone)]
 pub struct ExpandedAST {
     id: NodeId,
-    pub invocations: Vec<BlockRewrite>,
+    blocks: Vec<BlockRewrite>,
 }
 
 impl ExpandedAST {
     pub fn new(id: NodeId, invocations: Vec<BlockRewrite>) -> Self {
-        Self { id, invocations }
+        Self {
+            id,
+            blocks: invocations,
+        }
+    }
+    pub fn block_rewrite_items(&self) -> &[BlockRewrite] {
+        &self.blocks
     }
 }
 
@@ -40,7 +46,7 @@ impl Ast for ExpandedAST {
         self.id
     }
     fn span(&self) -> Span {
-        if let Some(inv) = self.invocations.first() {
+        if let Some(inv) = self.blocks.first() {
             inv.block().span()
         } else {
             Span::call_site()

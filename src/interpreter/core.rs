@@ -58,15 +58,16 @@ impl Interpreter {
         let expanded = args.expand()?;
 
         let mut out = vec![];
-        for inv in expanded.invocations {
+        for block_rewrite in expanded.block_rewrite_items() {
             // Resolve per-invocation alias spec
             let mut scope = Scope::default();
-            inv.spec()
+            block_rewrite
+                .spec()
                 .resolve(self.environment.as_ref(), &mut scope, None)?;
 
             // Evaluate per-invocation alias spec to get bindings
             let mut context = Context::new(scope.metadata_rc());
-            let evaluated = inv.spec().eval(&self.environment, &mut context)?;
+            let evaluated = block_rewrite.spec().eval(&self.environment, &mut context)?;
             let Evaluated::Bindings(bindings_map) = evaluated else {
                 unreachable!()
             };
@@ -79,7 +80,7 @@ impl Interpreter {
                 substitutions.insert(alias.ident().to_string(), value.clone());
             }
 
-            let mut block = inv.block().clone();
+            let mut block = block_rewrite.block().clone();
             let mut visitor = AliasSubstitutionVisitor::new(substitutions);
             visitor.visit_block_mut(&mut block);
             if let Some(err) = visitor.error() {
